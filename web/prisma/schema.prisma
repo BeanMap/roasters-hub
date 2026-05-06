@@ -8,10 +8,11 @@ datasource db {
 }
 
 model UserProfile {
-  id             String         @id
-  email          String         @unique
-  role           UserRole       @default(ROASTER)
-  createdAt      DateTime       @default(now())
+  id               String         @id
+  email            String         @unique
+  role             UserRole       @default(ROASTER)
+  marketingConsent Boolean        @default(false)
+  createdAt        DateTime       @default(now())
   adminNotes     AdminNote[]
   savedRoasters  SavedRoaster[]
   savedCafes     SavedCafe[]

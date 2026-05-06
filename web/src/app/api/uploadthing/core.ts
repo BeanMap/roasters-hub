@@ -70,9 +70,13 @@ export const ourFileRouter = {
 
   adminImage: f({ image: { maxFileSize: "8MB", maxFileCount: 1 } })
     .middleware(async () => {
-      const { userId } = await auth();
-      if (!userId) throw new UploadThingError("Unauthorized");
-      return { userId };
+      let adminId: string;
+      try {
+        adminId = await requireAdmin();
+      } catch {
+        throw new UploadThingError("Admin access required");
+      }
+      return { userId: adminId };
     })
     .onUploadComplete(async ({ file }) => {
       return { url: file.ufsUrl };

@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
-import { useAuth, SignInButton } from "@clerk/nextjs";
+import { useAuth, SignInButton, SignedIn } from "@clerk/nextjs";
 import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
 import { createCafe } from "@/actions/cafe.actions";
 import { getDefaultCountryFromLocale } from "@/lib/default-country";
 import { detectCountry } from "@/actions/geo.actions";
+import { usePersistedForm } from "@/lib/use-persisted-form";
 import { OpeningHoursPicker } from "@/components/shared/OpeningHoursPicker";
 import { AddressAutocomplete } from "@/components/shared/AddressAutocomplete";
 import { CountryAutocomplete } from "@/components/shared/CountryAutocomplete";
@@ -28,7 +29,7 @@ export default function RegisterCafePage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState({
+  const [form, updateForm, clearForm] = usePersistedForm("register-cafe-form", {
     name: "",
     city: "",
     country: defaultCountry?.name ?? "",
@@ -53,11 +54,8 @@ export default function RegisterCafePage() {
   useEffect(() => {
     if (defaultCountry) return;
     detectCountry().then((detected) => {
-      if (detected) {
-        setForm((prev) => {
-          if (prev.country) return prev;
-          return { ...prev, country: detected.name };
-        });
+      if (detected && !form.country) {
+        updateForm("country", detected.name);
       }
     });
   }, [defaultCountry]);
@@ -65,10 +63,11 @@ export default function RegisterCafePage() {
   const steps = t.raw("stepsCafe") as string[];
 
   const update = (field: string, value: string) =>
-    setForm((prev) => ({ ...prev, [field]: value }));
+    updateForm(field, value);
 
   const handleCountryChange = (name: string, code: string) => {
-    setForm((prev) => ({ ...prev, country: name, countryCode: code }));
+    updateForm("country", name);
+    updateForm("countryCode", code);
   };
 
   const toggleService = (value: string) => {
@@ -103,6 +102,7 @@ export default function RegisterCafePage() {
     fd.set("acceptMarketing", form.acceptMarketing ? "true" : "false");
     const result = await createCafe(fd);
     if (result.success) {
+      clearForm();
       setSubmitted(true);
     } else {
       setError(result.error);
@@ -212,6 +212,7 @@ export default function RegisterCafePage() {
                     update("lat", String(lat));
                     update("lng", String(lng));
                   }}
+                  onStreetNumberChange={(n) => update("streetNumber", n)}
                   city={form.city}
                   country={form.country}
                   placeholder={t("addressPlaceholder")}
@@ -414,7 +415,7 @@ export default function RegisterCafePage() {
                   type="checkbox"
                   required
                   checked={form.acceptTerms}
-                  onChange={(e) => setForm((prev) => ({ ...prev, acceptTerms: e.target.checked }))}
+                  onChange={(e) => updateForm("acceptTerms", e.target.checked)}
                   className="mt-0.5 w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary"
                 />
                 <span className="text-sm text-on-surface-variant group-hover:text-on-surface transition-colors leading-relaxed">
@@ -431,7 +432,7 @@ export default function RegisterCafePage() {
                   type="checkbox"
                   required
                   checked={form.acceptPrivacy}
-                  onChange={(e) => setForm((prev) => ({ ...prev, acceptPrivacy: e.target.checked }))}
+                  onChange={(e) => updateForm("acceptPrivacy", e.target.checked)}
                   className="mt-0.5 w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary"
                 />
                 <span className="text-sm text-on-surface-variant group-hover:text-on-surface transition-colors leading-relaxed">
@@ -443,17 +444,19 @@ export default function RegisterCafePage() {
                 </span>
               </label>
 
+              <SignedIn>
               <label className="flex items-start gap-3 cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={form.acceptMarketing}
-                  onChange={(e) => setForm((prev) => ({ ...prev, acceptMarketing: e.target.checked }))}
+                  onChange={(e) => updateForm("acceptMarketing", e.target.checked)}
                   className="mt-0.5 w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary"
                 />
                 <span className="text-sm text-on-surface-variant group-hover:text-on-surface transition-colors leading-relaxed">
                   {t("acceptMarketing")}
                 </span>
               </label>
+              </SignedIn>
             </div>
           </div>
         )}

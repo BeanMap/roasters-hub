@@ -8,6 +8,7 @@ import { Footer } from "@/components/shared/Footer";
 import { ReviewForm } from "@/components/shared/ReviewForm";
 import { ReviewList } from "@/components/shared/ReviewList";
 import { ImageGallery } from "@/components/shared/ImageGallery";
+import { AddPhotoButton } from "@/components/shared/AddPhotoButton";
 import { AmenityIcon } from "@/components/cafes/AmenityIcon";
 import { VerifiedBadge } from "@/components/roasters/VerifiedBadge";
 import { CafeProfileTracker } from "@/components/cafes/CafeProfileTracker";
@@ -225,6 +226,9 @@ export default async function CafeProfilePage({
             <section>
               <h2 className="font-headline text-3xl mb-8 tracking-tight">Photos</h2>
               <ImageGallery images={galleryImages} />
+              <div className="mt-4">
+                <AddPhotoButton entityType="CAFE" entityId={cafe.id} />
+              </div>
             </section>
           )}
 

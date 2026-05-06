@@ -3,13 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
-import { useAuth, SignInButton } from "@clerk/nextjs";
+import { useAuth, SignInButton, SignedIn } from "@clerk/nextjs";
 import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
 import { ROAST_STYLES, CERTIFICATIONS, CERTIFICATION_LABELS, ORIGINS } from "@/types/certifications";
 import { createRoasterRegistration } from "@/actions/roaster.actions";
 import { getDefaultCountryFromLocale } from "@/lib/default-country";
 import { detectCountry } from "@/actions/geo.actions";
+import { usePersistedForm } from "@/lib/use-persisted-form";
 import { OpeningHoursPicker } from "@/components/shared/OpeningHoursPicker";
 import { AddressAutocomplete } from "@/components/shared/AddressAutocomplete";
 import { CountryAutocomplete } from "@/components/shared/CountryAutocomplete";
@@ -26,7 +27,7 @@ export default function RegisterPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState({
+  const [form, updateForm, clearForm] = usePersistedForm("register-roaster-form", {
     name: "",
     country: defaultCountry?.name ?? "",
     countryCode: defaultCountry?.code ?? "",
@@ -54,11 +55,8 @@ export default function RegisterPage() {
   useEffect(() => {
     if (defaultCountry) return;
     detectCountry().then((detected) => {
-      if (detected) {
-        setForm((prev) => {
-          if (prev.country) return prev;
-          return { ...prev, country: detected.name };
-        });
+      if (detected && !form.country) {
+        updateForm("country", detected.name);
       }
     });
   }, [defaultCountry]);
@@ -66,20 +64,20 @@ export default function RegisterPage() {
   const steps = t.raw("stepsRoaster") as string[];
 
   const updateField = (field: string, value: string | string[]) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+    updateForm(field, value);
   };
 
   const handleCountryChange = (name: string, code: string) => {
-    setForm((prev) => ({ ...prev, country: name, countryCode: code }));
+    updateForm("country", name);
+    updateForm("countryCode", code);
   };
 
   const toggleArray = (field: "origins" | "roastStyles" | "certifications", value: string) => {
-    setForm((prev) => ({
-      ...prev,
-      [field]: prev[field].includes(value)
-        ? prev[field].filter((v) => v !== value)
-        : [...prev[field], value],
-    }));
+    const current = form[field] as string[];
+    const next = current.includes(value)
+      ? current.filter((v) => v !== value)
+      : [...current, value];
+    updateForm(field, next);
   };
 
   const handleSubmit = async () => {
@@ -96,7 +94,8 @@ export default function RegisterPage() {
     formData.set("country", form.country);
     formData.set("city", form.city);
     formData.set("description", form.description);
-    if (form.address) formData.set("address", form.address + (form.streetNumber ? " " + form.streetNumber : ""));
+    const fullAddress = [form.address, form.streetNumber].filter(Boolean).join(" ");
+    if (fullAddress) formData.set("address", fullAddress);
     if (form.lat) formData.set("lat", form.lat);
     if (form.lng) formData.set("lng", form.lng);
     formData.set("website", form.website);
@@ -118,6 +117,7 @@ export default function RegisterPage() {
       return;
     }
 
+    clearForm();
     setSubmitted(true);
   };
 
@@ -420,7 +420,7 @@ export default function RegisterPage() {
                   type="checkbox"
                   required
                   checked={form.acceptTerms}
-                  onChange={(e) => setForm((prev) => ({ ...prev, acceptTerms: e.target.checked }))}
+                  onChange={(e) => updateForm("acceptTerms", e.target.checked)}
                   className="mt-0.5 w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary"
                 />
                 <span className="text-sm text-on-surface-variant group-hover:text-on-surface transition-colors leading-relaxed">
@@ -437,7 +437,7 @@ export default function RegisterPage() {
                   type="checkbox"
                   required
                   checked={form.acceptPrivacy}
-                  onChange={(e) => setForm((prev) => ({ ...prev, acceptPrivacy: e.target.checked }))}
+                  onChange={(e) => updateForm("acceptPrivacy", e.target.checked)}
                   className="mt-0.5 w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary"
                 />
                 <span className="text-sm text-on-surface-variant group-hover:text-on-surface transition-colors leading-relaxed">
@@ -449,17 +449,19 @@ export default function RegisterPage() {
                 </span>
               </label>
 
+              <SignedIn>
               <label className="flex items-start gap-3 cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={form.acceptMarketing}
-                  onChange={(e) => setForm((prev) => ({ ...prev, acceptMarketing: e.target.checked }))}
+                  onChange={(e) => updateForm("acceptMarketing", e.target.checked)}
                   className="mt-0.5 w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary"
                 />
                 <span className="text-sm text-on-surface-variant group-hover:text-on-surface transition-colors leading-relaxed">
                   {t("acceptMarketing")}
                 </span>
               </label>
+              </SignedIn>
             </div>
 
             {error && (

@@ -13,7 +13,7 @@ export default async function RoasterDashboardPage() {
 
   const profile = await db.userProfile.findUnique({
     where: { id: userId },
-    select: { ownedRoasters: { select: { id: true } } },
+    select: { marketingConsent: true, ownedRoasters: { select: { id: true } } },
   });
 
   if (!profile?.ownedRoasters.length) {
@@ -100,7 +100,7 @@ export default async function RoasterDashboardPage() {
   return (
     <>
       <Header />
-      <DashboardClient roaster={serialized} stats={stats} />
+      <DashboardClient roaster={serialized} stats={stats} marketingConsent={profile.marketingConsent} />
       <Footer />
     </>
   );

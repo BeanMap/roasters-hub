@@ -7,6 +7,7 @@ interface AddressAutocompleteProps {
   value: string;
   onChange: (address: string) => void;
   onCoordsChange?: (lat: number, lng: number) => void;
+  onStreetNumberChange?: (number: string) => void;
   placeholder?: string;
   city?: string;
   country?: string;
@@ -16,12 +17,15 @@ interface Suggestion {
   displayName: string;
   lat: number;
   lng: number;
+  road?: string;
+  houseNumber?: string;
 }
 
 export function AddressAutocomplete({
   value,
   onChange,
   onCoordsChange,
+  onStreetNumberChange,
   placeholder = "Start typing an address...",
   city,
   country,
@@ -34,7 +38,6 @@ export function AddressAutocomplete({
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   );
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const debouncedSearch = useCallback(
     (q: string) => {
@@ -74,10 +77,14 @@ export function AddressAutocomplete({
   };
 
   const selectSuggestion = (suggestion: Suggestion) => {
-    onChange(suggestion.displayName);
+    const street = suggestion.road ?? suggestion.displayName.split(",")[0]?.trim() ?? suggestion.displayName;
+    onChange(street);
     setIsOpen(false);
     setSuggestions([]);
     onCoordsChange?.(suggestion.lat, suggestion.lng);
+    if (suggestion.houseNumber) {
+      onStreetNumberChange?.(suggestion.houseNumber);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -115,7 +122,6 @@ export function AddressAutocomplete({
   return (
     <div className="relative">
       <input
-        ref={inputRef}
         type="text"
         value={value}
         onChange={handleInputChange}

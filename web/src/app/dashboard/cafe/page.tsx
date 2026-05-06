@@ -17,6 +17,7 @@ export default async function CafeDashboardPage() {
       id: true,
       email: true,
       role: true,
+      marketingConsent: true,
       createdAt: true,
       ownedCafes: {
         include: {
@@ -86,6 +87,7 @@ export default async function CafeDashboardPage() {
           isPrimary: img.isPrimary,
           status: img.status as "PENDING" | "APPROVED" | "REJECTED",
         }))}
+        marketingConsent={profile.marketingConsent}
         linkedRoasters={cafe.roasters.map(({ roaster }) => ({
           id: roaster.id,
           name: roaster.name,

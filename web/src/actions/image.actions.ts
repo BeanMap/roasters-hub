@@ -209,10 +209,15 @@ export async function setPrimaryImage(imageId: string): Promise<ActionResult> {
       select: { role: true },
     });
     const isAdmin = profile?.role === "ADMIN";
-    const isOwner = image.uploadedById === userId;
 
-    if (!isAdmin && !isOwner) {
-      return { success: false, error: "Forbidden" };
+    if (!isAdmin) {
+      const entity = image.cafeId
+        ? await db.cafe.findFirst({ where: { id: image.cafeId, ownerId: userId } })
+        : await db.roaster.findFirst({ where: { id: image.roasterId!, ownerId: userId } });
+
+      if (!entity || image.status !== "APPROVED") {
+        return { success: false, error: "Forbidden" };
+      }
     }
 
     const conditions = image.roasterId
@@ -257,10 +262,15 @@ export async function reorderImages(
     const isAdmin = profile?.role === "ADMIN";
 
     if (!isAdmin) {
-      const first = await db.image.findFirst({
-        where: { id: items[0]?.id ?? "" },
+      const ids = items.map((i) => i.id);
+      const owned = await db.image.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, uploadedById: true },
       });
-      if (!first || first.uploadedById !== userId) {
+      if (
+        owned.length !== ids.length ||
+        owned.some((img) => img.uploadedById !== userId)
+      ) {
         return { success: false, error: "Forbidden" };
       }
     }

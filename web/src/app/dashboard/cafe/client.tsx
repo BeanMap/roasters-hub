@@ -15,6 +15,7 @@ import { DeleteAccountSection } from "@/components/shared/DeleteAccountSection";
 import { DashboardGallery } from "@/components/shared/DashboardGallery";
 import { AddressAutocomplete } from "@/components/shared/AddressAutocomplete";
 import { MiniMap } from "@/components/shared/MiniMap";
+import { MarketingConsentToggle } from "@/components/shared/MarketingConsentToggle";
 import type { GalleryImage } from "@/components/shared/DashboardGallery";
 
 type Cafe = {
@@ -43,11 +44,13 @@ export function CafeDashboardClient({
   cafe,
   linkedRoasters: initialLinked,
   galleryImages,
+  marketingConsent,
   stats,
 }: {
   cafe: Cafe;
   linkedRoasters: LinkedRoaster[];
   galleryImages: GalleryImage[];
+  marketingConsent: boolean;
   stats: Stats;
 }) {
   const router = useRouter();
@@ -440,6 +443,7 @@ export function CafeDashboardClient({
           )}
         </div>
       </section>
+      <MarketingConsentToggle initial={marketingConsent} />
       <DeleteAccountSection />
     </main>
   );

@@ -12,6 +12,7 @@ import { TrackedLink } from "@/components/roasters/TrackedLink";
 import { ReviewForm } from "@/components/shared/ReviewForm";
 import { ReviewList } from "@/components/shared/ReviewList";
 import { ImageGallery } from "@/components/shared/ImageGallery";
+import { AddPhotoButton } from "@/components/shared/AddPhotoButton";
 import { SaveRoasterButton } from "@/components/roasters/SaveRoasterButton";
 import { isRoasterSaved } from "@/actions/saved-roaster.actions";
 import { db } from "@/lib/db";
@@ -189,6 +190,9 @@ export default async function RoasterProfilePage({
             <section>
               <h2 className="font-headline text-3xl mb-8 tracking-tight">Photos</h2>
               <ImageGallery images={galleryImages} />
+              <div className="mt-4">
+                <AddPhotoButton entityType="ROASTER" entityId={roaster.id} />
+              </div>
             </section>
           )}
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { searchCountries, getCountryName, type Country } from "@/lib/countries";
+import { useState, useMemo } from "react";
+import { searchCountries, type Country } from "@/lib/countries";
 
 interface CountryAutocompleteProps {
   value: string;
@@ -16,13 +16,26 @@ export function CountryAutocomplete({
   locale,
   placeholder = "Select country...",
 }: CountryAutocompleteProps) {
+  const [userEdited, setUserEdited] = useState(false);
   const [query, setQuery] = useState(() => value || "");
   const [suggestions, setSuggestions] = useState<Country[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
-  const inputRef = useRef<HTMLInputElement>(null);
+
+  const displayName = useMemo(() => {
+    if (!value) return "";
+    const found = searchCountries(value, locale);
+    if (found.length === 1) {
+      const c = found[0];
+      return locale === "pl" ? c.pl : locale === "de" ? c.de : c.en;
+    }
+    return value;
+  }, [value, locale]);
+
+  const shown = userEdited ? query : displayName;
 
   const handleInput = (q: string) => {
+    setUserEdited(true);
     setQuery(q);
     const results = searchCountries(q, locale);
     setSuggestions(results);
@@ -33,6 +46,7 @@ export function CountryAutocomplete({
   const select = (c: Country) => {
     const name =
       locale === "pl" ? c.pl : locale === "de" ? c.de : c.en;
+    setUserEdited(false);
     setQuery(name);
     onChange(name, c.code);
     setIsOpen(false);
@@ -59,12 +73,11 @@ export function CountryAutocomplete({
   return (
     <div className="relative">
       <input
-        ref={inputRef}
         type="text"
-        value={query}
+        value={shown}
         onChange={(e) => handleInput(e.target.value)}
         onFocus={() => {
-          if (!suggestions.length) handleInput(query);
+          if (!suggestions.length) handleInput(shown);
           else setIsOpen(true);
         }}
         onBlur={() => setTimeout(() => setIsOpen(false), 200)}

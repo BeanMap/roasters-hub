@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { searchCity } from "@/lib/geocoding";
 
 interface CityAutocompleteProps {
   value: string;
@@ -21,36 +22,43 @@ export function CityAutocomplete({
   const [loading, setLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const abortRef = useRef<AbortController | undefined>(undefined);
+
+  useEffect(() => {
+    setQuery(value);
+  }, [value]);
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(debounceRef.current);
+      abortRef.current?.abort();
+    };
+  }, []);
 
   const search = useCallback(
     (q: string) => {
       clearTimeout(debounceRef.current);
+      abortRef.current?.abort();
+
       if (q.length < 2) {
         setSuggestions([]);
         setIsOpen(false);
         return;
       }
+
       debounceRef.current = setTimeout(async () => {
+        const controller = new AbortController();
+        abortRef.current = controller;
         setLoading(true);
         try {
-          const parts = [q];
-          if (country) parts.push(country);
-          const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(parts.join(", "))}&format=json&limit=5&featuretype=city`;
-          const resp = await fetch(url, {
-            headers: { "User-Agent": "BeenMap/1.0" },
-          });
-          if (resp.ok) {
-            const data = await resp.json() as { display_name: string }[];
-            const names = data
-              .map((d) => d.display_name.split(",")[0]?.trim())
-              .filter((n, i, a) => n && a.indexOf(n) === i);
-            setSuggestions(names);
-            setIsOpen(names.length > 0);
-          }
+          const names = await searchCity(q, country, controller.signal);
+          setSuggestions(names);
+          setIsOpen(names.length > 0);
         } catch {
           setSuggestions([]);
+        } finally {
+          setLoading(false);
         }
-        setLoading(false);
       }, 300);
     },
     [country],
@@ -62,9 +70,10 @@ export function CityAutocomplete({
         type="text"
         value={query}
         onChange={(e) => {
-          setQuery(e.target.value);
-          onChange(e.target.value);
-          search(e.target.value);
+          const v = e.target.value;
+          setQuery(v);
+          onChange(v);
+          search(v);
         }}
         onFocus={() => {
           if (suggestions.length) setIsOpen(true);
@@ -74,14 +83,10 @@ export function CityAutocomplete({
           if (!isOpen) return;
           if (e.key === "ArrowDown") {
             e.preventDefault();
-            setActiveIndex((i) =>
-              i < suggestions.length - 1 ? i + 1 : 0,
-            );
+            setActiveIndex((i) => (i < suggestions.length - 1 ? i + 1 : 0));
           } else if (e.key === "ArrowUp") {
             e.preventDefault();
-            setActiveIndex((i) =>
-              i > 0 ? i - 1 : suggestions.length - 1,
-            );
+            setActiveIndex((i) => (i > 0 ? i - 1 : suggestions.length - 1));
           } else if (e.key === "Enter") {
             e.preventDefault();
             if (activeIndex >= 0 && suggestions[activeIndex]) {

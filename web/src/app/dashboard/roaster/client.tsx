@@ -20,6 +20,7 @@ import { DeleteAccountSection } from "@/components/shared/DeleteAccountSection";
 import { DashboardGallery } from "@/components/shared/DashboardGallery";
 import { AddressAutocomplete } from "@/components/shared/AddressAutocomplete";
 import { MiniMap } from "@/components/shared/MiniMap";
+import { MarketingConsentToggle } from "@/components/shared/MarketingConsentToggle";
 import type { GalleryImage } from "@/components/shared/DashboardGallery";
 
 interface RoasterData {
@@ -113,9 +114,11 @@ function LocationEdit({ roaster }: { roaster: RoasterData }) {
 export function DashboardClient({
   roaster,
   stats,
+  marketingConsent,
 }: {
   roaster: RoasterData;
   stats: Stats;
+  marketingConsent: boolean;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -510,8 +513,9 @@ export function DashboardClient({
             )}
           </div>
         )}
-      </section>
-      <DeleteAccountSection />
+       </section>
+       <MarketingConsentToggle initial={marketingConsent} />
+       <DeleteAccountSection />
     </main>
   );
 }
