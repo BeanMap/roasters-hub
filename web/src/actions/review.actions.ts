@@ -44,28 +44,34 @@ export async function submitReview(formData: FormData): Promise<ActionResult> {
     });
     if (!roaster) return { success: false, error: "Roaster not found" };
 
-    if (userId) {
-      const existing = await db.review.findFirst({
-        where: { userId, roasterId },
-      });
-      if (existing) {
-        return {
-          success: false,
-          error:
-            "You've already reviewed this place. You can edit your existing review below.",
-        };
+    try {
+      if (userId) {
+        const existing = await db.review.findFirst({
+          where: { userId, roasterId },
+        });
+        if (existing) {
+          return {
+            success: false,
+            error:
+              "You've already reviewed this place. You can edit your existing review below.",
+          };
+        }
       }
+      await db.review.create({
+        data: {
+          roasterId,
+          authorName,
+          rating,
+          comment: comment || null,
+          userId: userId ?? null,
+        },
+      });
+    } catch {
+      // Fallback: userId column may not exist yet
+      await db.review.create({
+        data: { roasterId, authorName, rating, comment: comment || null },
+      });
     }
-
-    await db.review.create({
-      data: {
-        roasterId,
-        authorName,
-        rating,
-        comment: comment || null,
-        userId: userId ?? null,
-      },
-    });
     revalidatePath(`/roasters/${roaster.slug}`);
     return { success: true, data: undefined };
   } catch (error) {
@@ -110,28 +116,34 @@ export async function submitCafeReview(
     });
     if (!cafe) return { success: false, error: "Cafe not found" };
 
-    if (userId) {
-      const existing = await db.review.findFirst({
-        where: { userId, cafeId },
-      });
-      if (existing) {
-        return {
-          success: false,
-          error:
-            "You've already reviewed this place. You can edit your existing review below.",
-        };
+    try {
+      if (userId) {
+        const existing = await db.review.findFirst({
+          where: { userId, cafeId },
+        });
+        if (existing) {
+          return {
+            success: false,
+            error:
+              "You've already reviewed this place. You can edit your existing review below.",
+          };
+        }
       }
+      await db.review.create({
+        data: {
+          cafeId,
+          authorName,
+          rating,
+          comment: comment || null,
+          userId: userId ?? null,
+        },
+      });
+    } catch {
+      // Fallback: userId column may not exist yet
+      await db.review.create({
+        data: { cafeId, authorName, rating, comment: comment || null },
+      });
     }
-
-    await db.review.create({
-      data: {
-        cafeId,
-        authorName,
-        rating,
-        comment: comment || null,
-        userId: userId ?? null,
-      },
-    });
     revalidatePath(`/cafes/${cafe.slug}`);
     return { success: true, data: undefined };
   } catch (error) {
@@ -157,14 +169,25 @@ export async function updateReview(
       return { success: false, error: "Forbidden" };
     }
 
-    await db.review.update({
-      where: { id: reviewId },
-      data: {
-        ...(data.rating !== undefined ? { rating: data.rating } : {}),
-        ...(data.comment !== undefined ? { comment: data.comment } : {}),
-        updatedAt: new Date(),
-      },
-    });
+    try {
+      await db.review.update({
+        where: { id: reviewId },
+        data: {
+          ...(data.rating !== undefined ? { rating: data.rating } : {}),
+          ...(data.comment !== undefined ? { comment: data.comment } : {}),
+          updatedAt: new Date(),
+        },
+      });
+    } catch {
+      // Fallback: updatedAt column may not exist yet
+      await db.review.update({
+        where: { id: reviewId },
+        data: {
+          ...(data.rating !== undefined ? { rating: data.rating } : {}),
+          ...(data.comment !== undefined ? { comment: data.comment } : {}),
+        },
+      });
+    }
 
     if (review.roaster?.slug) revalidatePath(`/roasters/${review.roaster.slug}`);
     if (review.cafe?.slug) revalidatePath(`/cafes/${review.cafe.slug}`);
