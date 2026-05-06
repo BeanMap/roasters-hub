@@ -11,6 +11,8 @@ import { getDefaultCountryFromLocale } from "@/lib/default-country";
 import { detectCountry } from "@/actions/geo.actions";
 import { OpeningHoursPicker } from "@/components/shared/OpeningHoursPicker";
 import { AddressAutocomplete } from "@/components/shared/AddressAutocomplete";
+import { CountryAutocomplete } from "@/components/shared/CountryAutocomplete";
+import { CityAutocomplete } from "@/components/shared/CityAutocomplete";
 import { MiniMap } from "@/components/shared/MiniMap";
 import { CAFE_SERVICES } from "@/constants/cafe-services";
 import { EMPTY_OPENING_HOURS, type OpeningHours } from "@/types/opening-hours";
@@ -30,8 +32,10 @@ export default function RegisterCafePage() {
     name: "",
     city: "",
     country: defaultCountry?.name ?? "",
+    countryCode: defaultCountry?.code ?? "",
     description: "",
     address: "",
+    streetNumber: "",
     lat: "",
     lng: "",
     website: "",
@@ -63,6 +67,10 @@ export default function RegisterCafePage() {
   const update = (field: string, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
+  const handleCountryChange = (name: string, code: string) => {
+    setForm((prev) => ({ ...prev, country: name, countryCode: code }));
+  };
+
   const toggleService = (value: string) => {
     setSelectedServices((prev) =>
       prev.includes(value) ? prev.filter((s) => s !== value) : [...prev, value]
@@ -81,7 +89,8 @@ export default function RegisterCafePage() {
     fd.set("city", form.city);
     fd.set("country", form.country);
     fd.set("description", form.description);
-    fd.set("address", form.address);
+    const fullAddress = [form.address, form.streetNumber].filter(Boolean).join(" ");
+    fd.set("address", fullAddress);
     fd.set("lat", form.lat);
     fd.set("lng", form.lng);
     fd.set("website", form.website);
@@ -175,26 +184,52 @@ export default function RegisterCafePage() {
                 placeholder={t("cafeNamePlaceholder")}
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">{t("city")}</label>
-                <input
-                  value={form.city}
-                  onChange={(e) => update("city", e.target.value)}
-                  className="w-full border border-outline/30 rounded-lg px-3 py-2 bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder={t("cityPlaceholder")}
+            <div>
+              <label className="block text-sm font-medium mb-1">{t("country")}</label>
+              <CountryAutocomplete
+                value={form.country}
+                onChange={handleCountryChange}
+                locale={locale}
+                placeholder={t("countryPlaceholder")}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">{t("city")}</label>
+              <CityAutocomplete
+                value={form.city}
+                onChange={(v) => update("city", v)}
+                country={form.country}
+                placeholder={t("cityPlaceholder")}
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="col-span-2">
+                <label className="block text-sm font-medium mb-1">{t("address")}</label>
+                <AddressAutocomplete
+                  value={form.address}
+                  onChange={(v) => update("address", v)}
+                  onCoordsChange={(lat, lng) => {
+                    update("lat", String(lat));
+                    update("lng", String(lng));
+                  }}
+                  city={form.city}
+                  country={form.country}
+                  placeholder={t("addressPlaceholder")}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">{t("country")}</label>
+                <label className="block text-sm font-medium mb-1">{t("streetNumber")}</label>
                 <input
-                  value={form.country}
-                  onChange={(e) => update("country", e.target.value)}
+                  value={form.streetNumber}
+                  onChange={(e) => update("streetNumber", e.target.value)}
                   className="w-full border border-outline/30 rounded-lg px-3 py-2 bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder={t("countryPlaceholder")}
+                  placeholder="42"
                 />
               </div>
             </div>
+            {form.lat && form.lng && (
+              <MiniMap lat={parseFloat(form.lat)} lng={parseFloat(form.lng)} />
+            )}
             <div>
               <label className="block text-sm font-medium mb-1">{t("description")}</label>
               <textarea
@@ -211,45 +246,6 @@ export default function RegisterCafePage() {
 
         {step === 1 && (
           <div className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium mb-1">{t("address")} *</label>
-              <AddressAutocomplete
-                value={form.address}
-                onChange={(address) => update("address", address)}
-                onCoordsChange={(lat, lng) => {
-                  update("lat", String(lat));
-                  update("lng", String(lng));
-                }}
-                placeholder={t("addressPlaceholder")}
-              />
-            </div>
-            {form.lat && form.lng && (
-              <MiniMap lat={parseFloat(form.lat)} lng={parseFloat(form.lng)} />
-            )}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">{t("latitude")}</label>
-                <input
-                  value={form.lat}
-                  onChange={(e) => update("lat", e.target.value)}
-                  type="number"
-                  step="any"
-                  className="w-full border border-outline/30 rounded-lg px-3 py-2 bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder={t("latitudePlaceholder")}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">{t("longitude")}</label>
-                <input
-                  value={form.lng}
-                  onChange={(e) => update("lng", e.target.value)}
-                  type="number"
-                  step="any"
-                  className="w-full border border-outline/30 rounded-lg px-3 py-2 bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder={t("longitudePlaceholder")}
-                />
-              </div>
-            </div>
             <div>
               <label className="block text-sm font-medium mb-1">{t("emailAddress")}</label>
               <input

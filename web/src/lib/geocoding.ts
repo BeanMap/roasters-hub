@@ -59,8 +59,13 @@ export async function geocodeAddress(
 
 export async function searchAddress(
   query: string,
+  city?: string,
+  country?: string,
 ): Promise<GeocodingResult[]> {
-  const encoded = encodeURIComponent(query);
+  const parts = [query];
+  if (city) parts.push(city);
+  if (country) parts.push(country);
+  const encoded = encodeURIComponent(parts.join(", "));
 
   try {
     const resp = await rateLimitedFetch(

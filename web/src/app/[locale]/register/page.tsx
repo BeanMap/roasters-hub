@@ -12,6 +12,8 @@ import { getDefaultCountryFromLocale } from "@/lib/default-country";
 import { detectCountry } from "@/actions/geo.actions";
 import { OpeningHoursPicker } from "@/components/shared/OpeningHoursPicker";
 import { AddressAutocomplete } from "@/components/shared/AddressAutocomplete";
+import { CountryAutocomplete } from "@/components/shared/CountryAutocomplete";
+import { CityAutocomplete } from "@/components/shared/CityAutocomplete";
 import { MiniMap } from "@/components/shared/MiniMap";
 import { EMPTY_OPENING_HOURS, type OpeningHours } from "@/types/opening-hours";
 
@@ -27,9 +29,11 @@ export default function RegisterPage() {
   const [form, setForm] = useState({
     name: "",
     country: defaultCountry?.name ?? "",
+    countryCode: defaultCountry?.code ?? "",
     city: "",
     description: "",
     address: "",
+    streetNumber: "",
     lat: "",
     lng: "",
     website: "",
@@ -65,6 +69,10 @@ export default function RegisterPage() {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleCountryChange = (name: string, code: string) => {
+    setForm((prev) => ({ ...prev, country: name, countryCode: code }));
+  };
+
   const toggleArray = (field: "origins" | "roastStyles" | "certifications", value: string) => {
     setForm((prev) => ({
       ...prev,
@@ -88,7 +96,7 @@ export default function RegisterPage() {
     formData.set("country", form.country);
     formData.set("city", form.city);
     formData.set("description", form.description);
-    if (form.address) formData.set("address", form.address);
+    if (form.address) formData.set("address", form.address + (form.streetNumber ? " " + form.streetNumber : ""));
     if (form.lat) formData.set("lat", form.lat);
     if (form.lng) formData.set("lng", form.lng);
     formData.set("website", form.website);
@@ -179,38 +187,59 @@ export default function RegisterPage() {
             <div>
               <label className="block text-sm font-medium mb-2">{t("roasteryName")}</label>
               <input
-                type="text"
-                required
+                type="text" required
                 value={form.name}
                 onChange={(e) => updateField("name", e.target.value)}
                 className="input-field"
                 placeholder={t("roasteryNamePlaceholder")}
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">{t("country")}</label>
-                <input
-                  type="text"
-                  required
-                  value={form.country}
-                  onChange={(e) => updateField("country", e.target.value)}
-                  className="input-field"
-                  placeholder={t("countryPlaceholder")}
+            <div>
+              <label className="block text-sm font-medium mb-2">{t("country")}</label>
+              <CountryAutocomplete
+                value={form.country}
+                onChange={handleCountryChange}
+                locale={locale}
+                placeholder={t("countryPlaceholder")}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">{t("city")}</label>
+              <CityAutocomplete
+                value={form.city}
+                onChange={(v) => updateField("city", v)}
+                country={form.country}
+                placeholder={t("cityPlaceholder")}
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="col-span-2">
+                <label className="block text-sm font-medium mb-2">{t("address")}</label>
+                <AddressAutocomplete
+                  value={form.address}
+                  onChange={(v) => updateField("address", v)}
+                  onCoordsChange={(lat, lng) => {
+                    updateField("lat", String(lat));
+                    updateField("lng", String(lng));
+                  }}
+                  city={form.city}
+                  country={form.country}
+                  placeholder={t("addressPlaceholder")}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">{t("city")}</label>
+                <label className="block text-sm font-medium mb-2">{t("streetNumber")}</label>
                 <input
-                  type="text"
-                  required
-                  value={form.city}
-                  onChange={(e) => updateField("city", e.target.value)}
+                  value={form.streetNumber}
+                  onChange={(e) => updateField("streetNumber", e.target.value)}
                   className="input-field"
-                  placeholder={t("cityPlaceholder")}
+                  placeholder="42"
                 />
               </div>
             </div>
+            {form.lat && form.lng && (
+              <MiniMap lat={parseFloat(form.lat)} lng={parseFloat(form.lng)} />
+            )}
             <div>
               <label className="block text-sm font-medium mb-2">
                 {t("description")} <span className="text-on-surface-variant font-normal">{t("descriptionCounter", { count: form.description.length })}</span>
@@ -240,31 +269,6 @@ export default function RegisterPage() {
           <div className="space-y-8">
             <h2 className="font-headline text-3xl font-bold">{t("step2RoasterTitle")}</h2>
             <p className="text-on-surface-variant text-sm">{t("step2RoasterSubtitle")}</p>
-            <div>
-              <label className="block text-sm font-medium mb-2">{t("address")}</label>
-              <AddressAutocomplete
-                value={form.address}
-                onChange={(address) => updateField("address", address)}
-                onCoordsChange={(lat, lng) => {
-                  updateField("lat", String(lat));
-                  updateField("lng", String(lng));
-                }}
-                placeholder={t("addressPlaceholder")}
-              />
-            </div>
-            {form.lat && form.lng && (
-              <MiniMap lat={parseFloat(form.lat)} lng={parseFloat(form.lng)} />
-            )}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">{t("latitude")}</label>
-                <input type="text" value={form.lat} onChange={(e) => updateField("lat", e.target.value)} className="input-field" placeholder={t("latitudePlaceholder")} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">{t("longitude")}</label>
-                <input type="text" value={form.lng} onChange={(e) => updateField("lng", e.target.value)} className="input-field" placeholder={t("longitudePlaceholder")} />
-              </div>
-            </div>
             <div>
               <label className="block text-sm font-medium mb-2">{t("websiteUrl")}</label>
               <input type="url" value={form.website} onChange={(e) => updateField("website", e.target.value)} className="input-field" placeholder={t("websitePlaceholder")} />

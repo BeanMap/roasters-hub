@@ -8,6 +8,8 @@ interface AddressAutocompleteProps {
   onChange: (address: string) => void;
   onCoordsChange?: (lat: number, lng: number) => void;
   placeholder?: string;
+  city?: string;
+  country?: string;
 }
 
 interface Suggestion {
@@ -21,6 +23,8 @@ export function AddressAutocomplete({
   onChange,
   onCoordsChange,
   placeholder = "Start typing an address...",
+  city,
+  country,
 }: AddressAutocompleteProps) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -46,7 +50,7 @@ export function AddressAutocomplete({
         setLoading(true);
         setError("");
         try {
-          const results = await searchAddress(q);
+          const results = await searchAddress(q, city, country);
           setSuggestions(results);
           setIsOpen(results.length > 0);
           setActiveIndex(-1);
@@ -60,7 +64,7 @@ export function AddressAutocomplete({
         setLoading(false);
       }, 300);
     },
-    [],
+    [city, country],
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
