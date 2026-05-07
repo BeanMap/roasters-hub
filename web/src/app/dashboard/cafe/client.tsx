@@ -14,7 +14,8 @@ import { updateCafeCoverImage, updateCafeProfile } from "@/actions/cafe.actions"
 import { DeleteAccountSection } from "@/components/shared/DeleteAccountSection";
 import { DashboardGallery } from "@/components/shared/DashboardGallery";
 import { AddressAutocomplete } from "@/components/shared/AddressAutocomplete";
-import { MiniMap } from "@/components/shared/MiniMap";
+import dynamic from "next/dynamic";
+const MiniMap = dynamic(() => import("@/components/shared/MiniMap").then((m) => m.MiniMap), { ssr: false });
 import { MarketingConsentToggle } from "@/components/shared/MarketingConsentToggle";
 import type { GalleryImage } from "@/components/shared/DashboardGallery";
 

@@ -426,6 +426,7 @@
     "descriptionPlaceholderCafe": "Erzähl uns von deinem Café…",
     "address": "Adresse",
     "addressPlaceholder": "ul. Marszałkowska 1, Warschau",
+    "streetNumber": "Hausnummer",
     "latitude": "Breitengrad",
     "latitudePlaceholder": "52.2297",
     "longitude": "Längengrad",

@@ -15,7 +15,8 @@ import { OpeningHoursPicker } from "@/components/shared/OpeningHoursPicker";
 import { AddressAutocomplete } from "@/components/shared/AddressAutocomplete";
 import { CountryAutocomplete } from "@/components/shared/CountryAutocomplete";
 import { CityAutocomplete } from "@/components/shared/CityAutocomplete";
-import { MiniMap } from "@/components/shared/MiniMap";
+import dynamic from "next/dynamic";
+const MiniMap = dynamic(() => import("@/components/shared/MiniMap").then((m) => m.MiniMap), { ssr: false });
 import { EMPTY_OPENING_HOURS, type OpeningHours } from "@/types/opening-hours";
 
 export default function RegisterPage() {

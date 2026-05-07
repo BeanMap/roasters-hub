@@ -3,7 +3,8 @@
 import { useState } from "react"
 import { adminUpdateRoaster } from "@/actions/admin.actions"
 import { AddressAutocomplete } from "@/components/shared/AddressAutocomplete"
-import { MiniMap } from "@/components/shared/MiniMap"
+import dynamic from "next/dynamic"
+const MiniMap = dynamic(() => import("@/components/shared/MiniMap").then((m) => m.MiniMap), { ssr: false })
 import { adminInput, SectionHeader, Field, Hint, SaveButton } from "./_shared"
 
 interface Props {
