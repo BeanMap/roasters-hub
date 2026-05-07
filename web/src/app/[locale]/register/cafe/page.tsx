@@ -3,13 +3,19 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
-import { useAuth, SignInButton } from "@clerk/nextjs";
+import { useAuth, SignInButton, SignedIn } from "@clerk/nextjs";
 import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
 import { createCafe } from "@/actions/cafe.actions";
 import { getDefaultCountryFromLocale } from "@/lib/default-country";
 import { detectCountry } from "@/actions/geo.actions";
+import { usePersistedForm } from "@/lib/use-persisted-form";
 import { OpeningHoursPicker } from "@/components/shared/OpeningHoursPicker";
+import { AddressAutocomplete } from "@/components/shared/AddressAutocomplete";
+import { CountryAutocomplete } from "@/components/shared/CountryAutocomplete";
+import { CityAutocomplete } from "@/components/shared/CityAutocomplete";
+import dynamic from "next/dynamic";
+const MiniMap = dynamic(() => import("@/components/shared/MiniMap").then((m) => m.MiniMap), { ssr: false });
 import { CAFE_SERVICES } from "@/constants/cafe-services";
 import { EMPTY_OPENING_HOURS, type OpeningHours } from "@/types/opening-hours";
 
@@ -24,12 +30,14 @@ export default function RegisterCafePage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState({
+  const [form, updateForm, clearForm] = usePersistedForm("register-cafe-form", {
     name: "",
     city: "",
     country: defaultCountry?.name ?? "",
+    countryCode: defaultCountry?.code ?? "",
     description: "",
     address: "",
+    streetNumber: "",
     lat: "",
     lng: "",
     website: "",
@@ -47,11 +55,8 @@ export default function RegisterCafePage() {
   useEffect(() => {
     if (defaultCountry) return;
     detectCountry().then((detected) => {
-      if (detected) {
-        setForm((prev) => {
-          if (prev.country) return prev;
-          return { ...prev, country: detected.name };
-        });
+      if (detected && !form.country) {
+        updateForm("country", detected.name);
       }
     });
   }, [defaultCountry]);
@@ -59,7 +64,12 @@ export default function RegisterCafePage() {
   const steps = t.raw("stepsCafe") as string[];
 
   const update = (field: string, value: string) =>
-    setForm((prev) => ({ ...prev, [field]: value }));
+    updateForm(field, value);
+
+  const handleCountryChange = (name: string, code: string) => {
+    updateForm("country", name);
+    updateForm("countryCode", code);
+  };
 
   const toggleService = (value: string) => {
     setSelectedServices((prev) =>
@@ -79,7 +89,8 @@ export default function RegisterCafePage() {
     fd.set("city", form.city);
     fd.set("country", form.country);
     fd.set("description", form.description);
-    fd.set("address", form.address);
+    const fullAddress = [form.address, form.streetNumber].filter(Boolean).join(" ");
+    fd.set("address", fullAddress);
     fd.set("lat", form.lat);
     fd.set("lng", form.lng);
     fd.set("website", form.website);
@@ -92,6 +103,7 @@ export default function RegisterCafePage() {
     fd.set("acceptMarketing", form.acceptMarketing ? "true" : "false");
     const result = await createCafe(fd);
     if (result.success) {
+      clearForm();
       setSubmitted(true);
     } else {
       setError(result.error);
@@ -173,26 +185,53 @@ export default function RegisterCafePage() {
                 placeholder={t("cafeNamePlaceholder")}
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">{t("city")}</label>
-                <input
-                  value={form.city}
-                  onChange={(e) => update("city", e.target.value)}
-                  className="w-full border border-outline/30 rounded-lg px-3 py-2 bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder={t("cityPlaceholder")}
+            <div>
+              <label className="block text-sm font-medium mb-1">{t("country")}</label>
+              <CountryAutocomplete
+                value={form.country}
+                onChange={handleCountryChange}
+                locale={locale}
+                placeholder={t("countryPlaceholder")}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">{t("city")}</label>
+              <CityAutocomplete
+                value={form.city}
+                onChange={(v) => update("city", v)}
+                country={form.country}
+                placeholder={t("cityPlaceholder")}
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="col-span-2">
+                <label className="block text-sm font-medium mb-1">{t("address")}</label>
+                <AddressAutocomplete
+                  value={form.address}
+                  onChange={(v) => update("address", v)}
+                  onCoordsChange={(lat, lng) => {
+                    update("lat", String(lat));
+                    update("lng", String(lng));
+                  }}
+                  onStreetNumberChange={(n) => update("streetNumber", n)}
+                  city={form.city}
+                  country={form.country}
+                  placeholder={t("addressPlaceholder")}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">{t("country")}</label>
+                <label className="block text-sm font-medium mb-1">{t("streetNumber")}</label>
                 <input
-                  value={form.country}
-                  onChange={(e) => update("country", e.target.value)}
+                  value={form.streetNumber}
+                  onChange={(e) => update("streetNumber", e.target.value)}
                   className="w-full border border-outline/30 rounded-lg px-3 py-2 bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder={t("countryPlaceholder")}
+                  placeholder="42"
                 />
               </div>
             </div>
+            {form.lat && form.lng && (
+              <MiniMap lat={parseFloat(form.lat)} lng={parseFloat(form.lng)} />
+            )}
             <div>
               <label className="block text-sm font-medium mb-1">{t("description")}</label>
               <textarea
@@ -209,39 +248,6 @@ export default function RegisterCafePage() {
 
         {step === 1 && (
           <div className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium mb-1">{t("address")} *</label>
-              <input
-                value={form.address}
-                onChange={(e) => update("address", e.target.value)}
-                className="w-full border border-outline/30 rounded-lg px-3 py-2 bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder={t("addressPlaceholder")}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">{t("latitude")}</label>
-                <input
-                  value={form.lat}
-                  onChange={(e) => update("lat", e.target.value)}
-                  type="number"
-                  step="any"
-                  className="w-full border border-outline/30 rounded-lg px-3 py-2 bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder={t("latitudePlaceholder")}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">{t("longitude")}</label>
-                <input
-                  value={form.lng}
-                  onChange={(e) => update("lng", e.target.value)}
-                  type="number"
-                  step="any"
-                  className="w-full border border-outline/30 rounded-lg px-3 py-2 bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder={t("longitudePlaceholder")}
-                />
-              </div>
-            </div>
             <div>
               <label className="block text-sm font-medium mb-1">{t("emailAddress")}</label>
               <input
@@ -410,7 +416,7 @@ export default function RegisterCafePage() {
                   type="checkbox"
                   required
                   checked={form.acceptTerms}
-                  onChange={(e) => setForm((prev) => ({ ...prev, acceptTerms: e.target.checked }))}
+                  onChange={(e) => updateForm("acceptTerms", e.target.checked)}
                   className="mt-0.5 w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary"
                 />
                 <span className="text-sm text-on-surface-variant group-hover:text-on-surface transition-colors leading-relaxed">
@@ -427,7 +433,7 @@ export default function RegisterCafePage() {
                   type="checkbox"
                   required
                   checked={form.acceptPrivacy}
-                  onChange={(e) => setForm((prev) => ({ ...prev, acceptPrivacy: e.target.checked }))}
+                  onChange={(e) => updateForm("acceptPrivacy", e.target.checked)}
                   className="mt-0.5 w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary"
                 />
                 <span className="text-sm text-on-surface-variant group-hover:text-on-surface transition-colors leading-relaxed">
@@ -439,17 +445,19 @@ export default function RegisterCafePage() {
                 </span>
               </label>
 
+              <SignedIn>
               <label className="flex items-start gap-3 cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={form.acceptMarketing}
-                  onChange={(e) => setForm((prev) => ({ ...prev, acceptMarketing: e.target.checked }))}
+                  onChange={(e) => updateForm("acceptMarketing", e.target.checked)}
                   className="mt-0.5 w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary"
                 />
                 <span className="text-sm text-on-surface-variant group-hover:text-on-surface transition-colors leading-relaxed">
                   {t("acceptMarketing")}
                 </span>
               </label>
+              </SignedIn>
             </div>
           </div>
         )}

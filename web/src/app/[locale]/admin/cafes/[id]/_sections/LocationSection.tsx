@@ -2,6 +2,9 @@
 
 import { useState } from "react"
 import { adminUpdateCafe } from "@/actions/cafe.actions"
+import { AddressAutocomplete } from "@/components/shared/AddressAutocomplete"
+import dynamic from "next/dynamic"
+const MiniMap = dynamic(() => import("@/components/shared/MiniMap").then((m) => m.MiniMap), { ssr: false })
 import { adminInput, SectionHeader, Field, Hint, SaveButton } from "./_shared"
 
 interface Props {
@@ -51,19 +54,34 @@ export function LocationSection({ cafeId, initial }: Props) {
       <SectionHeader title="Location" hint="Street address and geographic coordinates" />
 
       <Field label="Address">
-        <input
+        <AddressAutocomplete
           value={form.address}
-          placeholder="e.g. ul. Marszałkowska 1, Warsaw"
-          onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
-          className={adminInput}
+          onChange={(address) => setForm((f) => ({ ...f, address }))}
+          onCoordsChange={(lat, lng) =>
+            setForm((f) => ({ ...f, lat: String(lat), lng: String(lng) }))
+          }
+          placeholder="Start typing an address..."
         />
       </Field>
+
+      {form.lat && form.lng && (
+        <MiniMap lat={parseFloat(form.lat)} lng={parseFloat(form.lng)} />
+      )}
 
       <Field label="Postal code">
         <input
           value={form.postalCode}
-          placeholder="e.g. 00-001"
+          placeholder="e.g. 45-001"
           onChange={(e) => setForm((f) => ({ ...f, postalCode: e.target.value }))}
+          className={adminInput}
+        />
+      </Field>
+
+      <Field label="Source URL">
+        <input
+          value={form.sourceUrl}
+          placeholder="e.g. https://maps.google.com/…"
+          onChange={(e) => setForm((f) => ({ ...f, sourceUrl: e.target.value }))}
           className={adminInput}
         />
       </Field>
@@ -73,7 +91,7 @@ export function LocationSection({ cafeId, initial }: Props) {
           <input
             type="number"
             step="any"
-            placeholder="e.g. 52.2297"
+            placeholder="e.g. 50.6751"
             value={form.lat}
             onChange={(e) => setForm((f) => ({ ...f, lat: e.target.value }))}
             className={adminInput}
@@ -84,7 +102,7 @@ export function LocationSection({ cafeId, initial }: Props) {
           <input
             type="number"
             step="any"
-            placeholder="e.g. 21.0122"
+            placeholder="e.g. 17.9213"
             value={form.lng}
             onChange={(e) => setForm((f) => ({ ...f, lng: e.target.value }))}
             className={adminInput}
@@ -92,17 +110,8 @@ export function LocationSection({ cafeId, initial }: Props) {
         </Field>
       </div>
       <Hint>
-        Find coordinates in Google Maps: right-click on the location and copy the lat/lng values.
+        Use the address search above to auto-fill coordinates, or enter them manually.
       </Hint>
-
-      <Field label="Source URL (where this listing came from)">
-        <input
-          value={form.sourceUrl}
-          placeholder="e.g. https://maps.google.com/…"
-          onChange={(e) => setForm((f) => ({ ...f, sourceUrl: e.target.value }))}
-          className={adminInput}
-        />
-      </Field>
 
       <SaveButton saving={saving} saved={saved} onClick={handleSave} />
       {saveError && (

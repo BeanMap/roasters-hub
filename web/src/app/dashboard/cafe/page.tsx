@@ -17,6 +17,7 @@ export default async function CafeDashboardPage() {
       id: true,
       email: true,
       role: true,
+      marketingConsent: true,
       createdAt: true,
       ownedCafes: {
         include: {
@@ -34,6 +35,18 @@ export default async function CafeDashboardPage() {
   if (!profile?.ownedCafes.length) redirect("/dashboard/saved-roasters");
 
   const cafe = profile.ownedCafes[0];
+
+  let galleryImages: { id: string; url: string; isPrimary: boolean; status: string }[] = [];
+  try {
+    const imgs = await db.image.findMany({
+      where: { cafeId: cafe.id, status: { not: "REJECTED" } },
+      orderBy: { sortOrder: "asc" },
+      select: { id: true, url: true, isPrimary: true, status: true },
+    });
+    galleryImages = imgs;
+  } catch {
+    // gallery not available
+  }
 
   const eventCounts = await db.cafeEvent.groupBy({
     by: ["type"],
@@ -58,8 +71,23 @@ export default async function CafeDashboardPage() {
           city: cafe.city,
           country: cafe.country,
           status: cafe.status,
+          description: cafe.description ?? "",
+          address: cafe.address ?? "",
+          lat: cafe.lat,
+          lng: cafe.lng,
+          website: cafe.website ?? "",
+          email: cafe.email ?? "",
+          instagram: cafe.instagram ?? "",
+          phone: cafe.phone ?? "",
           coverImageUrl: cafe.coverImageUrl ?? null,
         }}
+        galleryImages={galleryImages.map((img) => ({
+          id: img.id,
+          url: img.url,
+          isPrimary: img.isPrimary,
+          status: img.status as "PENDING" | "APPROVED" | "REJECTED",
+        }))}
+        marketingConsent={profile.marketingConsent}
         linkedRoasters={cafe.roasters.map(({ roaster }) => ({
           id: roaster.id,
           name: roaster.name,

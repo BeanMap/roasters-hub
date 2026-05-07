@@ -17,6 +17,12 @@ import {
   ORIGINS,
 } from "@/types/certifications";
 import { DeleteAccountSection } from "@/components/shared/DeleteAccountSection";
+import { DashboardGallery } from "@/components/shared/DashboardGallery";
+import { AddressAutocomplete } from "@/components/shared/AddressAutocomplete";
+import dynamic from "next/dynamic";
+const MiniMap = dynamic(() => import("@/components/shared/MiniMap").then((m) => m.MiniMap), { ssr: false });
+import { MarketingConsentToggle } from "@/components/shared/MarketingConsentToggle";
+import type { GalleryImage } from "@/components/shared/DashboardGallery";
 
 interface RoasterData {
   id: string;
@@ -26,6 +32,9 @@ interface RoasterData {
   city: string;
   country: string;
   status: string;
+  address: string;
+  lat: number | null;
+  lng: number | null;
   website: string;
   email: string;
   instagram: string;
@@ -35,6 +44,7 @@ interface RoasterData {
   roastStyles: string[];
   imageUrl: string | null;
   imageId: string | null;
+  galleryImages: GalleryImage[];
 }
 
 interface Stats {
@@ -44,12 +54,72 @@ interface Stats {
   contactClicks: number;
 }
 
+function LocationEdit({ roaster }: { roaster: RoasterData }) {
+  const [address, setAddress] = useState(roaster.address);
+  const [lat, setLat] = useState(roaster.lat?.toString() ?? "");
+  const [lng, setLng] = useState(roaster.lng?.toString() ?? "");
+
+  return (
+    <div className="space-y-3">
+      <label className="block text-xs font-semibold uppercase tracking-widest text-on-surface-variant/60 mb-2">
+        Location
+      </label>
+      <AddressAutocomplete
+        value={address}
+        onChange={setAddress}
+        onCoordsChange={(la, ln) => {
+          setLat(String(la));
+          setLng(String(ln));
+        }}
+        placeholder="Search for your roastery address..."
+      />
+      {lat && lng && (
+        <MiniMap lat={parseFloat(lat)} lng={parseFloat(lng)} />
+      )}
+      <div className="grid grid-cols-2 gap-4">
+        <input
+          type="hidden"
+          name="address"
+          value={address}
+          readOnly
+        />
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-widest text-on-surface-variant/60 mb-1">
+            Latitude
+          </label>
+          <input
+            name="lat"
+            value={lat}
+            onChange={(e) => setLat(e.target.value)}
+            className="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+            placeholder="Auto-filled"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-widest text-on-surface-variant/60 mb-1">
+            Longitude
+          </label>
+          <input
+            name="lng"
+            value={lng}
+            onChange={(e) => setLng(e.target.value)}
+            className="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+            placeholder="Auto-filled"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function DashboardClient({
   roaster,
   stats,
+  marketingConsent,
 }: {
   roaster: RoasterData;
   stats: Stats;
+  marketingConsent: boolean;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -198,6 +268,14 @@ export function DashboardClient({
         </div>
       </section>
 
+      {/* Gallery */}
+      <DashboardGallery
+        images={roaster.galleryImages}
+        entityType="ROASTER"
+        entityId={roaster.id}
+        maxImages={3}
+      />
+
       {/* Profile Section */}
       <section className="bg-surface-container-lowest editorial-shadow rounded-2xl p-8 border border-outline-variant/10">
         <div className="flex items-center justify-between mb-8">
@@ -226,6 +304,9 @@ export function DashboardClient({
                 className="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
             </div>
+
+            {/* Location */}
+            <LocationEdit roaster={roaster} />
 
             {/* Contact Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -433,8 +514,9 @@ export function DashboardClient({
             )}
           </div>
         )}
-      </section>
-      <DeleteAccountSection />
+       </section>
+       <MarketingConsentToggle initial={marketingConsent} />
+       <DeleteAccountSection />
     </main>
   );
 }

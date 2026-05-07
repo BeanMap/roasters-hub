@@ -2,6 +2,9 @@
 
 import { useState } from "react"
 import { adminUpdateRoaster } from "@/actions/admin.actions"
+import { AddressAutocomplete } from "@/components/shared/AddressAutocomplete"
+import dynamic from "next/dynamic"
+const MiniMap = dynamic(() => import("@/components/shared/MiniMap").then((m) => m.MiniMap), { ssr: false })
 import { adminInput, SectionHeader, Field, Hint, SaveButton } from "./_shared"
 
 interface Props {
@@ -51,13 +54,19 @@ export function LocationSection({ roasterId, initial }: Props) {
       <SectionHeader title="Location" hint="Street address and geographic coordinates of the roastery" />
 
       <Field label="Address">
-        <input
+        <AddressAutocomplete
           value={form.address}
-          placeholder="e.g. ul. Fabryczna 12, Opole"
-          onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
-          className={adminInput}
+          onChange={(address) => setForm((f) => ({ ...f, address }))}
+          onCoordsChange={(lat, lng) =>
+            setForm((f) => ({ ...f, lat: String(lat), lng: String(lng) }))
+          }
+          placeholder="Start typing an address..."
         />
       </Field>
+
+      {form.lat && form.lng && (
+        <MiniMap lat={parseFloat(form.lat)} lng={parseFloat(form.lng)} />
+      )}
 
       <Field label="Postal code">
         <input
@@ -101,7 +110,7 @@ export function LocationSection({ roasterId, initial }: Props) {
         </Field>
       </div>
       <Hint>
-        Find coordinates in Google Maps: right-click on the location and copy the lat/lng values.
+        Use the address search above to auto-fill coordinates, or enter them manually.
       </Hint>
 
       <SaveButton saving={saving} saved={saved} onClick={handleSave} />

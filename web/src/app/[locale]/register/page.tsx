@@ -3,14 +3,20 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
-import { useAuth, SignInButton } from "@clerk/nextjs";
+import { useAuth, SignInButton, SignedIn } from "@clerk/nextjs";
 import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
 import { ROAST_STYLES, CERTIFICATIONS, CERTIFICATION_LABELS, ORIGINS } from "@/types/certifications";
 import { createRoasterRegistration } from "@/actions/roaster.actions";
 import { getDefaultCountryFromLocale } from "@/lib/default-country";
 import { detectCountry } from "@/actions/geo.actions";
+import { usePersistedForm } from "@/lib/use-persisted-form";
 import { OpeningHoursPicker } from "@/components/shared/OpeningHoursPicker";
+import { AddressAutocomplete } from "@/components/shared/AddressAutocomplete";
+import { CountryAutocomplete } from "@/components/shared/CountryAutocomplete";
+import { CityAutocomplete } from "@/components/shared/CityAutocomplete";
+import dynamic from "next/dynamic";
+const MiniMap = dynamic(() => import("@/components/shared/MiniMap").then((m) => m.MiniMap), { ssr: false });
 import { EMPTY_OPENING_HOURS, type OpeningHours } from "@/types/opening-hours";
 
 export default function RegisterPage() {
@@ -22,11 +28,16 @@ export default function RegisterPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState({
+  const [form, updateForm, clearForm] = usePersistedForm("register-roaster-form", {
     name: "",
     country: defaultCountry?.name ?? "",
+    countryCode: defaultCountry?.code ?? "",
     city: "",
     description: "",
+    address: "",
+    streetNumber: "",
+    lat: "",
+    lng: "",
     website: "",
     shopUrl: "",
     instagram: "",
@@ -45,11 +56,8 @@ export default function RegisterPage() {
   useEffect(() => {
     if (defaultCountry) return;
     detectCountry().then((detected) => {
-      if (detected) {
-        setForm((prev) => {
-          if (prev.country) return prev;
-          return { ...prev, country: detected.name };
-        });
+      if (detected && !form.country) {
+        updateForm("country", detected.name);
       }
     });
   }, [defaultCountry]);
@@ -57,16 +65,20 @@ export default function RegisterPage() {
   const steps = t.raw("stepsRoaster") as string[];
 
   const updateField = (field: string, value: string | string[]) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+    updateForm(field, value);
+  };
+
+  const handleCountryChange = (name: string, code: string) => {
+    updateForm("country", name);
+    updateForm("countryCode", code);
   };
 
   const toggleArray = (field: "origins" | "roastStyles" | "certifications", value: string) => {
-    setForm((prev) => ({
-      ...prev,
-      [field]: prev[field].includes(value)
-        ? prev[field].filter((v) => v !== value)
-        : [...prev[field], value],
-    }));
+    const current = form[field] as string[];
+    const next = current.includes(value)
+      ? current.filter((v) => v !== value)
+      : [...current, value];
+    updateForm(field, next);
   };
 
   const handleSubmit = async () => {
@@ -83,6 +95,10 @@ export default function RegisterPage() {
     formData.set("country", form.country);
     formData.set("city", form.city);
     formData.set("description", form.description);
+    const fullAddress = [form.address, form.streetNumber].filter(Boolean).join(" ");
+    if (fullAddress) formData.set("address", fullAddress);
+    if (form.lat) formData.set("lat", form.lat);
+    if (form.lng) formData.set("lng", form.lng);
     formData.set("website", form.website);
     formData.set("shopUrl", form.shopUrl);
     formData.set("instagram", form.instagram);
@@ -102,6 +118,7 @@ export default function RegisterPage() {
       return;
     }
 
+    clearForm();
     setSubmitted(true);
   };
 
@@ -171,38 +188,59 @@ export default function RegisterPage() {
             <div>
               <label className="block text-sm font-medium mb-2">{t("roasteryName")}</label>
               <input
-                type="text"
-                required
+                type="text" required
                 value={form.name}
                 onChange={(e) => updateField("name", e.target.value)}
                 className="input-field"
                 placeholder={t("roasteryNamePlaceholder")}
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">{t("country")}</label>
-                <input
-                  type="text"
-                  required
-                  value={form.country}
-                  onChange={(e) => updateField("country", e.target.value)}
-                  className="input-field"
-                  placeholder={t("countryPlaceholder")}
+            <div>
+              <label className="block text-sm font-medium mb-2">{t("country")}</label>
+              <CountryAutocomplete
+                value={form.country}
+                onChange={handleCountryChange}
+                locale={locale}
+                placeholder={t("countryPlaceholder")}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">{t("city")}</label>
+              <CityAutocomplete
+                value={form.city}
+                onChange={(v) => updateField("city", v)}
+                country={form.country}
+                placeholder={t("cityPlaceholder")}
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="col-span-2">
+                <label className="block text-sm font-medium mb-2">{t("address")}</label>
+                <AddressAutocomplete
+                  value={form.address}
+                  onChange={(v) => updateField("address", v)}
+                  onCoordsChange={(lat, lng) => {
+                    updateField("lat", String(lat));
+                    updateField("lng", String(lng));
+                  }}
+                  city={form.city}
+                  country={form.country}
+                  placeholder={t("addressPlaceholder")}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">{t("city")}</label>
+                <label className="block text-sm font-medium mb-2">{t("streetNumber")}</label>
                 <input
-                  type="text"
-                  required
-                  value={form.city}
-                  onChange={(e) => updateField("city", e.target.value)}
+                  value={form.streetNumber}
+                  onChange={(e) => updateField("streetNumber", e.target.value)}
                   className="input-field"
-                  placeholder={t("cityPlaceholder")}
+                  placeholder="42"
                 />
               </div>
             </div>
+            {form.lat && form.lng && (
+              <MiniMap lat={parseFloat(form.lat)} lng={parseFloat(form.lng)} />
+            )}
             <div>
               <label className="block text-sm font-medium mb-2">
                 {t("description")} <span className="text-on-surface-variant font-normal">{t("descriptionCounter", { count: form.description.length })}</span>
@@ -383,7 +421,7 @@ export default function RegisterPage() {
                   type="checkbox"
                   required
                   checked={form.acceptTerms}
-                  onChange={(e) => setForm((prev) => ({ ...prev, acceptTerms: e.target.checked }))}
+                  onChange={(e) => updateForm("acceptTerms", e.target.checked)}
                   className="mt-0.5 w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary"
                 />
                 <span className="text-sm text-on-surface-variant group-hover:text-on-surface transition-colors leading-relaxed">
@@ -400,7 +438,7 @@ export default function RegisterPage() {
                   type="checkbox"
                   required
                   checked={form.acceptPrivacy}
-                  onChange={(e) => setForm((prev) => ({ ...prev, acceptPrivacy: e.target.checked }))}
+                  onChange={(e) => updateForm("acceptPrivacy", e.target.checked)}
                   className="mt-0.5 w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary"
                 />
                 <span className="text-sm text-on-surface-variant group-hover:text-on-surface transition-colors leading-relaxed">
@@ -412,17 +450,19 @@ export default function RegisterPage() {
                 </span>
               </label>
 
+              <SignedIn>
               <label className="flex items-start gap-3 cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={form.acceptMarketing}
-                  onChange={(e) => setForm((prev) => ({ ...prev, acceptMarketing: e.target.checked }))}
+                  onChange={(e) => updateForm("acceptMarketing", e.target.checked)}
                   className="mt-0.5 w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary"
                 />
                 <span className="text-sm text-on-surface-variant group-hover:text-on-surface transition-colors leading-relaxed">
                   {t("acceptMarketing")}
                 </span>
               </label>
+              </SignedIn>
             </div>
 
             {error && (

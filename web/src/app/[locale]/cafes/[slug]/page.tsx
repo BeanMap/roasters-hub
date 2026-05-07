@@ -7,6 +7,8 @@ import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
 import { ReviewForm } from "@/components/shared/ReviewForm";
 import { ReviewList } from "@/components/shared/ReviewList";
+import { ImageGallery } from "@/components/shared/ImageGallery";
+import { AddPhotoButton } from "@/components/shared/AddPhotoButton";
 import { AmenityIcon } from "@/components/cafes/AmenityIcon";
 import { VerifiedBadge } from "@/components/roasters/VerifiedBadge";
 import { CafeProfileTracker } from "@/components/cafes/CafeProfileTracker";
@@ -14,9 +16,6 @@ import { CafeTrackedLink } from "@/components/cafes/CafeTrackedLink";
 import { SaveCafeButton } from "@/components/cafes/SaveCafeButton";
 import { isCafeSaved } from "@/actions/saved-cafe.actions";
 import { db } from "@/lib/db";
-
-export const revalidate = 3600;
-export const dynamicParams = true;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string; locale: string }> }): Promise<Metadata> {
   const { slug, locale } = await params;
@@ -76,20 +75,20 @@ export default async function CafeProfilePage({
         coverImageUrl: true,
         openingHours: true,
         serving: true,
-        services: true,
-        sourceUrl: true,
-        status: true,
-        featured: true,
-        createdAt: true,
-        updatedAt: true,
-        roasters: {
-          include: {
-            roaster: {
-              select: { id: true, name: true, slug: true, city: true, country: true },
+          services: true,
+          sourceUrl: true,
+          status: true,
+          featured: true,
+          createdAt: true,
+          updatedAt: true,
+          roasters: {
+            include: {
+              roaster: {
+                select: { id: true, name: true, slug: true, city: true, country: true },
+              },
             },
           },
         },
-      },
     });
   } catch {
     notFound();
@@ -101,18 +100,36 @@ export default async function CafeProfilePage({
     notFound();
   }
 
-  const cafeReviews = await db.review.findMany({
-    where: { cafeId: cafe.id, status: "APPROVED" },
-    orderBy: { createdAt: "desc" },
-    take: 20,
-  });
+  let galleryImages: { id: string; url: string; isPrimary: boolean }[] = [];
+  try {
+    galleryImages = await db.image.findMany({
+      where: { cafeId: cafe.id, status: "APPROVED" },
+      orderBy: { sortOrder: "asc" },
+      select: { id: true, url: true, isPrimary: true },
+    });
+  } catch {
+    // gallery not available — graceful fallback
+  }
+
+  let approvedReviews: { id: string; authorName: string; rating: number; comment: string | null; createdAt: Date }[] = [];
+  try {
+    const rows = await db.review.findMany({
+      where: { cafeId: cafe.id, status: "APPROVED" },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+      select: { id: true, authorName: true, rating: true, comment: true, createdAt: true },
+    });
+    approvedReviews = rows;
+  } catch {
+    // reviews migration may not be applied yet
+  }
 
   const avgRating =
-    cafeReviews.length > 0
-      ? cafeReviews.reduce((sum, r) => sum + r.rating, 0) / cafeReviews.length
+    approvedReviews.length > 0
+      ? approvedReviews.reduce((sum, r) => sum + r.rating, 0) / approvedReviews.length
       : null;
 
-  const serializedReviews = cafeReviews.map((r) => ({
+  const serializedReviews = approvedReviews.map((r) => ({
     id: r.id,
     authorName: r.authorName,
     rating: r.rating,
@@ -184,7 +201,7 @@ export default async function CafeProfilePage({
             {cafe.city}, {cafe.country}
             {avgRating !== null && (
               <span className="ml-2 text-primary font-semibold">
-                ★ {avgRating.toFixed(1)} ({cafeReviews.length} {cafeReviews.length === 1 ? t("reviewCount", { count: 1 }) : t("reviewCount", { count: cafeReviews.length })})</span>
+                ★ {avgRating.toFixed(1)} ({approvedReviews.length} {approvedReviews.length === 1 ? t("reviewCount", { count: 1 }) : t("reviewCount", { count: approvedReviews.length })})</span>
             )}
           </div>
         </div>
@@ -203,6 +220,18 @@ export default async function CafeProfilePage({
               </p>
             </section>
           )}
+
+          {/* Gallery */}
+          {galleryImages.length > 0 && (
+            <section>
+              <h2 className="font-headline text-3xl mb-8 tracking-tight">Photos</h2>
+              <ImageGallery images={galleryImages} />
+            </section>
+          )}
+
+          <div className="mb-8">
+            <AddPhotoButton entityType="CAFE" entityId={cafe.id} />
+          </div>
 
           {/* What they serve + Amenities */}
           {(cafe.serving.length > 0 || cafe.services.length > 0) && (

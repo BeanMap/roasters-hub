@@ -3,6 +3,7 @@ import { UploadThingError } from "uploadthing/server";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
+import { requireAdmin } from "@/lib/auth";
 
 const f = createUploadthing();
 
@@ -23,7 +24,6 @@ export const ourFileRouter = {
       return { roasterId: profile.ownedRoasters[0].id };
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      // Replace existing primary image
       await db.roasterImage.deleteMany({
         where: { roasterId: metadata.roasterId, isPrimary: true },
       });
@@ -70,11 +70,76 @@ export const ourFileRouter = {
 
   adminImage: f({ image: { maxFileSize: "8MB", maxFileCount: 1 } })
     .middleware(async () => {
-      const { userId } = await auth();
-      if (!userId) throw new UploadThingError("Unauthorized");
-      return { userId };
+      let adminId: string;
+      try {
+        adminId = await requireAdmin();
+      } catch {
+        throw new UploadThingError("Admin access required");
+      }
+      return { userId: adminId };
     })
     .onUploadComplete(async ({ file }) => {
+      return { url: file.ufsUrl };
+    }),
+
+  defaultImage: f({ image: { maxFileSize: "8MB", maxFileCount: 1 } })
+    .middleware(async ({ req }) => {
+      let adminId: string;
+      try {
+        adminId = await requireAdmin();
+      } catch {
+        throw new UploadThingError("Admin access required");
+      }
+      const entityType = req.headers.get("x-entity-type") as
+        | "CAFE"
+        | "ROASTER"
+        | null;
+      if (!entityType) throw new UploadThingError("Missing entity type");
+      return { userId: adminId, entityType };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      await db.image.create({
+        data: {
+          url: file.ufsUrl,
+          entityType: metadata.entityType,
+          uploadedById: metadata.userId,
+          status: "APPROVED",
+          isDefault: true,
+        },
+      });
+      revalidatePath("/admin/images");
+      return { url: file.ufsUrl };
+    }),
+
+  userImage: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })
+    .middleware(async ({ req }) => {
+      const { userId } = await auth();
+      if (!userId) throw new UploadThingError("Unauthorized");
+
+      const entityType = req.headers.get("x-entity-type") as
+        | "CAFE"
+        | "ROASTER"
+        | null;
+      const entityId = req.headers.get("x-entity-id");
+
+      if (!entityType) throw new UploadThingError("Missing entity type");
+      if (!entityId) throw new UploadThingError("Missing entity id");
+
+      return { userId, entityType, entityId };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      await db.image.create({
+        data: {
+          url: file.ufsUrl,
+          entityType: metadata.entityType,
+          roasterId:
+            metadata.entityType === "ROASTER" ? metadata.entityId : null,
+          cafeId: metadata.entityType === "CAFE" ? metadata.entityId : null,
+          uploadedById: metadata.userId,
+          status: "PENDING",
+          isDefault: false,
+        },
+      });
       return { url: file.ufsUrl };
     }),
 } satisfies FileRouter;

@@ -10,8 +10,14 @@ import {
   searchVerifiedRoasters,
 } from "@/actions/cafe-relation.actions";
 import { UploadButton } from "@/lib/uploadthing";
-import { updateCafeCoverImage } from "@/actions/cafe.actions";
+import { updateCafeCoverImage, updateCafeProfile } from "@/actions/cafe.actions";
 import { DeleteAccountSection } from "@/components/shared/DeleteAccountSection";
+import { DashboardGallery } from "@/components/shared/DashboardGallery";
+import { AddressAutocomplete } from "@/components/shared/AddressAutocomplete";
+import dynamic from "next/dynamic";
+const MiniMap = dynamic(() => import("@/components/shared/MiniMap").then((m) => m.MiniMap), { ssr: false });
+import { MarketingConsentToggle } from "@/components/shared/MarketingConsentToggle";
+import type { GalleryImage } from "@/components/shared/DashboardGallery";
 
 type Cafe = {
   id: string;
@@ -20,6 +26,14 @@ type Cafe = {
   city: string;
   country: string;
   status: string;
+  description: string;
+  address: string;
+  lat: number | null;
+  lng: number | null;
+  website: string;
+  email: string;
+  instagram: string;
+  phone: string;
   coverImageUrl: string | null;
 };
 
@@ -30,18 +44,43 @@ type Stats = { pageViews: number; websiteClicks: number; contactClicks: number }
 export function CafeDashboardClient({
   cafe,
   linkedRoasters: initialLinked,
+  galleryImages,
+  marketingConsent,
   stats,
 }: {
   cafe: Cafe;
   linkedRoasters: LinkedRoaster[];
+  galleryImages: GalleryImage[];
+  marketingConsent: boolean;
   stats: Stats;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [linked, setLinked] = useState(initialLinked);
+  const [editAddress, setEditAddress] = useState(cafe.address);
+  const [editLat, setEditLat] = useState(cafe.lat?.toString() ?? "");
+  const [editLng, setEditLng] = useState(cafe.lng?.toString() ?? "");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const handleProfileSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSaving(true);
+    setMessage(null);
+    const formData = new FormData(e.currentTarget);
+    const result = await updateCafeProfile(cafe.id, formData);
+    if (result.success) {
+      setMessage({ type: "success", text: "Profile updated!" });
+      setEditing(false);
+      router.refresh();
+    } else {
+      setMessage({ type: "error", text: result.error });
+    }
+    setSaving(false);
+  };
 
   const handleSearch = async (q: string) => {
     setQuery(q);
@@ -187,6 +226,171 @@ export function CafeDashboardClient({
         </div>
       </section>
 
+      {/* Profile Section */}
+      <section className="bg-surface-container-lowest editorial-shadow rounded-2xl p-8 border border-outline-variant/10 mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="font-headline text-2xl tracking-tight">Profile Details</h2>
+          {!editing && (
+            <button
+              onClick={() => setEditing(true)}
+              className="text-xs uppercase tracking-widest font-bold text-primary pb-1 border-b-2 border-primary/20 hover:border-primary transition-all"
+            >
+              Edit
+            </button>
+          )}
+        </div>
+
+        {editing ? (
+          <form onSubmit={handleProfileSubmit} className="space-y-5">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-widest text-on-surface-variant/60 mb-1">
+                Description
+              </label>
+              <textarea
+                name="description"
+                defaultValue={cafe.description}
+                rows={4}
+                className="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-widest text-on-surface-variant/60 mb-1">
+                Address
+              </label>
+              <AddressAutocomplete
+                value={editAddress}
+                onChange={setEditAddress}
+                onCoordsChange={(lat, lng) => {
+                  setEditLat(String(lat));
+                  setEditLng(String(lng));
+                }}
+                placeholder="Search for your cafe address..."
+              />
+              <input type="hidden" name="address" value={editAddress} readOnly />
+              {editLat && editLng && (
+                <div className="mt-2">
+                  <MiniMap
+                    lat={parseFloat(editLat)}
+                    lng={parseFloat(editLng)}
+                  />
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-widest text-on-surface-variant/60 mb-1">
+                  Latitude
+                </label>
+                <input
+                  name="lat"
+                  value={editLat}
+                  onChange={(e) => setEditLat(e.target.value)}
+                  className="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  placeholder="Auto-filled"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-widest text-on-surface-variant/60 mb-1">
+                  Longitude
+                </label>
+                <input
+                  name="lng"
+                  value={editLng}
+                  onChange={(e) => setEditLng(e.target.value)}
+                  className="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  placeholder="Auto-filled"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-widest text-on-surface-variant/60 mb-1">
+                  Website
+                </label>
+                <input
+                  name="website"
+                  type="url"
+                  defaultValue={cafe.website}
+                  className="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-widest text-on-surface-variant/60 mb-1">
+                  Email
+                </label>
+                <input
+                  name="email"
+                  type="email"
+                  defaultValue={cafe.email}
+                  className="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-widest text-on-surface-variant/60 mb-1">
+                  Instagram
+                </label>
+                <input
+                  name="instagram"
+                  defaultValue={cafe.instagram}
+                  className="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-widest text-on-surface-variant/60 mb-1">
+                  Phone
+                </label>
+                <input
+                  name="phone"
+                  defaultValue={cafe.phone}
+                  className="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="submit"
+                disabled={saving}
+                className="bg-primary text-on-primary px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-container transition-colors disabled:opacity-50"
+              >
+                {saving ? "Saving..." : "Save Changes"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditing(false)}
+                className="text-sm text-on-surface-variant/60 hover:text-on-surface"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="space-y-3 text-sm">
+            {cafe.description && (
+              <p className="text-on-surface-variant/70">{cafe.description.slice(0, 200)}{cafe.description.length > 200 ? "..." : ""}</p>
+            )}
+            {cafe.address && (
+              <p className="text-on-surface-variant/50">{cafe.address}, {cafe.city}, {cafe.country}</p>
+            )}
+            {cafe.website && (
+              <p className="text-on-surface-variant/50">{cafe.website}</p>
+            )}
+            {!cafe.description && !cafe.address && !cafe.website && (
+              <p className="text-on-surface-variant/50 italic">No profile details yet. Click Edit to add.</p>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* Gallery */}
+      <DashboardGallery
+        images={galleryImages}
+        entityType="CAFE"
+        entityId={cafe.id}
+        maxImages={3}
+      />
+
       {/* Roasters we serve */}
       <section className="bg-surface-container-lowest editorial-shadow rounded-2xl p-8 border border-outline-variant/10">
         <h2 className="font-headline text-2xl mb-4">Roasters we serve</h2>
@@ -240,6 +444,7 @@ export function CafeDashboardClient({
           )}
         </div>
       </section>
+      <MarketingConsentToggle initial={marketingConsent} />
       <DeleteAccountSection />
     </main>
   );

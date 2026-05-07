@@ -8,65 +8,69 @@ datasource db {
 }
 
 model UserProfile {
-  id            String         @id
-  email         String         @unique
-  role          UserRole       @default(ROASTER)
-  createdAt     DateTime       @default(now())
-  adminNotes    AdminNote[]
-  savedRoasters SavedRoaster[]
-  savedCafes    SavedCafe[]
-  ownedRoasters Roaster[]      @relation("RoasterOwner")
-  ownedCafes    Cafe[]         @relation("CafeOwner")
+  id               String         @id
+  email            String         @unique
+  role             UserRole       @default(ROASTER)
+  marketingConsent Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  adminNotes     AdminNote[]
+  savedRoasters  SavedRoaster[]
+  savedCafes     SavedCafe[]
+  ownedRoasters  Roaster[]      @relation("RoasterOwner")
+  ownedCafes     Cafe[]         @relation("CafeOwner")
+  uploadedImages Image[]
+  reviews        Review[]
 
   @@map("user_profiles")
 }
 
 model Roaster {
-  id             String                @id @default(cuid())
-  name           String
-  slug           String                @unique
-  description    String?
-  country        String
-  countryCode    String
-  city           String
-  lat            Float?
-  lng            Float?
-  website        String?
-  email          String?
-  instagram      String?
-  facebook       String?
-  shopUrl        String?
-  certifications String[]
-  origins        String[]
-  roastStyles    String[]
-  status         RoasterStatus         @default(PENDING)
-  featured       Boolean               @default(false)
-  featuredUntil  DateTime?
-  verifiedAt     DateTime?
-  rejectedAt     DateTime?
-  rejectedReason       String?
-  address              String?
-  postalCode           String?
-  phone                String?
-  foundedYear          Int?
-  brewingMethods       String[]
-  wholesaleAvailable   Boolean?
+  id                    String                @id @default(cuid())
+  name                  String
+  slug                  String                @unique
+  description           String?
+  country               String
+  countryCode           String
+  city                  String
+  lat                   Float?
+  lng                   Float?
+  website               String?
+  email                 String?
+  instagram             String?
+  facebook              String?
+  shopUrl               String?
+  certifications        String[]
+  origins               String[]
+  roastStyles           String[]
+  status                RoasterStatus         @default(PENDING)
+  featured              Boolean               @default(false)
+  featuredUntil         DateTime?
+  verifiedAt            DateTime?
+  rejectedAt            DateTime?
+  rejectedReason        String?
+  address               String?
+  postalCode            String?
+  phone                 String?
+  foundedYear           Int?
+  brewingMethods        String[]
+  wholesaleAvailable    Boolean?
   subscriptionAvailable Boolean?
-  openingHours         Json?
-  hasCafe              Boolean?
-  hasTastingRoom       Boolean?
-  coverImageUrl        String?
-  sourceUrl            String?
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  ownerId              String?
-  adminNotes           AdminNote[]
-  servedAt             CafeRoasterRelation[]
-  events         ProfileEvent[]
-  reviews        Review[]
-  images         RoasterImage[]
-  savedBy        SavedRoaster[]
-  owner          UserProfile?          @relation("RoasterOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  openingHours          Json?
+  hasCafe               Boolean?
+  hasTastingRoom        Boolean?
+  coverImageUrl         String?
+  sourceUrl             String?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  ownerId               String?
+  adminNotes            AdminNote[]
+  servedAt              CafeRoasterRelation[]
+  events                ProfileEvent[]
+  reviews               Review[]
+  images                RoasterImage[]
+  galleryImages         Image[]
+  savedBy               SavedRoaster[]
+  owner                 UserProfile?          @relation("RoasterOwner", fields: [ownerId], references: [id], onDelete: SetNull)
 
   @@index([status])
   @@index([country])
@@ -89,6 +93,41 @@ model RoasterImage {
 
   @@index([roasterId])
   @@map("roaster_images")
+}
+
+model Image {
+  id           String      @id @default(cuid())
+  url          String
+  entityType   EntityType
+  roasterId    String?
+  cafeId       String?
+  uploadedById String
+  status       ImageStatus @default(PENDING)
+  isDefault    Boolean     @default(false)
+  isPrimary    Boolean     @default(false)
+  sortOrder    Int         @default(0)
+  createdAt    DateTime    @default(now())
+
+  uploadedBy UserProfile @relation(fields: [uploadedById], references: [id])
+  roaster    Roaster?    @relation(fields: [roasterId], references: [id], onDelete: Cascade)
+  cafe       Cafe?       @relation(fields: [cafeId], references: [id], onDelete: Cascade)
+
+  @@index([entityType, roasterId])
+  @@index([entityType, cafeId])
+  @@index([uploadedById])
+  @@index([status])
+  @@map("images")
+}
+
+model AppSettings {
+  id               String   @id @default("singleton")
+  imageMaxTotal    Int      @default(10)
+  imageMaxPerUser  Int      @default(1)
+  imageMaxPerOwner Int      @default(3)
+  defaultPoolMax   Int      @default(20)
+  updatedAt        DateTime @updatedAt
+
+  @@map("app_settings")
 }
 
 model ProfileEvent {
@@ -152,14 +191,20 @@ model Review {
   comment    String?
   status     ReviewStatus @default(PENDING)
   createdAt  DateTime     @default(now())
+  userId     String?
+  updatedAt  DateTime?
   cafeId     String?
+  user       UserProfile? @relation(fields: [userId], references: [id], onDelete: SetNull)
   cafe       Cafe?        @relation(fields: [cafeId], references: [id], onDelete: Cascade)
   roaster    Roaster?     @relation(fields: [roasterId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, roasterId])
+  @@unique([userId, cafeId])
   @@index([roasterId])
   @@index([roasterId, status])
   @@index([cafeId])
   @@index([cafeId, status])
+  @@index([userId])
   @@map("reviews")
 }
 
@@ -190,24 +235,24 @@ model SavedCafe {
 }
 
 model Cafe {
-  id             String                @id @default(cuid())
-  name           String
-  slug           String                @unique
-  description    String?
-  country        String
-  countryCode    String
-  city           String
-  address        String?
-  lat            Float?
-  lng            Float?
-  website        String?
-  instagram      String?
-  phone          String?
-  logoUrl        String?
-  coverImageUrl  String?
-  status         CafeStatus            @default(PENDING)
-  featured       Boolean               @default(false)
-  verifiedAt     DateTime?
+  id              String                @id @default(cuid())
+  name            String
+  slug            String                @unique
+  description     String?
+  country         String
+  countryCode     String
+  city            String
+  address         String?
+  lat             Float?
+  lng             Float?
+  website         String?
+  instagram       String?
+  phone           String?
+  logoUrl         String?
+  coverImageUrl   String?
+  status          CafeStatus            @default(PENDING)
+  featured        Boolean               @default(false)
+  verifiedAt      DateTime?
   rejectedAt      DateTime?
   rejectedReason  String?
   postalCode      String?
@@ -219,13 +264,14 @@ model Cafe {
   ownerId         String?
   sourceUrl       String?
   openingHours    Json?
-  serving        String[]              @default([])
-  services       String[]              @default([])
-  roasters       CafeRoasterRelation[]
-  reviews        Review[]
-  savedBy        SavedCafe[]
-  events         CafeEvent[]
-  owner          UserProfile?          @relation("CafeOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  serving         String[]              @default([])
+  services        String[]              @default([])
+  roasters        CafeRoasterRelation[]
+  reviews         Review[]
+  galleryImages   Image[]
+  savedBy         SavedCafe[]
+  events          CafeEvent[]
+  owner           UserProfile?          @relation("CafeOwner", fields: [ownerId], references: [id], onDelete: SetNull)
 
   @@index([status])
   @@index([country])
@@ -276,9 +322,9 @@ model EnrichmentRun {
 }
 
 model EnrichmentProposal {
-  id            String        @id @default(cuid())
+  id            String                   @id @default(cuid())
   runId         String
-  run           EnrichmentRun @relation(fields: [runId], references: [id])
+  run           EnrichmentRun            @relation(fields: [runId], references: [id])
   entityType    String
   entityId      String?
   entityName    String
@@ -291,10 +337,10 @@ model EnrichmentProposal {
   confidence    Float
   sourceId      String
   sourceUrl     String?
-  status        EnrichmentProposalStatus  @default(PENDING)
+  status        EnrichmentProposalStatus @default(PENDING)
   reviewedAt    DateTime?
   reviewedBy    String?
-  createdAt     DateTime      @default(now())
+  createdAt     DateTime                 @default(now())
 
   @@index([runId])
   @@index([entityId])
@@ -355,6 +401,17 @@ enum EnrichmentProposalStatus {
   APPLIED
 }
 
+enum EntityType {
+  CAFE
+  ROASTER
+}
+
+enum ImageStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model SlugRedirect {
   id         String   @id @default(cuid())
   fromSlug   String   @unique
@@ -367,7 +424,7 @@ model SlugRedirect {
 
 model EnrichmentTag {
   id         String   @id @default(cuid())
-  entityType String   // CAFE | ROASTER
+  entityType String // CAFE | ROASTER
   value      String
   createdAt  DateTime @default(now())
 

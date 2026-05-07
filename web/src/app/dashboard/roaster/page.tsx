@@ -13,7 +13,7 @@ export default async function RoasterDashboardPage() {
 
   const profile = await db.userProfile.findUnique({
     where: { id: userId },
-    select: { ownedRoasters: { select: { id: true } } },
+    select: { marketingConsent: true, ownedRoasters: { select: { id: true } } },
   });
 
   if (!profile?.ownedRoasters.length) {
@@ -44,6 +44,18 @@ export default async function RoasterDashboardPage() {
 
   if (!roaster) redirect("/");
 
+  let galleryImages: { id: string; url: string; isPrimary: boolean; status: "PENDING" | "APPROVED" | "REJECTED" }[] = [];
+  try {
+    const imgs = await db.image.findMany({
+      where: { roasterId: roaster.id, status: { not: "REJECTED" } },
+      orderBy: { sortOrder: "asc" },
+      select: { id: true, url: true, isPrimary: true, status: true },
+    });
+    galleryImages = imgs;
+  } catch {
+    // gallery not available
+  }
+
   const eventCounts = await db.profileEvent.groupBy({
     by: ["type"],
     where: { roasterId: roaster.id },
@@ -65,6 +77,9 @@ export default async function RoasterDashboardPage() {
     city: roaster.city,
     country: roaster.country,
     status: roaster.status,
+    address: roaster.address ?? "",
+    lat: roaster.lat,
+    lng: roaster.lng,
     website: roaster.website ?? "",
     email: roaster.email ?? "",
     instagram: roaster.instagram ?? "",
@@ -74,12 +89,18 @@ export default async function RoasterDashboardPage() {
     roastStyles: roaster.roastStyles,
     imageUrl: roaster.images[0]?.url ?? null,
     imageId: roaster.images[0]?.id ?? null,
+    galleryImages: galleryImages.map((img) => ({
+      id: img.id,
+      url: img.url,
+      isPrimary: img.isPrimary,
+      status: img.status as "PENDING" | "APPROVED" | "REJECTED",
+    })),
   };
 
   return (
     <>
       <Header />
-      <DashboardClient roaster={serialized} stats={stats} />
+      <DashboardClient roaster={serialized} stats={stats} marketingConsent={profile.marketingConsent} />
       <Footer />
     </>
   );

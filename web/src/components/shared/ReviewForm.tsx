@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth, SignInButton, useUser } from "@clerk/nextjs";
 
 type ReviewFormProps = {
   roasterId?: string;
@@ -8,6 +9,8 @@ type ReviewFormProps = {
 };
 
 export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
+  const { isSignedIn } = useAuth();
+  const { user } = useUser();
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [submitted, setSubmitted] = useState(false);
@@ -25,12 +28,8 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
     setError("");
 
     const formData = new FormData(e.currentTarget);
-    if (roasterId) {
-      formData.set("roasterId", roasterId);
-    }
-    if (cafeId) {
-      formData.set("cafeId", cafeId);
-    }
+    if (roasterId) formData.set("roasterId", roasterId);
+    if (cafeId) formData.set("cafeId", cafeId);
     formData.set("rating", String(rating));
 
     let result: { success: boolean; error?: string };
@@ -50,10 +49,25 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
     }
   }
 
+  if (!isSignedIn) {
+    return (
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+        <p className="text-sm text-amber-800 mb-2">
+          Sign in to leave a review
+        </p>
+        <SignInButton mode="modal">
+          <button className="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-700">
+            Sign In
+          </button>
+        </SignInButton>
+      </div>
+    );
+  }
+
   if (submitted) {
     return (
-      <div className="bg-secondary-container/30 border border-secondary/20 rounded-xl p-6 text-center">
-        <p className="text-secondary font-medium">
+      <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+        <p className="text-green-700 font-medium text-sm">
           Thank you for your review! It will appear after moderation.
         </p>
       </div>
@@ -62,23 +76,19 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="review-author" className="block text-sm font-medium mb-1">Your Name</label>
-        <input
-          id="review-author"
-          name="authorName"
-          type="text"
-          required
-          minLength={2}
-          maxLength={100}
-          className="input-field"
-          placeholder="Jane Doe"
-        />
-      </div>
+      {user?.fullName && (
+        <input type="hidden" name="authorName" value={user.fullName} />
+      )}
 
       <div>
-        <p className="block text-sm font-medium mb-1" id="rating-label">Rating</p>
-        <div className="flex gap-1" role="group" aria-labelledby="rating-label">
+        <p className="block text-sm font-medium mb-1" id="rating-label">
+          Rating
+        </p>
+        <div
+          className="flex gap-1"
+          role="group"
+          aria-labelledby="rating-label"
+        >
           {[1, 2, 3, 4, 5].map((star) => (
             <button
               key={star}
@@ -104,8 +114,12 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
       </div>
 
       <div>
-        <label htmlFor="review-comment" className="block text-sm font-medium mb-1">
-          Comment <span className="text-on-surface-variant/50">(optional)</span>
+        <label
+          htmlFor="review-comment"
+          className="block text-sm font-medium mb-1"
+        >
+          Comment{" "}
+          <span className="text-on-surface-variant/50">(optional)</span>
         </label>
         <textarea
           id="review-comment"

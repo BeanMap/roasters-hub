@@ -11,6 +11,8 @@ import { ProfileTracker } from "@/components/roasters/ProfileTracker";
 import { TrackedLink } from "@/components/roasters/TrackedLink";
 import { ReviewForm } from "@/components/shared/ReviewForm";
 import { ReviewList } from "@/components/shared/ReviewList";
+import { ImageGallery } from "@/components/shared/ImageGallery";
+import { AddPhotoButton } from "@/components/shared/AddPhotoButton";
 import { SaveRoasterButton } from "@/components/roasters/SaveRoasterButton";
 import { isRoasterSaved } from "@/actions/saved-roaster.actions";
 import { db } from "@/lib/db";
@@ -72,6 +74,17 @@ export default async function RoasterProfilePage({
     const slugRedirect = await db.slugRedirect.findUnique({ where: { fromSlug: slug } });
     if (slugRedirect?.entityType === "roaster") redirect(`/roasters/${slugRedirect.toSlug}`);
     notFound();
+  }
+
+  let galleryImages: { id: string; url: string; isPrimary: boolean }[] = [];
+  try {
+    galleryImages = await db.image.findMany({
+      where: { roasterId: roaster.id, status: "APPROVED" },
+      orderBy: { sortOrder: "asc" },
+      select: { id: true, url: true, isPrimary: true },
+    });
+  } catch {
+    // gallery not available — graceful fallback
   }
 
   let approvedReviews: { id: string; authorName: string; rating: number; comment: string | null; createdAt: Date }[] = [];
@@ -171,6 +184,18 @@ export default async function RoasterProfilePage({
               {roaster.description}
             </p>
           </section>
+
+          {/* Gallery */}
+          {galleryImages.length > 0 && (
+            <section>
+              <h2 className="font-headline text-3xl mb-8 tracking-tight">Photos</h2>
+              <ImageGallery images={galleryImages} />
+            </section>
+          )}
+
+          <div className="mb-8">
+            <AddPhotoButton entityType="ROASTER" entityId={roaster.id} />
+          </div>
 
           {/* Origins */}
           {roaster.origins.length > 0 && (

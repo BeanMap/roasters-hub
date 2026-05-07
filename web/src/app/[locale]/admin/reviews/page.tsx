@@ -11,13 +11,24 @@ export default async function AdminReviewsPage() {
   const user = await currentUser();
   if (user?.publicMetadata?.role !== "ADMIN") redirect("/");
 
-  const reviews = await db.review.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      roaster: { select: { name: true, slug: true } },
-      cafe: { select: { name: true, slug: true } },
-    },
-  });
+  let reviews: { id: string; authorName: string; rating: number; comment: string | null; status: string; createdAt: Date; roaster: { name: string; slug: string } | null; cafe: { name: string; slug: string } | null }[] = [];
+  try {
+    reviews = await db.review.findMany({
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        authorName: true,
+        rating: true,
+        comment: true,
+        status: true,
+        createdAt: true,
+        roaster: { select: { name: true, slug: true } },
+        cafe: { select: { name: true, slug: true } },
+      },
+    });
+  } catch {
+    // migration may not be applied yet
+  }
 
   const serialized = reviews.map((r) => ({
     id: r.id,

@@ -274,6 +274,80 @@ export async function adminUpdateCafe(
   }
 }
 
+export async function updateCafeProfile(
+  cafeId: string,
+  formData: FormData,
+): Promise<ActionResult<{ slug: string }>> {
+  try {
+    await requireCafeOwner(cafeId);
+
+    const raw = {
+      description: formData.get("description"),
+      address: formData.get("address") || undefined,
+      lat: formData.get("lat") || undefined,
+      lng: formData.get("lng") || undefined,
+      website: formData.get("website"),
+      email: formData.get("email"),
+      instagram: formData.get("instagram"),
+      phone: formData.get("phone"),
+      openingHours: formData.get("openingHours") || undefined,
+    };
+
+    const parsed = UpdateCafeSchema.safeParse(raw);
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: "Validation failed",
+        fieldErrors: parsed.error.flatten().fieldErrors as Record<
+          string,
+          string[]
+        >,
+      };
+    }
+
+    const data = parsed.data;
+
+    let openingHours: import("@prisma/client").Prisma.InputJsonValue | null =
+      null;
+    if (data.openingHours) {
+      try {
+        openingHours = JSON.parse(data.openingHours);
+      } catch {
+        /* skip */
+      }
+    }
+
+    const cafe = await db.cafe.update({
+      where: { id: cafeId },
+      data: {
+        description: data.description || null,
+        address: data.address || null,
+        lat: typeof data.lat === "number" ? data.lat : null,
+        lng: typeof data.lng === "number" ? data.lng : null,
+        website: data.website || null,
+        email: data.email || null,
+        instagram: data.instagram || null,
+        phone: data.phone || null,
+        openingHours: openingHours ?? Prisma.JsonNull,
+      },
+      select: { slug: true },
+    });
+
+    revalidatePath(`/cafes/${cafe.slug}`);
+    revalidatePath("/cafes");
+    revalidatePath("/map");
+    revalidatePath("/dashboard/cafe");
+
+    return { success: true, data: { slug: cafe.slug } };
+  } catch (error) {
+    console.error("[updateCafeProfile]", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Something went wrong",
+    };
+  }
+}
+
 export async function updateCafeCoverImage(cafeId: string, coverImageUrl: string): Promise<ActionResult> {
   try {
     await requireCafeOwner(cafeId);
