@@ -226,11 +226,12 @@ export default async function CafeProfilePage({
             <section>
               <h2 className="font-headline text-3xl mb-8 tracking-tight">Photos</h2>
               <ImageGallery images={galleryImages} />
-              <div className="mt-4">
-                <AddPhotoButton entityType="CAFE" entityId={cafe.id} />
-              </div>
             </section>
           )}
+
+          <div className="mb-8">
+            <AddPhotoButton entityType="CAFE" entityId={cafe.id} />
+          </div>
 
           {/* What they serve + Amenities */}
           {(cafe.serving.length > 0 || cafe.services.length > 0) && (

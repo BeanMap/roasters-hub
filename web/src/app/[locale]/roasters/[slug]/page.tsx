@@ -190,11 +190,12 @@ export default async function RoasterProfilePage({
             <section>
               <h2 className="font-headline text-3xl mb-8 tracking-tight">Photos</h2>
               <ImageGallery images={galleryImages} />
-              <div className="mt-4">
-                <AddPhotoButton entityType="ROASTER" entityId={roaster.id} />
-              </div>
             </section>
           )}
+
+          <div className="mb-8">
+            <AddPhotoButton entityType="ROASTER" entityId={roaster.id} />
+          </div>
 
           {/* Origins */}
           {roaster.origins.length > 0 && (
