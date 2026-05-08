@@ -144,10 +144,7 @@ export function DashboardGallery({
           </p>
           <UploadButton
             endpoint="userImage"
-            headers={{
-              "x-entity-type": entityType,
-              "x-entity-id": entityId,
-            }}
+            input={{ entityType, entityId }}
             onClientUploadComplete={() => {
               setMessage({ type: "success", text: "Photo uploaded and submitted for review." });
               router.refresh();

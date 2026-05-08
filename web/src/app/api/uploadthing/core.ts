@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
 import { auth } from "@clerk/nextjs/server";
@@ -112,20 +113,15 @@ export const ourFileRouter = {
     }),
 
   userImage: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })
-    .middleware(async ({ req }) => {
+    .input(z.object({
+      entityType: z.enum(["CAFE", "ROASTER"]),
+      entityId: z.string().min(1),
+    }))
+    .middleware(async ({ input }) => {
       const { userId } = await auth();
       if (!userId) throw new UploadThingError("Unauthorized");
 
-      const entityType = req.headers.get("x-entity-type") as
-        | "CAFE"
-        | "ROASTER"
-        | null;
-      const entityId = req.headers.get("x-entity-id");
-
-      if (!entityType) throw new UploadThingError("Missing entity type");
-      if (!entityId) throw new UploadThingError("Missing entity id");
-
-      return { userId, entityType, entityId };
+      return { userId, entityType: input.entityType, entityId: input.entityId };
     })
     .onUploadComplete(async ({ metadata, file }) => {
       try {
