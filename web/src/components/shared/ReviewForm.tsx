@@ -76,9 +76,16 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {user?.fullName && (
-        <input type="hidden" name="authorName" value={user.fullName} />
-      )}
+      <input
+        type="hidden"
+        name="authorName"
+        value={
+          user?.fullName ??
+          user?.username ??
+          user?.primaryEmailAddress?.emailAddress?.split("@")[0] ??
+          "User"
+        }
+      />
 
       <div>
         <p className="block text-sm font-medium mb-1" id="rating-label">
