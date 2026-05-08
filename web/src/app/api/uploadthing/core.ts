@@ -128,18 +128,25 @@ export const ourFileRouter = {
       return { userId, entityType, entityId };
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      await db.image.create({
-        data: {
-          url: file.ufsUrl,
-          entityType: metadata.entityType,
-          roasterId:
-            metadata.entityType === "ROASTER" ? metadata.entityId : null,
-          cafeId: metadata.entityType === "CAFE" ? metadata.entityId : null,
-          uploadedById: metadata.userId,
-          status: "PENDING",
-          isDefault: false,
-        },
-      });
+      try {
+        await db.image.create({
+          data: {
+            url: file.ufsUrl,
+            entityType: metadata.entityType,
+            roasterId:
+              metadata.entityType === "ROASTER" ? metadata.entityId : null,
+            cafeId: metadata.entityType === "CAFE" ? metadata.entityId : null,
+            uploadedById: metadata.userId,
+            status: "PENDING",
+            isDefault: false,
+          },
+        });
+        if (metadata.entityType === "ROASTER") revalidatePath("/roasters");
+        if (metadata.entityType === "CAFE") revalidatePath("/cafes");
+      } catch (error) {
+        console.error("[userImage onUploadComplete]", error);
+        throw new UploadThingError("Failed to save photo. Please try again.");
+      }
       return { url: file.ufsUrl };
     }),
 } satisfies FileRouter;
