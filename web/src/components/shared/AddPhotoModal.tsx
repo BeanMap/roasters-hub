@@ -60,10 +60,7 @@ export function AddPhotoModal({
         <div className="flex flex-col items-center gap-3 border-2 border-dashed border-gray-300 rounded-xl p-8">
           <UploadButton
             endpoint="userImage"
-            headers={{
-              "x-entity-type": entityType,
-              "x-entity-id": entityId,
-            }}
+            input={{ entityType, entityId }}
             onClientUploadComplete={() => {
               setMessage({
                 type: "success",
