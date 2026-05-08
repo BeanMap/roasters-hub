@@ -11,7 +11,7 @@ export async function AdminNav() {
       <NavLink href="/admin/enrichment">Enrichment</NavLink>
       <NavLink href="/admin/cafes">Cafes</NavLink>
       <NavLink href="/admin/roasters">Roasters</NavLink>
-      <NavLink href="/admin/images">Images</NavLink>
+      <NavLink href="/admin/images/pending">Images</NavLink>
       <NavLink href="/admin/settings">Settings</NavLink>
       <span className="ml-auto text-xs text-stone-400">@{name}</span>
     </nav>
