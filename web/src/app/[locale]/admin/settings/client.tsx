@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { AdminImagesClient } from "../images/client";
 
 interface SettingsData {
   imageMaxTotal: number;
@@ -10,10 +11,22 @@ interface SettingsData {
   defaultPoolMax: number;
 }
 
+interface ImageItem {
+  id: string;
+  url: string;
+  entityType: "CAFE" | "ROASTER";
+  status: string;
+  isDefault: boolean;
+  createdAt: string;
+  uploadedBy: string;
+}
+
 export function AdminSettingsClient({
   initial,
+  defaultImages,
 }: {
   initial: SettingsData;
+  defaultImages: ImageItem[];
 }) {
   const router = useRouter();
   const [values, setValues] = useState(initial);
@@ -141,6 +154,10 @@ export function AdminSettingsClient({
           {saving ? "Saving..." : "Save Settings"}
         </button>
       </div>
+
+      <hr className="my-10 border-t border-gray-200" />
+
+      <AdminImagesClient images={defaultImages} />
     </main>
   );
 }
