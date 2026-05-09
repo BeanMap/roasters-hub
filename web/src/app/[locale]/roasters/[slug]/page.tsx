@@ -197,6 +197,31 @@ export default async function RoasterProfilePage({
             <AddPhotoButton entityType="ROASTER" entityId={roaster.id} />
           </div>
 
+          {/* Location Map Link */}
+          {roaster.lat && roaster.lng && (
+            <section>
+              <h2 className="font-headline text-3xl mb-8 tracking-tight">{t("location")}</h2>
+              <a
+                href={`/map?lat=${roaster.lat}&lng=${roaster.lng}&zoom=14&name=${encodeURIComponent(roaster.name)}`}
+                className="block bg-surface-container rounded-2xl overflow-hidden border border-outline-variant/10 hover:border-primary/30 transition-colors group"
+              >
+                <div className="aspect-[16/6] bg-surface-container-high relative flex items-center justify-center">
+                  <div className="absolute inset-0 bg-[url('https://tile.openstreetmap.org/12/${Math.floor((roaster.lng + 180) / 360 * (1 << 12))}/${Math.floor((1 - Math.log(Math.tan(roaster.lat * Math.PI / 180) + 1 / Math.cos(roaster.lat * Math.PI / 180)) / Math.PI) / 2 * (1 << 12))}.png')] opacity-30 bg-cover bg-center" />
+                  <div className="relative z-10 flex flex-col items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+                      </svg>
+                    </div>
+                    <span className="text-on-surface-variant text-sm group-hover:text-primary transition-colors">
+                      {t("viewOnMap")}
+                    </span>
+                  </div>
+                </div>
+              </a>
+            </section>
+          )}
+
           {/* Origins */}
           {roaster.origins.length > 0 && (
             <section>

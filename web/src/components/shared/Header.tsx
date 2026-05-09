@@ -37,6 +37,15 @@ function HeaderSearch({ pathname }: { pathname: string }) {
     }
   };
 
+  const handleSearchClick = () => {
+    const input = document.querySelector("input[placeholder*='Search']") as HTMLInputElement | null;
+    if (input) {
+      const val = input.value.trim();
+      const base = entityType === "cafes" ? "/cafes" : "/roasters";
+      router.push(val ? `${base}?q=${encodeURIComponent(val)}` : base);
+    }
+  };
+
   return (
     <div className="hidden sm:flex items-center bg-surface-container-low rounded-lg overflow-hidden h-[42px] border-[1.5px] border-transparent focus-within:border-outline-variant/50 transition-colors">
       <button
@@ -65,7 +74,7 @@ function HeaderSearch({ pathname }: { pathname: string }) {
         <CoffeeCup className="w-[17px] h-[17px]" />
       </button>
       <div className="flex items-center px-3 gap-2 flex-1">
-        <svg className="w-[14px] h-[14px] text-on-surface-variant/60 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-[14px] h-[14px] text-on-surface-variant/60 shrink-0 cursor-pointer hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" onClick={handleSearchClick}>
           <circle cx="11" cy="11" r="8" strokeWidth={2} strokeLinecap="round" />
           <path d="m21 21-4.35-4.35" strokeWidth={2} strokeLinecap="round" />
         </svg>
@@ -152,7 +161,17 @@ export function Header() {
                     avatarBox: "w-8 h-8",
                   },
                 }}
-              />
+              >
+                <UserButton.UserProfileLink
+                  label="My Photos"
+                  url="/dashboard/my-photos"
+                  labelIcon={
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  }
+                />
+              </UserButton>
             </SignedIn>
           </div>
 

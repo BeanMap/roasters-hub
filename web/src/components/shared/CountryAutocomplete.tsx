@@ -8,6 +8,7 @@ interface CountryAutocompleteProps {
   onChange: (countryName: string, countryCode: string) => void;
   locale: string;
   placeholder?: string;
+  validationError?: string;
 }
 
 export function CountryAutocomplete({
@@ -15,6 +16,7 @@ export function CountryAutocomplete({
   onChange,
   locale,
   placeholder = "Select country...",
+  validationError,
 }: CountryAutocompleteProps) {
   const [userEdited, setUserEdited] = useState(false);
   const [query, setQuery] = useState(() => value || "");
@@ -103,6 +105,9 @@ export function CountryAutocomplete({
             </li>
           ))}
         </ul>
+      )}
+      {validationError && (
+        <p className="text-red-600 text-xs mt-1">{validationError}</p>
       )}
     </div>
   );

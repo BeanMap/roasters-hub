@@ -29,8 +29,16 @@ export function usePersistedForm<T extends Record<string, unknown>>(
   }, [key, form]);
 
   const update = useCallback((field: string, value: unknown) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  }, []);
+    setForm((prev) => {
+      const next = { ...prev, [field]: value };
+      try {
+        localStorage.setItem(key, JSON.stringify(next));
+      } catch {
+        // storage full or unavailable
+      }
+      return next;
+    });
+  }, [key]);
 
   const clear = useCallback(() => {
     try {

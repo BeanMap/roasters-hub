@@ -248,6 +248,27 @@ export async function setPrimaryImage(imageId: string): Promise<ActionResult> {
   }
 }
 
+export async function getImageUploadInfo(
+  entityType: EntityType,
+  entityId: string,
+): Promise<{ total: number; userTotal: number; maxTotal: number; maxPerUser: number }> {
+  const userId = await requireAuth();
+  const settings = await getAppSettings();
+
+  const where = { entityType, ...entityImageWhere(entityType, entityId) };
+  const [total, userTotal] = await Promise.all([
+    db.image.count({ where: { ...where, status: { not: "REJECTED" } } }),
+    db.image.count({ where: { ...where, uploadedById: userId } }),
+  ]);
+
+  return {
+    total,
+    userTotal,
+    maxTotal: settings.imageMaxTotal,
+    maxPerUser: settings.imageMaxPerUser,
+  };
+}
+
 export async function reorderImages(
   items: { id: string; sortOrder: number }[],
 ): Promise<ActionResult> {

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
@@ -77,7 +76,35 @@ export default async function CafeCityPage({
     },
   });
 
-  if (cafes.length === 0) notFound();
+  if (cafes.length === 0) {
+    const fallbackCountry = decodeURIComponent(country);
+    const fallbackCity = city.replace(/-/g, " ");
+    return (
+      <>
+        <Header />
+        <main className="max-w-7xl mx-auto px-6 py-16 text-center">
+          <div className="w-20 h-20 bg-surface-container-high rounded-full flex items-center justify-center mx-auto mb-8">
+            <svg className="w-10 h-10 text-on-surface-variant/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <h1 className="font-headline text-4xl font-bold mb-4">{t("noCafesInCityTitle", { city: fallbackCity })}</h1>
+          <p className="text-on-surface-variant text-lg mb-10 max-w-lg mx-auto">
+            {t("noCafesInCityDesc", { city: fallbackCity, country: fallbackCountry })}
+          </p>
+          <div className="flex justify-center gap-4">
+            <Link href={`/cafes/country/${country}`} className="bg-primary text-on-primary px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-all">
+              {t("allCafesInCountry", { country: fallbackCountry })}
+            </Link>
+            <Link href="/cafes" className="border border-outline/20 text-on-surface-variant px-6 py-3 rounded-lg font-medium hover:bg-surface-container-low transition-all">
+              {t("browseAllCafes")}
+            </Link>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   const countryName = cafes[0].country;
   const cityName = cafes[0].city;

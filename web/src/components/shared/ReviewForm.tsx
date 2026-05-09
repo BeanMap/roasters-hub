@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth, SignInButton, useUser } from "@clerk/nextjs";
+
+const REVIEW_DRAFT_KEY = "review-draft";
 
 type ReviewFormProps = {
   roasterId?: string;
@@ -16,6 +18,23 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [comment, setComment] = useState("");
+  const restored = useRef(false);
+
+  useEffect(() => {
+    if (isSignedIn && !restored.current) {
+      try {
+        const draft = localStorage.getItem(REVIEW_DRAFT_KEY);
+        if (draft) {
+          const parsed = JSON.parse(draft);
+          if (parsed.rating) setRating(parsed.rating);
+          if (parsed.comment) setComment(parsed.comment);
+          localStorage.removeItem(REVIEW_DRAFT_KEY);
+        }
+      } catch { /* ignore */ }
+      restored.current = true;
+    }
+  }, [isSignedIn]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -50,13 +69,21 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
   }
 
   if (!isSignedIn) {
+    const saveDraft = () => {
+      if (rating > 0 || comment.trim()) {
+        try {
+          localStorage.setItem(REVIEW_DRAFT_KEY, JSON.stringify({ rating, comment }));
+        } catch { /* ignore */ }
+      }
+    };
+
     return (
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
         <p className="text-sm text-amber-800 mb-2">
           Sign in to leave a review
         </p>
         <SignInButton mode="modal">
-          <button className="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-700">
+          <button onClick={saveDraft} className="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-700">
             Sign In
           </button>
         </SignInButton>
@@ -135,10 +162,12 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
           maxLength={2000}
           className="input-field resize-none"
           placeholder="Share your experience..."
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
         />
       </div>
 
-      {error && <p className="text-error text-sm">{error}</p>}
+      {error && <p className="text-red-600 text-sm font-medium">{error}</p>}
 
       <button
         type="submit"
