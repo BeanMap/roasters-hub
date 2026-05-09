@@ -36,10 +36,13 @@ export function AddPhotoButton({ entityType, entityId }: AddPhotoButtonProps) {
 
   if (!isSignedIn) {
     return (
-      <div className="text-center py-3">
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
+        <p className="text-sm text-amber-800 mb-2">
+          Sign in to add a photo
+        </p>
         <SignInButton mode="modal">
-          <button className="text-sm text-amber-600 hover:text-amber-700 font-medium">
-            Sign in to add a photo
+          <button className="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-700">
+            Sign In
           </button>
         </SignInButton>
       </div>

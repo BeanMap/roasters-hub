@@ -78,15 +78,69 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
     };
 
     return (
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
-        <p className="text-sm text-amber-800 mb-2">
-          Sign in to leave a review
-        </p>
-        <SignInButton mode="modal">
-          <button onClick={saveDraft} className="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-700">
-            Sign In
-          </button>
-        </SignInButton>
+      <div className="space-y-4">
+        <div>
+          <p className="block text-sm font-medium mb-1" id="rating-label">
+            Rating
+          </p>
+          <div
+            className="flex gap-1"
+            role="group"
+            aria-labelledby="rating-label"
+          >
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                type="button"
+                onClick={() => setRating(star)}
+                onMouseEnter={() => setHoverRating(star)}
+                onMouseLeave={() => setHoverRating(0)}
+                className="text-2xl transition-colors"
+                aria-label={`${star} star${star > 1 ? "s" : ""}`}
+              >
+                <span
+                  className={
+                    star <= (hoverRating || rating)
+                      ? "text-amber-500"
+                      : "text-on-surface-variant/20"
+                  }
+                >
+                  ★
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label
+            htmlFor="review-comment-draft"
+            className="block text-sm font-medium mb-1"
+          >
+            Comment{" "}
+            <span className="text-on-surface-variant/50">(optional)</span>
+          </label>
+          <textarea
+            id="review-comment-draft"
+            rows={3}
+            maxLength={2000}
+            className="input-field resize-none"
+            placeholder="Share your experience..."
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+          />
+        </div>
+
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+          <p className="text-sm text-amber-800 mb-2">
+            Sign in to leave a review
+          </p>
+          <SignInButton mode="modal">
+            <button onClick={saveDraft} className="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-700">
+              Sign In
+            </button>
+          </SignInButton>
+        </div>
       </div>
     );
   }
@@ -103,16 +157,24 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <input
-        type="hidden"
-        name="authorName"
-        value={
-          user?.fullName ??
-          user?.username ??
-          user?.primaryEmailAddress?.emailAddress?.split("@")[0] ??
-          "User"
-        }
-      />
+      {user?.fullName ? (
+        <input type="hidden" name="authorName" value={user.fullName} />
+      ) : (
+        <div>
+          <label htmlFor="review-name" className="block text-sm font-medium mb-1">
+            Your name
+          </label>
+          <input
+            id="review-name"
+            type="text"
+            name="authorName"
+            required
+            minLength={2}
+            className="input-field"
+            placeholder="Enter your name"
+          />
+        </div>
+      )}
 
       <div>
         <p className="block text-sm font-medium mb-1" id="rating-label">

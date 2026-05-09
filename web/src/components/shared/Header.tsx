@@ -156,6 +156,7 @@ export function Header() {
             </SignedOut>
             <SignedIn>
               <UserButton
+                afterSignOutUrl={pathname}
                 appearance={{
                   elements: {
                     avatarBox: "w-8 h-8",
