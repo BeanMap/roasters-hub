@@ -48,7 +48,18 @@ export function AddPhotoModal({
                 : "bg-red-50 text-red-700"
             }`}
           >
-            {message.text}
+            <p className="mb-2">{message.text}</p>
+            <button
+              onClick={() => {
+                if (message.type === "success") {
+                  router.refresh();
+                }
+                onClose();
+              }}
+              className="text-xs underline hover:no-underline"
+            >
+              {message.type === "success" ? "Close" : "Dismiss"}
+            </button>
           </div>
         )}
 
@@ -64,12 +75,8 @@ export function AddPhotoModal({
             onClientUploadComplete={() => {
               setMessage({
                 type: "success",
-                text: "Photo submitted for review!",
+                text: "Photo submitted for review! It will appear after moderation.",
               });
-              setTimeout(() => {
-                router.refresh();
-                onClose();
-              }, 1500);
             }}
             onUploadError={(error: Error) => {
               setMessage({ type: "error", text: error.message });
