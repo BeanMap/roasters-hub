@@ -5,8 +5,7 @@ import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
-import { ReviewForm } from "@/components/shared/ReviewForm";
-import { ReviewList } from "@/components/shared/ReviewList";
+import { ReviewSection } from "@/components/shared/ReviewSection";
 import { ImageGallery } from "@/components/shared/ImageGallery";
 import { AddPhotoButton } from "@/components/shared/AddPhotoButton";
 import { AmenityIcon } from "@/components/cafes/AmenityIcon";
@@ -16,6 +15,9 @@ import { CafeTrackedLink } from "@/components/cafes/CafeTrackedLink";
 import { SaveCafeButton } from "@/components/cafes/SaveCafeButton";
 import { isCafeSaved } from "@/actions/saved-cafe.actions";
 import { db } from "@/lib/db";
+
+export const revalidate = 3600;
+export const dynamicParams = true;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string; locale: string }> }): Promise<Metadata> {
   const { slug, locale } = await params;
@@ -285,14 +287,7 @@ export default async function CafeProfilePage({
           )}
 
           {/* Reviews */}
-          <section>
-            <h3 className="font-headline text-3xl mb-8 tracking-tight">{t("reviews")}</h3>
-            <ReviewList reviews={serializedReviews} averageRating={avgRating} />
-            <div className="mt-10 pt-8 border-t border-outline-variant/10">
-              <h4 className="text-lg font-medium mb-4">{t("leaveReview")}</h4>
-              <ReviewForm cafeId={cafe.id} />
-            </div>
-          </section>
+          <ReviewSection reviews={serializedReviews} averageRating={avgRating} cafeId={cafe.id} />
 
           {/* Roasters we serve */}
           <section>
