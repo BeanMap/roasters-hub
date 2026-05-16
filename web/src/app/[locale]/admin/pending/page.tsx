@@ -14,7 +14,7 @@ export default async function AdminPendingPage() {
   const roasters = await db.roaster.findMany({
     orderBy: { createdAt: "desc" },
     include: {
-      images: { orderBy: { order: "asc" }, take: 1 },
+      images: { orderBy: { sortOrder: "asc" }, take: 1 },
     },
   });
 

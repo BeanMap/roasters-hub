@@ -1184,7 +1184,7 @@ async function main() {
   console.log("Seeding database...");
 
   for (const roaster of SEED_ROASTERS) {
-    const { imageUrl, imageAlt, ...data } = roaster;
+    const { imageUrl, imageAlt: _imgAlt, ...data } = roaster;
 
     const created = await prisma.roaster.upsert({
       where: { slug: data.slug },
@@ -1192,14 +1192,7 @@ async function main() {
       create: {
         ...data,
         verifiedAt: new Date(),
-        images: {
-          create: {
-            url: imageUrl,
-            alt: imageAlt,
-            order: 0,
-            isPrimary: true,
-          },
-        },
+        coverImageUrl: imageUrl,
       },
     });
 

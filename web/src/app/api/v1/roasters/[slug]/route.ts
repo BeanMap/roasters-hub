@@ -34,8 +34,8 @@ export async function GET(
       lng: true,
       verifiedAt: true,
       images: {
-        select: { url: true, alt: true, order: true, isPrimary: true },
-        orderBy: { order: "asc" },
+        select: { url: true, alt: true, sortOrder: true, isPrimary: true },
+        orderBy: { sortOrder: "asc" },
       },
     },
   });

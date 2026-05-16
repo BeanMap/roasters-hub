@@ -20,7 +20,7 @@ const MIN_COUNTS: Record<string, number> = {
   cafes: 90,
   reviews: 40,
   userProfiles: 1,
-  roasterImages: 50,
+  images: 50,
   cafeRoasterRelations: 100,
 };
 
@@ -36,7 +36,7 @@ async function main() {
     cafeEvents: await db.cafeEvent.count(),
     savedCafes: await db.savedCafe.count(),
     userProfiles: await db.userProfile.count(),
-    roasterImages: await db.roasterImage.count(),
+    images: await db.image.count(),
     cafeRoasterRelations: await db.cafeRoasterRelation.count(),
     adminNotes: await db.adminNote.count(),
   };

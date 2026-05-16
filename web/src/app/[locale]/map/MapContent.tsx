@@ -8,14 +8,14 @@ import { useTranslations } from "next-intl";
 import { Header } from "@/components/shared/Header";
 import { RoasterCard } from "@/components/roasters/RoasterCard";
 import { filterByCert, filterByService } from "@/lib/map-filters";
-import type { Roaster, RoasterImage } from "@prisma/client";
+import type { Roaster, Image as PrismaImage } from "@prisma/client";
 
 const RoasterMap = dynamic(
   () => import("@/components/roasters/RoasterMap").then((mod) => mod.RoasterMap),
   { ssr: false, loading: () => <div className="w-full h-full bg-surface-container-low animate-pulse" /> }
 );
 
-type RoasterWithImages = Roaster & { images: RoasterImage[] };
+type RoasterWithImages = Roaster & { images: PrismaImage[] };
 
 type CafeMapItem = {
   id: string;

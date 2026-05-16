@@ -22,19 +22,20 @@ export const ourFileRouter = {
       });
       if (!profile?.ownedRoasters.length) throw new Error("No roaster linked");
 
-      return { roasterId: profile.ownedRoasters[0].id };
+      return { roasterId: profile.ownedRoasters[0].id, userId };
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      await db.roasterImage.deleteMany({
-        where: { roasterId: metadata.roasterId, isPrimary: true },
+      await db.image.deleteMany({
+        where: { roasterId: metadata.roasterId, entityType: "ROASTER", isPrimary: true },
       });
 
-      await db.roasterImage.create({
+      await db.image.create({
         data: {
           roasterId: metadata.roasterId,
           url: file.ufsUrl,
-          alt: file.name,
-          order: 0,
+          entityType: "ROASTER",
+          uploadedById: metadata.userId,
+          status: "APPROVED",
           isPrimary: true,
         },
       });

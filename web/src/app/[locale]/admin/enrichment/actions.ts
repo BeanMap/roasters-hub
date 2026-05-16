@@ -117,7 +117,7 @@ export async function bulkApplyByConfidence(
 
 export async function applyEnrichmentRun(runId: string): Promise<ActionResult<{ applied: number }>> {
   try {
-    await requireAdmin()
+    const adminId = await requireAdmin()
 
     const proposals = await db.enrichmentProposal.findMany({
       where: { runId, status: 'APPLIED' },
@@ -256,7 +256,7 @@ export async function applyEnrichmentRun(runId: string): Promise<ActionResult<{ 
                 instagram: typeof fieldMap.instagram === 'string' ? fieldMap.instagram : null,
                 status: 'PENDING',
                 images: {
-                  create: { url: coverImageUrl, alt: name, isPrimary: true, order: 0 },
+                  create: { url: coverImageUrl, alt: name, entityType: "ROASTER" as const, uploadedById: adminId, isPrimary: true, sortOrder: 0 },
                 },
               },
             })

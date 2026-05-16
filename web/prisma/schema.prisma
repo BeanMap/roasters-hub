@@ -67,8 +67,7 @@ model Roaster {
   servedAt              CafeRoasterRelation[]
   events                ProfileEvent[]
   reviews               Review[]
-  images                RoasterImage[]
-  galleryImages         Image[]
+  images                Image[]
   savedBy               SavedRoaster[]
   owner                 UserProfile?          @relation("RoasterOwner", fields: [ownerId], references: [id], onDelete: SetNull)
 
@@ -82,22 +81,11 @@ model Roaster {
   @@map("roasters")
 }
 
-model RoasterImage {
-  id        String  @id @default(cuid())
-  roasterId String
-  url       String
-  alt       String?
-  order     Int     @default(0)
-  isPrimary Boolean @default(false)
-  roaster   Roaster @relation(fields: [roasterId], references: [id], onDelete: Cascade)
-
-  @@index([roasterId])
-  @@map("roaster_images")
-}
 
 model Image {
   id           String      @id @default(cuid())
   url          String
+  alt          String?
   entityType   EntityType
   roasterId    String?
   cafeId       String?
