@@ -7,7 +7,7 @@
 ---
 
 ## Last Updated
-2026-05-16 | @AGENT — Pełny audyt statusu zadań. UX Enhancement (Images, Geocoding, Reviews) w całości zrealizowany (15/15). Strony prawne, hover states, mobile filters, Neon Preview Branches, testing docs — zrobione. Jedyny pozostały element @AGENT: migracja `RoasterImage` → `Image`. Najważniejsze zadania @MN: Clerk Production, environment segregation, podpięcie domeny, dark mode, SEO (JSON-LD, sitemap), fix regex phone extractora.
+2026-05-16 20:25 | @AGENT — ReviewSortControls zintegrowany z UI profili, ISR revalidate na cafes/[slug], ROADMAP cleanup. Wykryty problem: `beanmap.pl` to osobny projekt Vercel z własną bazą bez migracji RoasterImage→Image. Strony z `include: { images }` padają 500. Trzeba zaaplikować migrację na bazie beanmap.pl lub podpiąć domenę do głównego projektu.
 
 ---
 
