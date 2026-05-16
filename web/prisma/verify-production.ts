@@ -20,7 +20,6 @@ const MIN_COUNTS: Record<string, number> = {
   cafes: 90,
   reviews: 40,
   userProfiles: 1,
-  images: 50,
   cafeRoasterRelations: 100,
 };
 
