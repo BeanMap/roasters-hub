@@ -37,7 +37,7 @@ export default async function RoasterDashboardPage() {
   const roaster = await db.roaster.findUnique({
     where: { id: profile.ownedRoasters[0].id },
     include: {
-      images: { orderBy: { order: "asc" } },
+      images: { orderBy: { sortOrder: "asc" } },
       _count: { select: { events: true } },
     },
   });

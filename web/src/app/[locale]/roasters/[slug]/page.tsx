@@ -57,7 +57,7 @@ export default async function RoasterProfilePage({
   const roaster = await db.roaster.findUnique({
     where: { slug },
     include: {
-      images: { orderBy: { order: "asc" }, take: 1 },
+      images: { orderBy: { sortOrder: "asc" }, take: 1 },
       servedAt: {
         include: {
           cafe: {

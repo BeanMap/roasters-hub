@@ -7,7 +7,7 @@
 ---
 
 ## Last Updated
-2026-05-04 | @AGENT — UX Enhancement plan: Image model, geocoding (Nominatim), address autocomplete, default photo pool, user image uploads + approval queue, review auth gate, profile galleries. Spec: `docs/superpowers/specs/2026-05-04-ux-enhancement-design.md`
+2026-05-16 | @AGENT — Pełny audyt statusu zadań. UX Enhancement (Images, Geocoding, Reviews) w całości zrealizowany (15/15). Strony prawne, hover states, mobile filters, Neon Preview Branches, testing docs — zrobione. Jedyny pozostały element @AGENT: migracja `RoasterImage` → `Image`. Najważniejsze zadania @MN: Clerk Production, environment segregation, podpięcie domeny, dark mode, SEO (JSON-LD, sitemap), fix regex phone extractora.
 
 ---
 
@@ -74,10 +74,18 @@ web/src/lib/supabase.ts       — NOT NEEDED (replaced by Clerk)
 
 ## Active Work
 
+**@AGENT:** (brak — wszystkie zadania zrealizowane)
+
 **@MN:** [IN PROGRESS] Taksonomia danych + Zasilenie bazy kawiarni w PL
-**@MN:** [IN PROGRESS] Logo Bean Map — SVG variants, hover states, dark mode
 **@MN:** [P1] Clerk Production environment — utworzenie Production instance w Clerk, podmiana kluczy w Vercel
 **@MN:** [P1] Environment segregation audit — Uploadthing, Resend, Plausible klucze Dev vs Prod
+**@MN:** [P1] Podpięcie domeny — DNS na Vercel, `beanmap.pl` wciąż na parkingu
+**@MN:** [P1] Strony prawne — uzupełnienie placeholderów (NIP, REGON, adres, IOD)
+**@MN:** [P3] Dark mode — pełna implementacja (tylko `dark:prose-invert` na legal pages)
+**@MN:** [P3] SEO — `sitemap.ts`, `robots.ts`, JSON-LD structured data, canonical URLs, OG images
+**@MN:** [P2] Fix regex phone extractora — `website.adapter.ts`
+**@MN:** [P2] "List Your Cafe" — uspójnienie UX/copy z rejestracją palarni
+**@MN:** [P2] SVG warianty logo
 
 **Completed recently:**
 - ✅ Site Audit 2026-05-02 — all 12/14 issues fixed and verified on production (PR #77) (2026-05-03)
@@ -105,12 +113,13 @@ web/src/lib/supabase.ts       — NOT NEEDED (replaced by Clerk)
 
 ## Next Unblocked Task
 
-**TERAZ (@AGENT):** [P1] DB: Image + AppSettings + Review zmiany — nowy unified model Image, konfiguracja limitów, Review.userId.
-**NASTĘPNIE (@AGENT):** [P1] lib/geocoding.ts + AddressAutocomplete + MiniMap — Nominatim, autouzupełnianie adresu.
-**NASTĘPNIE (@AGENT):** [P1] Image actions + UploadThing endpointy — defaultImage, userImage.
-**TERAZ (MN):** [P1] SEO review — `generateMetadata`, canonical URLs, structured data (JSON-LD), sitemap completeness.
-**TERAZ (MN):** [P2] Hover states + transitions — spójne micro-animations na kartach, buttonach, nawigacji.
-**TERAZ (MN):** [P1] Cookie policy / regulamin / polityka prywatności — strony prawne zgodne z GDPR.
+**TERAZ (@AGENT):** (brak — wszystkie zadania zrealizowane. Czekam na nowe taski od @MN.)
+**NASTĘPNIE (@AGENT):** `ReviewSortControls` — integracja dropdowna sortowania w UI profili (komponent istnieje, niepodpięty).
+
+**TERAZ (MN):** [P1] Clerk Production — `sk_live_`/`pk_live_` klucze.
+**TERAZ (MN):** [P1] Environment segregation — osobne tokeny Uploadthing/Resend dla dev.
+**TERAZ (MN):** [P1] Podpięcie domeny — `beanmap.pl` na Vercel.
+**TERAZ (MN):** [P3] SEO — `sitemap.ts`, `robots.ts`, JSON-LD structured data, canonical URLs, OG images.
 
 **HUMAN ONLY blockers:** re-seed prod DB (`prisma db seed`), run new migrations on prod, buy production domain.
 

@@ -28,7 +28,7 @@ export const MOCK_ROASTERS = [
     createdAt: new Date("2024-01-10"),
     updatedAt: new Date("2024-01-15"),
     images: [
-      { id: "img1", url: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&h=600&fit=crop", alt: "Onyx Coffee Lab interior", order: 0, isPrimary: true, roasterId: "1" },
+      { id: "img1", url: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&h=600&fit=crop", alt: "Onyx Coffee Lab interior", sortOrder: 0, isPrimary: true, roasterId: "1" },
     ],
   },
   {
@@ -57,7 +57,7 @@ export const MOCK_ROASTERS = [
     createdAt: new Date("2024-01-18"),
     updatedAt: new Date("2024-01-20"),
     images: [
-      { id: "img2", url: "https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=800&h=600&fit=crop", alt: "Tim Wendelboe barista", order: 0, isPrimary: true, roasterId: "2" },
+      { id: "img2", url: "https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=800&h=600&fit=crop", alt: "Tim Wendelboe barista", sortOrder: 0, isPrimary: true, roasterId: "2" },
     ],
   },
   {
@@ -86,7 +86,7 @@ export const MOCK_ROASTERS = [
     createdAt: new Date("2024-01-25"),
     updatedAt: new Date("2024-02-01"),
     images: [
-      { id: "img3", url: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&h=600&fit=crop", alt: "Square Mile coffee bags", order: 0, isPrimary: true, roasterId: "3" },
+      { id: "img3", url: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&h=600&fit=crop", alt: "Square Mile coffee bags", sortOrder: 0, isPrimary: true, roasterId: "3" },
     ],
   },
   {
@@ -115,7 +115,7 @@ export const MOCK_ROASTERS = [
     createdAt: new Date("2024-02-05"),
     updatedAt: new Date("2024-02-10"),
     images: [
-      { id: "img4", url: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefda?w=800&h=600&fit=crop", alt: "Hard Beans roastery", order: 0, isPrimary: true, roasterId: "4" },
+      { id: "img4", url: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefda?w=800&h=600&fit=crop", alt: "Hard Beans roastery", sortOrder: 0, isPrimary: true, roasterId: "4" },
     ],
   },
   {
@@ -144,7 +144,7 @@ export const MOCK_ROASTERS = [
     createdAt: new Date("2024-02-12"),
     updatedAt: new Date("2024-02-15"),
     images: [
-      { id: "img5", url: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=800&h=600&fit=crop", alt: "Gardelli roasting machine", order: 0, isPrimary: true, roasterId: "5" },
+      { id: "img5", url: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=800&h=600&fit=crop", alt: "Gardelli roasting machine", sortOrder: 0, isPrimary: true, roasterId: "5" },
     ],
   },
   {
@@ -173,7 +173,7 @@ export const MOCK_ROASTERS = [
     createdAt: new Date("2024-02-25"),
     updatedAt: new Date("2024-03-01"),
     images: [
-      { id: "img6", url: "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=800&h=600&fit=crop", alt: "Assembly Coffee beans", order: 0, isPrimary: true, roasterId: "6" },
+      { id: "img6", url: "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=800&h=600&fit=crop", alt: "Assembly Coffee beans", sortOrder: 0, isPrimary: true, roasterId: "6" },
     ],
   },
   {
@@ -202,7 +202,7 @@ export const MOCK_ROASTERS = [
     createdAt: new Date("2024-03-01"),
     updatedAt: new Date("2024-03-05"),
     images: [
-      { id: "img7", url: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&h=600&fit=crop", alt: "HAYB Coffee shop", order: 0, isPrimary: true, roasterId: "7" },
+      { id: "img7", url: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&h=600&fit=crop", alt: "HAYB Coffee shop", sortOrder: 0, isPrimary: true, roasterId: "7" },
     ],
   },
   {
@@ -231,7 +231,7 @@ export const MOCK_ROASTERS = [
     createdAt: new Date("2024-03-08"),
     updatedAt: new Date("2024-03-10"),
     images: [
-      { id: "img8", url: "https://images.unsplash.com/photo-1511920170033-f8396924c348?w=800&h=600&fit=crop", alt: "Coffee Proficiency roastery", order: 0, isPrimary: true, roasterId: "8" },
+      { id: "img8", url: "https://images.unsplash.com/photo-1511920170033-f8396924c348?w=800&h=600&fit=crop", alt: "Coffee Proficiency roastery", sortOrder: 0, isPrimary: true, roasterId: "8" },
     ],
   },
   {
@@ -260,7 +260,7 @@ export const MOCK_ROASTERS = [
     createdAt: new Date("2024-03-10"),
     updatedAt: new Date("2024-03-12"),
     images: [
-      { id: "img9", url: "https://images.unsplash.com/photo-1507133750040-4a8f57021571?w=800&h=600&fit=crop", alt: "Nordic Roast barista", order: 0, isPrimary: true, roasterId: "9" },
+      { id: "img9", url: "https://images.unsplash.com/photo-1507133750040-4a8f57021571?w=800&h=600&fit=crop", alt: "Nordic Roast barista", sortOrder: 0, isPrimary: true, roasterId: "9" },
     ],
   },
   {
@@ -289,7 +289,7 @@ export const MOCK_ROASTERS = [
     createdAt: new Date("2024-03-12"),
     updatedAt: new Date("2024-03-15"),
     images: [
-      { id: "img10", url: "https://images.unsplash.com/photo-1504630083234-14187a9df0f5?w=800&h=600&fit=crop", alt: "Dark Matter Labs roasting", order: 0, isPrimary: true, roasterId: "10" },
+      { id: "img10", url: "https://images.unsplash.com/photo-1504630083234-14187a9df0f5?w=800&h=600&fit=crop", alt: "Dark Matter Labs roasting", sortOrder: 0, isPrimary: true, roasterId: "10" },
     ],
   },
   {
@@ -318,7 +318,7 @@ export const MOCK_ROASTERS = [
     createdAt: new Date("2024-03-15"),
     updatedAt: new Date("2024-03-18"),
     images: [
-      { id: "img11", url: "https://images.unsplash.com/photo-1498804103079-a6351b050096?w=800&h=600&fit=crop", alt: "Flora & Fauna coffee", order: 0, isPrimary: true, roasterId: "11" },
+      { id: "img11", url: "https://images.unsplash.com/photo-1498804103079-a6351b050096?w=800&h=600&fit=crop", alt: "Flora & Fauna coffee", sortOrder: 0, isPrimary: true, roasterId: "11" },
     ],
   },
   {
@@ -347,7 +347,7 @@ export const MOCK_ROASTERS = [
     createdAt: new Date("2024-03-18"),
     updatedAt: new Date("2024-03-20"),
     images: [
-      { id: "img12", url: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=800&h=600&fit=crop", alt: "Sey Coffee cup", order: 0, isPrimary: true, roasterId: "12" },
+      { id: "img12", url: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=800&h=600&fit=crop", alt: "Sey Coffee cup", sortOrder: 0, isPrimary: true, roasterId: "12" },
     ],
   },
 ];

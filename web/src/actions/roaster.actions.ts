@@ -186,14 +186,14 @@ export async function deleteRoasterImage(
   try {
     await requireRoasterOwner(roasterId);
 
-    const image = await db.roasterImage.findFirst({
-      where: { id: imageId, roasterId },
+    const image = await db.image.findFirst({
+      where: { id: imageId, roasterId, entityType: "ROASTER" },
     });
     if (!image) {
       return { success: false, error: "Image not found" };
     }
 
-    await db.roasterImage.delete({ where: { id: imageId } });
+    await db.image.delete({ where: { id: imageId } });
 
     const roaster = await db.roaster.findUnique({
       where: { id: roasterId },
