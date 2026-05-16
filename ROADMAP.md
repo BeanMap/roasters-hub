@@ -383,3 +383,14 @@ Kanon stanu zadań: ten plik. Aktualizuj po każdej sesji (agent lub developer).
 - [x] **Typography: custom font pair** — Fraunces (display) + Source Sans 3 (body) przez next/font/google (@MN) ✅
 - [x] **i18n PL/EN/DE** — complete i18n with `next-intl`, routing per locale (`[locale]`), full translations EN/PL/DE for all user/admin pages, redesigned locale switcher (PR #59-61) (@AGENT) ✅
 - [x] **UX Quality Audit findings implemented** — SaveCafeButton + saved-cafe.actions.ts, sticky sidebar with contact card on cafe profiles, CafeProfileTracker + CafeTrackedLink analytics, coverImageUrl display, VerifiedBadge on cafe hero, register title fixed (@AGENT) ✅
+- [x] **Cookie policy / regulamin / polityka prywatności** — 4 strony prawne (cookies, privacy, terms, impressum), PL+EN, zlinkowane w Footer (@MN) ✅ (2026-05-16 audit)
+- [x] **UI: hover states + transitions** — 390+ spójnych wzorców w 30+ komponentach (@MN) ✅ (2026-05-16 audit)
+- [x] **Mobile filters: search always visible** — search poza collapsible w RoasterFilters i CafeFilters (@AGENT) ✅ (2026-05-16 audit)
+- [x] **Neon Preview Branches** — 3 workflowy (preview-db, CI ephemeral, neon-cleanup), izolowana baza per PR (@MN) ✅
+- [x] **Testing docs: E2E skeletons** — 4 szkielety speców w `docs/testing/e2e/` (@UNASSIGNED) ✅ (2026-05-16 audit)
+- [x] **Site Audit 2026-04-24** — wszystkie CRITICAL + HIGH naprawione (@AGENT) ✅
+- [x] **Site Audit 2026-05-02** — 12/14 problemów naprawionych i zweryfikowanych na produkcji (PR #77) (@AGENT) ✅
+- [x] **UX Enhancement: Images, Geocoding, Reviews** — 15/15 zadań: unified Image model, geocoding, AddressAutocomplete, MiniMap, image actions, UploadThing endpoints, /admin/images, /admin/images/pending, /admin/settings, DashboardGallery, Review auth gate, ImageGallery, ImageLightbox, ImageSortableList, ReviewSortControls, Empty states, VerifiedOwnerBadge (@AGENT) ✅
+- [x] **Migracja RoasterImage → Image** — usunięcie starego modelu, aktualizacja endpointów/typów/seedów, migracja SQL (PR #89) (@AGENT) ✅
+- [x] **ReviewSortControls — integracja z UI** — komponent ReviewSection z sortowaniem na profilach palarni i kawiarni (@AGENT) ✅
+- [x] **ISR revalidate: cafes/[slug]** — dodane `revalidate = 3600` na profilu kawiarni (@AGENT) ✅

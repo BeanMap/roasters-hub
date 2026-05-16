@@ -9,8 +9,7 @@ import { CertificationBadge } from "@/components/roasters/CertificationBadge";
 import { RoasterCard } from "@/components/roasters/RoasterCard";
 import { ProfileTracker } from "@/components/roasters/ProfileTracker";
 import { TrackedLink } from "@/components/roasters/TrackedLink";
-import { ReviewForm } from "@/components/shared/ReviewForm";
-import { ReviewList } from "@/components/shared/ReviewList";
+import { ReviewSection } from "@/components/shared/ReviewSection";
 import { ImageGallery } from "@/components/shared/ImageGallery";
 import { AddPhotoButton } from "@/components/shared/AddPhotoButton";
 import { SaveRoasterButton } from "@/components/roasters/SaveRoasterButton";
@@ -253,14 +252,7 @@ export default async function RoasterProfilePage({
           )}
 
           {/* Reviews */}
-          <section>
-            <h3 className="font-headline text-3xl mb-8 tracking-tight">{t("reviews")}</h3>
-            <ReviewList reviews={approvedReviews} averageRating={avgRating} />
-            <div className="mt-10 pt-8 border-t border-outline-variant/10">
-              <h4 className="text-lg font-medium mb-4">{t("leaveReview")}</h4>
-              <ReviewForm roasterId={roaster.id} />
-            </div>
-          </section>
+          <ReviewSection reviews={approvedReviews} averageRating={avgRating} roasterId={roaster.id} />
 
           {/* Where to drink */}
           <section className="mt-16">
