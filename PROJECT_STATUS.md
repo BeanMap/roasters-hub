@@ -7,7 +7,7 @@
 ---
 
 ## Last Updated
-2026-05-16 20:25 | @AGENT — ReviewSortControls zintegrowany z UI profili, ISR revalidate na cafes/[slug], ROADMAP cleanup. Wykryty problem: `beanmap.pl` to osobny projekt Vercel z własną bazą bez migracji RoasterImage→Image. Strony z `include: { images }` padają 500. Trzeba zaaplikować migrację na bazie beanmap.pl lub podpiąć domenę do głównego projektu.
+2026-05-16 20:55 | @AGENT — Migracja RoasterImage→Image zaaplikowana na obu bazach (beanmap-web + beanmap.pl). beanmap.pl przywrócony do działania.
 
 ---
 
