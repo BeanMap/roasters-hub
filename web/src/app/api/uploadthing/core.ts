@@ -5,6 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
+import { revalidateEntity } from "@/lib/revalidation";
 
 const f = createUploadthing();
 
@@ -40,6 +41,8 @@ export const ourFileRouter = {
         },
       });
 
+      await revalidateEntity("ROASTER", metadata.roasterId);
+
       return { url: file.ufsUrl };
     }),
 
@@ -67,7 +70,7 @@ export const ourFileRouter = {
         where: { id: metadata.cafeId },
         data: { logoUrl: file.ufsUrl },
       });
-      revalidatePath("/cafes");
+      await revalidateEntity("CAFE", metadata.cafeId);
     }),
 
   adminImage: f({ image: { maxFileSize: "8MB", maxFileCount: 1 } })
@@ -126,6 +129,38 @@ export const ourFileRouter = {
     })
     .onUploadComplete(async ({ metadata, file }) => {
       try {
+        const [settings, total, userTotal] = await Promise.all([
+          db.appSettings.findUnique({ where: { id: "singleton" } }),
+          db.image.count({
+            where: {
+              entityType: metadata.entityType,
+              ...(metadata.entityType === "ROASTER"
+                ? { roasterId: metadata.entityId }
+                : { cafeId: metadata.entityId }),
+              status: { not: "REJECTED" },
+            },
+          }),
+          db.image.count({
+            where: {
+              entityType: metadata.entityType,
+              ...(metadata.entityType === "ROASTER"
+                ? { roasterId: metadata.entityId }
+                : { cafeId: metadata.entityId }),
+              uploadedById: metadata.userId,
+            },
+          }),
+        ]);
+
+        const maxTotal = settings?.imageMaxTotal ?? 10;
+        const maxPerUser = settings?.imageMaxPerUser ?? 1;
+
+        if (total >= maxTotal) {
+          throw new UploadThingError(`Image limit reached for this entity (${maxTotal})`);
+        }
+        if (userTotal >= maxPerUser) {
+          throw new UploadThingError(`You've reached the upload limit per entity (${maxPerUser})`);
+        }
+
         await db.image.create({
           data: {
             url: file.ufsUrl,
@@ -138,8 +173,7 @@ export const ourFileRouter = {
             isDefault: false,
           },
         });
-        if (metadata.entityType === "ROASTER") revalidatePath("/roasters");
-        if (metadata.entityType === "CAFE") revalidatePath("/cafes");
+        await revalidateEntity(metadata.entityType, metadata.entityId);
       } catch (error) {
         console.error("[userImage onUploadComplete]", error);
         throw new UploadThingError("Failed to save photo. Please try again.");
