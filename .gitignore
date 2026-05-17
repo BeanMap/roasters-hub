@@ -6,9 +6,7 @@
 __pycache__/
 *.pyc
 *.pyo
-.env
-.env.local
-.env.test
+.env*
 
 # Node
 node_modules/
