@@ -7,6 +7,7 @@ import { CafeCard } from "@/components/cafes/CafeCard";
 import { CafeFilters } from "@/components/cafes/CafeFilters";
 import { SortSelect } from "@/components/shared/SortSelect";
 import { db } from "@/lib/db";
+import { buildPageHref } from "@/lib/search-params";
 import type { Metadata } from "next";
 import type { Prisma } from "@prisma/client";
 
@@ -181,7 +182,7 @@ export default async function CafesPage({
             {totalPages > 1 && (
               <nav className="mt-20 flex items-center justify-center gap-4">
                 {page > 1 && (
-                  <Link href={`/cafes?page=${page - 1}`} className="flex items-center gap-1 px-4 py-2 text-sm text-on-surface-variant hover:text-primary transition-colors">
+                  <Link href={buildPageHref("/cafes", sp, page - 1)} className="flex items-center gap-1 px-4 py-2 text-sm text-on-surface-variant hover:text-primary transition-colors">
                     &larr; {tCommon("previous")}
                   </Link>
                 )}
@@ -189,7 +190,7 @@ export default async function CafesPage({
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                     <Link
                       key={p}
-                      href={`/cafes?page=${p}`}
+                      href={buildPageHref("/cafes", sp, p)}
                       className={
                         p === page
                           ? "w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold bg-primary text-on-primary"
@@ -201,7 +202,7 @@ export default async function CafesPage({
                   ))}
                 </div>
                 {page < totalPages && (
-                  <Link href={`/cafes?page=${page + 1}`} className="flex items-center gap-1 px-4 py-2 text-sm text-on-surface-variant hover:text-primary transition-colors">
+                  <Link href={buildPageHref("/cafes", sp, page + 1)} className="flex items-center gap-1 px-4 py-2 text-sm text-on-surface-variant hover:text-primary transition-colors">
                     {tCommon("next")} &rarr;
                   </Link>
                 )}
