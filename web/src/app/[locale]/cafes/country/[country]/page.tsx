@@ -78,15 +78,19 @@ export default async function CafeCountryPage({
 
   const countryName = cafes[0].country;
 
-  const cafesWithRating = await Promise.all(
-    cafes.map(async (cafe) => {
-      const agg = await db.review.aggregate({
-        where: { cafeId: cafe.id, status: "APPROVED" },
+  const cafeIds = cafes.map((c) => c.id);
+  const ratingAggs = cafeIds.length > 0
+    ? await db.review.groupBy({
+        by: ["cafeId"],
+        where: { cafeId: { in: cafeIds }, status: "APPROVED" },
         _avg: { rating: true },
-      });
-      return { ...cafe, averageRating: agg._avg.rating };
-    })
-  );
+      })
+    : [];
+  const ratingMap = new Map(ratingAggs.map((r) => [r.cafeId, r._avg.rating]));
+  const cafesWithRating = cafes.map((cafe) => ({
+    ...cafe,
+    averageRating: ratingMap.get(cafe.id) ?? null,
+  }));
 
   return (
     <>
