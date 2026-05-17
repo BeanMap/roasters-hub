@@ -1,5 +1,3 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { AdminSettingsClient } from "./client";
 
@@ -17,10 +15,6 @@ interface DefaultImageData {
 }
 
 export default async function AdminSettingsPage() {
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
-  const user = await currentUser();
-  if (user?.publicMetadata?.role !== "ADMIN") redirect("/");
 
   let settings = null;
   try {

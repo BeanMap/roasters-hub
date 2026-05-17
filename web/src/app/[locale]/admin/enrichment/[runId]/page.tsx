@@ -1,5 +1,4 @@
-import { auth, currentUser } from "@clerk/nextjs/server"
-import { redirect, notFound } from "next/navigation"
+import { notFound } from "next/navigation"
 import { getTranslations } from "next-intl/server"
 import { Link } from "@/i18n/navigation"
 import { db } from "@/lib/db"
@@ -34,10 +33,6 @@ function buildEntitySummaries(proposals: ProposalWithMeta[]): EntitySummary[] {
 }
 
 export default async function RunReviewPage({ params }: { params: Promise<{ runId: string }> }) {
-  const { userId } = await auth()
-  if (!userId) redirect("/sign-in")
-  const user = await currentUser()
-  if (user?.publicMetadata?.role !== "ADMIN") redirect("/")
 
   const { runId } = await params
 

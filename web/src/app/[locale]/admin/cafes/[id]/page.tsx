@@ -1,5 +1,4 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
-import { redirect, notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { db } from "@/lib/db";
 import { Header } from "@/components/shared/Header";
@@ -11,10 +10,6 @@ export const dynamic = "force-dynamic";
 type Params = Promise<{ id: string }>;
 
 export default async function AdminCafeDetailPage({ params }: { params: Params }) {
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
-  const user = await currentUser();
-  if (user?.publicMetadata?.role !== "ADMIN") redirect("/");
 
   const { id } = await params;
 

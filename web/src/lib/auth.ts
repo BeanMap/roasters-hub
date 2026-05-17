@@ -1,4 +1,5 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
 /**
  * Ensure a UserProfile exists in the DB for the given Clerk user.
@@ -45,6 +46,31 @@ export async function requireAdmin(): Promise<string> {
   await ensureUserProfile(userId, user.emailAddresses[0]?.emailAddress ?? "", "ADMIN");
 
   return userId;
+}
+
+/**
+ * Require the caller to be an authenticated ADMIN with a redirect.
+ * Use as a layout-level gate for admin pages (no manual checks per page).
+ * Redirects to /sign-in if not authenticated, or / if not admin.
+ * Returns user's first name for display in admin nav.
+ */
+export async function requireAdminPage(): Promise<string> {
+  const { userId, sessionClaims } = await auth();
+  if (!userId) redirect("/sign-in");
+
+  const roleFromClaims = (sessionClaims as Record<string, unknown>)?.metadata as { role?: string } | undefined;
+  if (roleFromClaims?.role === "ADMIN") {
+    await ensureUserProfile(userId, "", "ADMIN");
+    const user = await currentUser();
+    return user?.firstName ?? "Admin";
+  }
+
+  const user = await currentUser();
+  if (!user || user.publicMetadata?.role !== "ADMIN") redirect("/");
+
+  await ensureUserProfile(userId, user.emailAddresses[0]?.emailAddress ?? "", "ADMIN");
+
+  return user.firstName ?? "Admin";
 }
 
 /**

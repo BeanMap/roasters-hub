@@ -1,5 +1,3 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { RoasterStatus } from "@prisma/client";
@@ -22,10 +20,6 @@ const STATUS_OPTIONS = ["ALL", "PENDING", "VERIFIED", "REJECTED", "INACTIVE"] as
 type SearchParams = Promise<{ status?: string; sort?: string; page?: string; q?: string }>;
 
 export default async function AdminRoastersPage({ searchParams }: { searchParams: SearchParams }) {
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
-  const user = await currentUser();
-  if (user?.publicMetadata?.role !== "ADMIN") redirect("/");
 
   const t = await getTranslations("admin");
 

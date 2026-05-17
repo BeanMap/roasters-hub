@@ -1,5 +1,3 @@
-import { auth, currentUser } from "@clerk/nextjs/server"
-import { redirect } from "next/navigation"
 import { getTranslations } from "next-intl/server"
 import { Link } from "@/i18n/navigation"
 import { Header } from "@/components/shared/Header"
@@ -7,10 +5,6 @@ import { Footer } from "@/components/shared/Footer"
 import { NewRunForm } from "./_components/NewRunForm"
 
 export default async function NewRunPage() {
-  const { userId } = await auth()
-  if (!userId) redirect("/sign-in")
-  const user = await currentUser()
-  if (user?.publicMetadata?.role !== "ADMIN") redirect("/")
 
   const t = await getTranslations("admin")
 

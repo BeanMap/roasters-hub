@@ -1,5 +1,3 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { AdminPendingImagesClient } from "./client";
 
@@ -16,10 +14,6 @@ interface PendingImage {
 }
 
 export default async function AdminPendingImagesPage() {
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
-  const user = await currentUser();
-  if (user?.publicMetadata?.role !== "ADMIN") redirect("/");
 
   let serialized: PendingImage[] = [];
   try {
