@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { requireAdmin, requireAuth } from "@/lib/auth";
+import { revalidateEntity } from "@/lib/revalidation";
 import type { EntityType } from "@prisma/client";
 import { type ActionResult } from "@/types/actions";
 
@@ -84,10 +85,12 @@ export async function uploadImage(
       },
     });
 
-    revalidatePath("/dashboard/roaster");
-    revalidatePath("/dashboard/cafe");
-    if (entityId && entityType === "ROASTER") {
-      revalidatePath(`/roasters/${entityId}`);
+    if (entityId) {
+      await revalidateEntity(entityType, entityId);
+    } else {
+      revalidatePath("/admin/images");
+      revalidatePath("/dashboard/roaster");
+      revalidatePath("/dashboard/cafe");
     }
 
     return { success: true, data: { id: image.id } };
@@ -124,8 +127,10 @@ export async function approveImage(imageId: string): Promise<ActionResult> {
       },
     });
 
-    if (image.roasterId) revalidatePath(`/roasters/${image.roasterId}`);
-    if (image.cafeId) revalidatePath(`/cafes/${image.cafeId}`);
+    const entityId = image.roasterId ?? image.cafeId;
+    if (entityId) {
+      await revalidateEntity(image.entityType, entityId);
+    }
     revalidatePath("/admin/images/pending");
 
     return { success: true, data: undefined };
@@ -142,11 +147,22 @@ export async function rejectImage(imageId: string): Promise<ActionResult> {
   try {
     await requireAdmin();
 
+    const image = await db.image.findUnique({
+      where: { id: imageId },
+      select: { entityType: true, roasterId: true, cafeId: true },
+    });
+
     await db.image.update({
       where: { id: imageId },
       data: { status: "REJECTED" },
     });
 
+    if (image) {
+      const entityId = image.roasterId ?? image.cafeId;
+      if (entityId) {
+        await revalidateEntity(image.entityType, entityId);
+      }
+    }
     revalidatePath("/admin/images/pending");
 
     return { success: true, data: undefined };
@@ -180,11 +196,11 @@ export async function deleteImage(imageId: string): Promise<ActionResult> {
 
     await db.image.delete({ where: { id: imageId } });
 
-    if (image.roasterId) revalidatePath(`/roasters/${image.roasterId}`);
-    if (image.cafeId) revalidatePath(`/cafes/${image.cafeId}`);
+    const entityId = image.roasterId ?? image.cafeId;
+    if (entityId) {
+      await revalidateEntity(image.entityType, entityId);
+    }
     revalidatePath("/admin/images");
-    revalidatePath("/dashboard/roaster");
-    revalidatePath("/dashboard/cafe");
 
     return { success: true, data: undefined };
   } catch (error) {
@@ -235,8 +251,10 @@ export async function setPrimaryImage(imageId: string): Promise<ActionResult> {
       }),
     ]);
 
-    if (image.roasterId) revalidatePath(`/roasters/${image.roasterId}`);
-    if (image.cafeId) revalidatePath(`/cafes/${image.cafeId}`);
+    const entityId = image.roasterId ?? image.cafeId;
+    if (entityId) {
+      await revalidateEntity(image.entityType, entityId);
+    }
 
     return { success: true, data: undefined };
   } catch (error) {
@@ -359,7 +377,7 @@ export async function linkDefaultImage(
       },
     });
 
-    if (entityType === "ROASTER") revalidatePath(`/roasters/${entityId}`);
+    await revalidateEntity(entityType, entityId);
 
     return { success: true, data: undefined };
   } catch (error) {
