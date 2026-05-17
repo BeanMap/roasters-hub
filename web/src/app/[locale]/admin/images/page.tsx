@@ -1,5 +1,3 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { AdminImagesClient } from "./client";
 
@@ -17,10 +15,6 @@ interface ImageWithUser {
 }
 
 export default async function AdminImagesPage() {
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
-  const user = await currentUser();
-  if (user?.publicMetadata?.role !== "ADMIN") redirect("/");
 
   let images: { id: string; url: string; entityType: "CAFE" | "ROASTER"; status: "PENDING" | "APPROVED" | "REJECTED"; isDefault: boolean; createdAt: Date; uploadedBy: { email: string } }[] = [];
   try {

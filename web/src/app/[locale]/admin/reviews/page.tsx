@@ -1,15 +1,9 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { AdminReviewsClient } from "./client";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminReviewsPage() {
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
-  const user = await currentUser();
-  if (user?.publicMetadata?.role !== "ADMIN") redirect("/");
 
   let reviews: { id: string; authorName: string; rating: number; comment: string | null; status: string; createdAt: Date; roaster: { name: string; slug: string } | null; cafe: { name: string; slug: string } | null }[] = [];
   try {

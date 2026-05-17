@@ -1,9 +1,6 @@
 import { Link } from "@/i18n/navigation";
-import { currentUser } from "@clerk/nextjs/server";
 
-export async function AdminNav() {
-  const user = await currentUser();
-  const name = user?.firstName ?? "Admin";
+export async function AdminNav({ name }: { name: string }) {
 
   return (
     <nav className="flex h-11 items-center gap-6 bg-stone-900 px-4 text-sm">
