@@ -8,8 +8,7 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_APP_VERSION: version,
   },
-  // Use webpack instead of turbopack to avoid # in path issues
-  // turbopack has issues with special chars in directory names
+  // Build uses Turbopack (default for Next.js 16)
   images: {
     remotePatterns: [
       {
