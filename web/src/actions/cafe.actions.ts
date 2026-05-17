@@ -352,13 +352,17 @@ export async function updateCafeCoverImage(cafeId: string, coverImageUrl: string
   try {
     await requireCafeOwner(cafeId);
 
-    await db.cafe.update({
+    const cafe = await db.cafe.update({
       where: { id: cafeId },
       data: { coverImageUrl },
+      select: { slug: true },
     });
 
-    revalidatePath(`/cafes/${cafeId}`);
+    revalidatePath(`/cafes/${cafe.slug}`);
     revalidatePath("/cafes");
+    revalidatePath("/dashboard/cafe");
+    revalidatePath("/map");
+    revalidatePath("/");
     return { success: true, data: undefined };
   } catch (error) {
     console.error("[updateCafeCoverImage]", error);
