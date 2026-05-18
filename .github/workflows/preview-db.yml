@@ -168,8 +168,24 @@ jobs:
 
       - name: Delete Neon branch
         if: github.event.action == 'closed'
-        uses: neondatabase/delete-branch-action@v3
-        with:
-          project_id: ${{ secrets.NEON_PROJECT_ID }}
-          api_key: ${{ secrets.NEON_API_KEY }}
-          branch: ${{ steps.names.outputs.neon_branch }}
+        run: |
+          NEON_BRANCH="${{ steps.names.outputs.neon_branch }}"
+          PROJECT_ID="${{ secrets.NEON_PROJECT_ID }}"
+          API_KEY="${{ secrets.NEON_API_KEY }}"
+
+          RESPONSE=$(curl -s \
+            "https://console.neon.tech/api/v2/projects/${PROJECT_ID}/branches" \
+            -H "Authorization: Bearer ${API_KEY}" \
+            -H "Accept: application/json")
+
+          BRANCH_ID=$(echo "$RESPONSE" | jq -r --arg name "$NEON_BRANCH" '.branches[] | select(.name == $name) | .id // empty')
+
+          if [ -n "$BRANCH_ID" ]; then
+            echo "Deleting Neon branch: $NEON_BRANCH (id: $BRANCH_ID)"
+            curl -s -X DELETE \
+              "https://console.neon.tech/api/v2/projects/${PROJECT_ID}/branches/${BRANCH_ID}" \
+              -H "Authorization: Bearer ${API_KEY}"
+            echo "Done."
+          else
+            echo "Neon branch '$NEON_BRANCH' not found — nothing to delete."
+          fi
