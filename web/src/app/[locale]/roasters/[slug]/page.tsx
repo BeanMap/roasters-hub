@@ -32,9 +32,16 @@ export async function generateMetadata({
   }
 
   const t = await getTranslations({ locale, namespace: "profiles" });
+  const title = t("roasterMetaTitle", { name: roaster.name, city: roaster.city });
+  const description = roaster.description || t("roasterMetaDescription", { name: roaster.name, city: roaster.city, country: roaster.country });
   return {
-    title: t("roasterMetaTitle", { name: roaster.name, city: roaster.city }),
-    description: roaster.description || t("roasterMetaDescription", { name: roaster.name, city: roaster.city, country: roaster.country }),
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "profile",
+    },
   };
 }
 

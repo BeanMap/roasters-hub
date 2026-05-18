@@ -23,16 +23,22 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug, locale } = await params;
   const cafe = await db.cafe.findUnique({
     where: { slug },
-    select: { name: true, city: true, country: true },
+    select: { name: true, city: true, country: true, description: true },
   });
   if (!cafe) {
     const t = await getTranslations({ locale, namespace: "profiles" });
     return { title: t("cafeNotFound") };
   }
   const t = await getTranslations({ locale, namespace: "profiles" });
+  const title = t("cafeMetaTitle", { name: cafe.name, city: cafe.city, country: cafe.country });
   return {
-    title: t("cafeMetaTitle", { name: cafe.name, city: cafe.city, country: cafe.country }),
-    description: t("cafeMetaDescription", { name: cafe.name, city: cafe.city, country: cafe.country }),
+    title,
+    description: cafe.description ?? t("cafeMetaDescription", { name: cafe.name, city: cafe.city }),
+    openGraph: {
+      title,
+      description: cafe.description ?? t("cafeMetaDescription", { name: cafe.name, city: cafe.city }),
+      type: "profile",
+    },
   };
 }
 
