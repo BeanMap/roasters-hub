@@ -38,10 +38,26 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "Bean Map",
   },
+  robots: {
+    index: true,
+    follow: true,
+    "max-snippet": -1,
+    "max-image-preview": "large",
+    "max-video-preview": -1,
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
     siteName: "Bean Map",
+    title: "Bean Map — Discover Specialty Coffee Roasters",
+    description:
+      "The global directory connecting cafés and coffee lovers with verified specialty roasters.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Bean Map — Discover Specialty Coffee Roasters",
+    description:
+      "The global directory connecting cafés and coffee lovers with verified specialty roasters.",
   },
 };
 
