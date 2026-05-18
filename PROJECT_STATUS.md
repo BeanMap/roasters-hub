@@ -7,7 +7,7 @@
 ---
 
 ## Last Updated
-2026-05-16 20:55 | @AGENT — Migracja RoasterImage→Image zaaplikowana na obu bazach (beanmap-web + beanmap.pl). beanmap.pl przywrócony do działania.
+2026-05-18 21:30 | @AGENT — Code review fixes merged (6 PRs: ISR slug revalidation, UploadThing server-side limits, pagination filter preservation, N+1 → groupBy, admin auth consolidation, build hygiene). All @AGENT tasks completed.
 
 ---
 
@@ -88,6 +88,13 @@ web/src/lib/supabase.ts       — NOT NEEDED (replaced by Clerk)
 **@MN:** [P2] SVG warianty logo
 
 **Completed recently:**
+- ✅ Code review fixes (2026-05-18, PRs #94-99):
+  - ISR slug revalidation — `revalidateEntity()` helper, 6 sites fixed in `image.actions.ts` + `cafe.actions.ts`
+  - UploadThing server-side limits — `userImage.onUploadComplete` validates before `db.image.create()`
+  - Pagination preserves filters — `buildPageHref()` utility applied to `/roasters` + `/cafes`
+  - N+1 → groupBy on country/city pages — single `review.groupBy()` instead of per-cafe loop
+  - Admin auth consolidation — `requireAdminPage()` in layout gate, -56 duplicated lines across 14 pages
+  - Build hygiene — removed empty root `package-lock.json`, fixed outdated `next.config.ts` comment
 - ✅ Site Audit 2026-05-02 — all 12/14 issues fixed and verified on production (PR #77) (2026-05-03)
 - ✅ Bot sign-up protection disabled in Clerk Dashboard — `/sign-up` works (2026-05-03)
 - ✅ ROADMAP updated with Clerk Production + Infrastructure audit tasks (2026-05-03)
@@ -114,7 +121,6 @@ web/src/lib/supabase.ts       — NOT NEEDED (replaced by Clerk)
 ## Next Unblocked Task
 
 **TERAZ (@AGENT):** (brak — wszystkie zadania zrealizowane. Czekam na nowe taski od @MN.)
-**NASTĘPNIE (@AGENT):** `ReviewSortControls` — integracja dropdowna sortowania w UI profili (komponent istnieje, niepodpięty).
 
 **TERAZ (MN):** [P1] Clerk Production — `sk_live_`/`pk_live_` klucze.
 **TERAZ (MN):** [P1] Environment segregation — osobne tokeny Uploadthing/Resend dla dev.
