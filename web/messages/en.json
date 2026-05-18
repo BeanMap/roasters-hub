@@ -116,15 +116,38 @@
     "previous": "Previous",
     "noResults": "No results found.",
     "home": "Home",
-    "sortBy": "Sort by:"
+    "sortBy": "Sort by:",
+    "sortNewest": "Newest",
+    "sortHighest": "Highest rated",
+    "sortNewestFirst": "Newest first",
+    "addPhotoTitle": "Add a Photo",
+    "addPhotoReviewNote": "Photos are reviewed before appearing on the profile. Please only upload photos you've taken yourself.",
+    "addPhotoSubmitted": "Photo submitted for review! It will appear after moderation.",
+    "dismiss": "Dismiss",
+    "deleteImageConfirm": "Delete this image?",
+    "imageDeleted": "Image deleted.",
+    "primaryImageUpdated": "Primary image updated.",
+    "gallery": "Gallery",
+    "galleryImages": "images",
+    "galleryYouCanAdd": "— you can add",
+    "galleryMore": "more",
+    "awaitingApproval": "Awaiting approval",
+    "cover": "Cover",
+    "setAsCover": "Set as cover",
+    "addFirstPhoto": "Add your first photo",
+    "addAnotherPhoto": "Add another photo",
+    "photoUploadedSubmitted": "Photo uploaded and submitted for review.",
+    "maxImagesReached": "You've reached the maximum number of images."
   },
   "legal": {
     "privacyTitle": "Privacy Policy",
+    "privacyDesc": "Privacy Policy for Bean Map — how we protect your data.",
     "termsTitle": "Terms of Service",
+    "termsDesc": "Terms of Service for using Bean Map.",
     "cookiesTitle": "Cookie Policy",
-    "betaDisclaimer": "This page is being prepared. Bean Map is currently in open beta — no commercial services are offered.",
-    "contactLabel": "Contact",
-    "lastUpdated": "Last updated"
+    "cookiesDesc": "Cookie Policy for Bean Map — minimal and transparent.",
+    "impressumTitle": "Impressum",
+    "impressumDesc": "Impressum — information about the operator of Bean Map service."
   },
   "roasters": {
     "pageTitle": "Coffee Roasters",
@@ -384,8 +407,16 @@
     "suggestRoasteryIntro": "Know a great specialty roastery? Fill in what you know — the rest is optional."
   },
   "register": {
-    "stepsRoaster": ["Basic Info", "Contact & Links", "Specialty Details"],
-    "stepsCafe": ["Basic Info", "Contact & Location", "Review & Submit"],
+    "stepsRoaster": [
+      "Basic Info",
+      "Contact & Links",
+      "Specialty Details"
+    ],
+    "stepsCafe": [
+      "Basic Info",
+      "Contact & Location",
+      "Review & Submit"
+    ],
     "successTitleRoaster": "Your profile is submitted!",
     "successDescRoaster": "We'll review your roastery profile within 48 hours. You'll receive an email once it's verified and live.",
     "successBrowseRoasters": "Browse other roasters while you wait →",
@@ -474,16 +505,6 @@
     "consent": "I consent to receiving the Bean Map newsletter at the provided email address. I can withdraw my consent at any time. Details in the <privacyLink>Privacy Policy</privacyLink>. *",
     "segmentConsumer": "I'm a Coffee Lover",
     "segmentCafe": "I own a Café"
-  },
-  "legal": {
-    "privacyTitle": "Privacy Policy",
-    "privacyDesc": "Privacy Policy for Bean Map — how we protect your data.",
-    "termsTitle": "Terms of Service",
-    "termsDesc": "Terms of Service for using Bean Map.",
-    "cookiesTitle": "Cookie Policy",
-    "cookiesDesc": "Cookie Policy for Bean Map — minimal and transparent.",
-    "impressumTitle": "Impressum",
-    "impressumDesc": "Impressum — information about the operator of Bean Map service."
   },
   "cookies": {
     "message": "We use essential cookies for login and functionality. We don't track you.",

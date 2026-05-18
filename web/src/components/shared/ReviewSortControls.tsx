@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export type ReviewSort = "newest" | "highest";
 
@@ -13,6 +14,7 @@ export function ReviewSortControls({
   value,
   onChange,
 }: ReviewSortControlsProps) {
+  const t = useTranslations("common");
   const [open, setOpen] = useState(false);
 
   return (
@@ -21,7 +23,7 @@ export function ReviewSortControls({
         onClick={() => setOpen(!open)}
         className="flex items-center gap-1.5 text-sm text-on-surface-variant/70 hover:text-on-surface transition-colors"
       >
-        <span>Sort: {value === "newest" ? "Newest" : "Highest rated"}</span>
+        <span>{t("sortBy")} {value === "newest" ? t("sortNewest") : t("sortHighest")}</span>
         <svg
           className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`}
           fill="none"
@@ -47,7 +49,7 @@ export function ReviewSortControls({
               value === "newest" ? "text-amber-600 font-medium" : "text-gray-700"
             }`}
           >
-            Newest first
+            {t("sortNewestFirst")}
           </button>
           <button
             onClick={() => {
@@ -58,7 +60,7 @@ export function ReviewSortControls({
               value === "highest" ? "text-amber-600 font-medium" : "text-gray-700"
             }`}
           >
-            Highest rated
+            {t("sortHighest")}
           </button>
         </div>
       )}

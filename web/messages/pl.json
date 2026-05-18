@@ -116,15 +116,38 @@
     "previous": "Poprzedni",
     "noResults": "Brak wyników.",
     "home": "Strona główna",
-    "sortBy": "Sortuj:"
+    "sortBy": "Sortuj:",
+    "sortNewest": "Najnowsze",
+    "sortHighest": "Najwyżej oceniane",
+    "sortNewestFirst": "Najpierw najnowsze",
+    "addPhotoTitle": "Dodaj zdjęcie",
+    "addPhotoReviewNote": "Zdjęcia są sprawdzane przed publikacją na profilu. Prosimy przesyłać tylko własne zdjęcia.",
+    "addPhotoSubmitted": "Zdjęcie wysłane do sprawdzenia! Pojawi się po moderacji.",
+    "dismiss": "Zamknij",
+    "deleteImageConfirm": "Usunąć to zdjęcie?",
+    "imageDeleted": "Zdjęcie usunięte.",
+    "primaryImageUpdated": "Zdjęcie główne zaktualizowane.",
+    "gallery": "Galeria",
+    "galleryImages": "zdjęć",
+    "galleryYouCanAdd": "— możesz dodać",
+    "galleryMore": "więcej",
+    "awaitingApproval": "Oczekuje na zatwierdzenie",
+    "cover": "Okładka",
+    "setAsCover": "Ustaw jako okładkę",
+    "addFirstPhoto": "Dodaj pierwsze zdjęcie",
+    "addAnotherPhoto": "Dodaj kolejne zdjęcie",
+    "photoUploadedSubmitted": "Zdjęcie przesłane i wysłane do sprawdzenia.",
+    "maxImagesReached": "Osiągnąłeś maksymalną liczbę zdjęć."
   },
   "legal": {
-    "privacyTitle": "Polityka prywatności",
-    "termsTitle": "Warunki korzystania",
-    "cookiesTitle": "Polityka cookies",
-    "betaDisclaimer": "Ta strona jest w przygotowaniu. Bean Map jest w otwartej becie — nie świadczymy usług komercyjnych.",
-    "contactLabel": "Kontakt",
-    "lastUpdated": "Ostatnia aktualizacja"
+    "privacyTitle": "Polityka Prywatności",
+    "privacyDesc": "Polityka Prywatności Bean Map — jak chronimy Twoje dane.",
+    "termsTitle": "Regulamin",
+    "termsDesc": "Regulamin korzystania z serwisu Bean Map.",
+    "cookiesTitle": "Polityka Cookies",
+    "cookiesDesc": "Polityka Cookies Bean Map — minimalizm i przejrzystość.",
+    "impressumTitle": "Impressum",
+    "impressumDesc": "Impressum — informacje o operatorze serwisu Bean Map."
   },
   "roasters": {
     "pageTitle": "Palarnie kawy",
@@ -384,8 +407,16 @@
     "suggestRoasteryIntro": "Znasz świetną palarnię specialty? Wypełnij to, co wiesz — reszta jest opcjonalna."
   },
   "register": {
-    "stepsRoaster": ["Podstawy", "Kontakt", "Specjalizacja"],
-    "stepsCafe": ["Podstawy", "Lokalizacja", "Podsumowanie"],
+    "stepsRoaster": [
+      "Podstawy",
+      "Kontakt",
+      "Specjalizacja"
+    ],
+    "stepsCafe": [
+      "Podstawy",
+      "Lokalizacja",
+      "Podsumowanie"
+    ],
     "successTitleRoaster": "Profil został zgłoszony!",
     "successDescRoaster": "Przeanalizujemy profil Twojej palarni w ciągu 48 godzin. Otrzymasz email, gdy zostanie zweryfikowany i opublikowany.",
     "successBrowseRoasters": "Przeglądaj inne palarnie, czekając →",
@@ -474,16 +505,6 @@
     "consent": "Wyrażam zgodę na otrzymywanie newslettera Bean Map na podany adres e-mail. Mogę wycofać zgodę w dowolnym momencie. Szczegóły w <privacyLink>Polityce Prywatności</privacyLink>. *",
     "segmentConsumer": "Jestem miłośnikiem kawy",
     "segmentCafe": "Jestem właścicielem kawiarni"
-  },
-  "legal": {
-    "privacyTitle": "Polityka Prywatności",
-    "privacyDesc": "Polityka Prywatności Bean Map — jak chronimy Twoje dane.",
-    "termsTitle": "Regulamin",
-    "termsDesc": "Regulamin korzystania z serwisu Bean Map.",
-    "cookiesTitle": "Polityka Cookies",
-    "cookiesDesc": "Polityka Cookies Bean Map — minimalizm i przejrzystość.",
-    "impressumTitle": "Impressum",
-    "impressumDesc": "Impressum — informacje o operatorze serwisu Bean Map."
   },
   "cookies": {
     "message": "Używamy niezbędnych cookies do logowania i funkcjonalności. Nie śledzimy Cię.",

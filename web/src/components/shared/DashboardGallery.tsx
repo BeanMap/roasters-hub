@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { UploadButton } from "@/lib/uploadthing";
 import { deleteImage, setPrimaryImage } from "@/actions/image.actions";
+import { useTranslations } from "next-intl";
 
 export interface GalleryImage {
   id: string;
@@ -27,6 +28,7 @@ export function DashboardGallery({
   maxImages,
 }: DashboardGalleryProps) {
   const router = useRouter();
+  const t = useTranslations("common");
   const [loading, setLoading] = useState<string | null>(null);
   const [message, setMessage] = useState<{
     type: "success" | "error";
@@ -37,11 +39,11 @@ export function DashboardGallery({
   const remaining = Math.max(0, maxImages - activeImages.length);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this image?")) return;
+    if (!confirm(t("deleteImageConfirm"))) return;
     setLoading(id);
     const result = await deleteImage(id);
     if (result.success) {
-      setMessage({ type: "success", text: "Image deleted." });
+      setMessage({ type: "success", text: t("imageDeleted") });
       router.refresh();
     } else {
       setMessage({ type: "error", text: result.error });
@@ -53,7 +55,7 @@ export function DashboardGallery({
     setLoading(id);
     const result = await setPrimaryImage(id);
     if (result.success) {
-      setMessage({ type: "success", text: "Primary image updated." });
+      setMessage({ type: "success", text: t("primaryImageUpdated") });
       router.refresh();
     } else {
       setMessage({ type: "error", text: result.error });
@@ -63,10 +65,10 @@ export function DashboardGallery({
 
   return (
     <section className="bg-surface-container-lowest editorial-shadow rounded-2xl p-8 border border-outline-variant/10 mb-8">
-      <h2 className="font-headline text-2xl tracking-tight mb-2">Gallery</h2>
+      <h2 className="font-headline text-2xl tracking-tight mb-2">{t("gallery")}</h2>
       <p className="text-sm text-on-surface-variant/60 mb-6">
-        {activeImages.length} / {maxImages} images
-        {remaining > 0 && `— you can add ${remaining} more`}
+        {activeImages.length} / {maxImages} {t("galleryImages")}
+        {remaining > 0 && `${t("galleryYouCanAdd")} ${remaining} ${t("galleryMore")}`}
       </p>
 
       {message && (
@@ -101,12 +103,12 @@ export function DashboardGallery({
               <div className="absolute top-1.5 left-1.5 right-1.5 flex items-center justify-between gap-2">
                 {img.status === "PENDING" && (
                   <span className="bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded font-medium">
-                    Awaiting approval
+                    {t("awaitingApproval")}
                   </span>
                 )}
                 {img.isPrimary && (
                   <span className="bg-green-600 text-white text-[10px] px-1.5 py-0.5 rounded font-medium">
-                    Cover
+                    {t("cover")}
                   </span>
                 )}
                 <div className="flex gap-1 ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
@@ -115,7 +117,7 @@ export function DashboardGallery({
                       onClick={() => handleSetPrimary(img.id)}
                       disabled={loading === img.id}
                       className="bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded hover:bg-black/80 disabled:opacity-50"
-                      title="Set as cover"
+                      title={t("setAsCover")}
                     >
                       {loading === img.id ? "..." : "\u2605"}
                     </button>
@@ -124,7 +126,7 @@ export function DashboardGallery({
                     onClick={() => handleDelete(img.id)}
                     disabled={loading === img.id}
                     className="bg-red-600/80 text-white text-[10px] px-1.5 py-0.5 rounded hover:bg-red-700 disabled:opacity-50"
-                    title="Delete"
+                    title={t("delete")}
                   >
                     {loading === img.id ? "..." : "\u2715"}
                   </button>
@@ -139,14 +141,14 @@ export function DashboardGallery({
         <div className="flex flex-col items-center gap-3 border-2 border-dashed border-outline-variant/30 rounded-xl p-6 bg-surface-container-low">
           <p className="text-on-surface-variant/70 text-sm">
             {activeImages.length === 0
-              ? "Add your first photo"
-              : "Add another photo"}
+              ? t("addFirstPhoto")
+              : t("addAnotherPhoto")}
           </p>
           <UploadButton
             endpoint="userImage"
             input={{ entityType, entityId }}
             onClientUploadComplete={() => {
-              setMessage({ type: "success", text: "Photo uploaded and submitted for review." });
+              setMessage({ type: "success", text: t("photoUploadedSubmitted") });
               router.refresh();
             }}
             onUploadError={(error: Error) => {
@@ -163,7 +165,7 @@ export function DashboardGallery({
 
       {remaining === 0 && (
         <div className="text-center py-4 text-on-surface-variant/50 text-sm">
-          You&apos;ve reached the maximum number of images.
+          {t("maxImagesReached")}
         </div>
       )}
     </section>

@@ -33,35 +33,34 @@ export default async function MyPhotosPage() {
       },
     });
 
-    photos = await Promise.all(
-      images.map(async (img) => {
-        let entityName: string | null = null;
-        if (img.roasterId) {
-          const r = await db.roaster.findUnique({
-            where: { id: img.roasterId },
-            select: { name: true },
-          });
-          entityName = r?.name ?? null;
-        } else if (img.cafeId) {
-          const c = await db.cafe.findUnique({
-            where: { id: img.cafeId },
-            select: { name: true },
-          });
-          entityName = c?.name ?? null;
-        }
-        return {
-          id: img.id,
-          url: img.url,
-          entityType: img.entityType as "CAFE" | "ROASTER",
-          entityName,
-          status: img.status as "PENDING" | "APPROVED" | "REJECTED",
-          createdAt: img.createdAt.toISOString(),
-        };
-      }),
-    );
-  } catch {
-    // Image table may not exist yet
-  }
+    const roasterIds = images.filter((i) => i.roasterId).map((i) => i.roasterId!);
+    const cafeIds = images.filter((i) => i.cafeId).map((i) => i.cafeId!);
+
+    const [roasters, cafes] = await Promise.all([
+      roasterIds.length > 0
+        ? db.roaster.findMany({ where: { id: { in: roasterIds } }, select: { id: true, name: true } })
+        : [],
+      cafeIds.length > 0
+        ? db.cafe.findMany({ where: { id: { in: cafeIds } }, select: { id: true, name: true } })
+        : [],
+    ]);
+
+    const roasterMap = new Map(roasters.map((r) => [r.id, r.name]));
+    const cafeMap = new Map(cafes.map((c) => [c.id, c.name]));
+
+    photos = images.map((img) => ({
+      id: img.id,
+      url: img.url,
+      entityType: img.entityType as "CAFE" | "ROASTER",
+      entityName: img.roasterId
+        ? (roasterMap.get(img.roasterId) ?? null)
+        : img.cafeId
+          ? (cafeMap.get(img.cafeId) ?? null)
+          : null,
+      status: img.status as "PENDING" | "APPROVED" | "REJECTED",
+      createdAt: img.createdAt.toISOString(),
+    }));
+  } catch {}
 
   return <MyPhotosClient photos={photos} />;
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { UploadButton } from "@/lib/uploadthing";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 interface AddPhotoModalProps {
   entityType: "CAFE" | "ROASTER";
@@ -16,6 +17,7 @@ export function AddPhotoModal({
   onClose,
 }: AddPhotoModalProps) {
   const router = useRouter();
+  const t = useTranslations("common");
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -31,7 +33,7 @@ export function AddPhotoModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Add a Photo</h3>
+          <h3 className="text-lg font-semibold">{t("addPhotoTitle")}</h3>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 text-xl"
@@ -58,14 +60,13 @@ export function AddPhotoModal({
               }}
               className="text-xs underline hover:no-underline"
             >
-              {message.type === "success" ? "Close" : "Dismiss"}
+              {message.type === "success" ? t("close") : t("dismiss")}
             </button>
           </div>
         )}
 
         <p className="text-sm text-gray-500 mb-4">
-          Photos are reviewed before appearing on the profile. Please only
-          upload photos you&apos;ve taken yourself.
+          {t("addPhotoReviewNote")}
         </p>
 
         <div className="flex flex-col items-center gap-3 border-2 border-dashed border-gray-300 rounded-xl p-8">
@@ -75,7 +76,7 @@ export function AddPhotoModal({
             onClientUploadComplete={() => {
               setMessage({
                 type: "success",
-                text: "Photo submitted for review! It will appear after moderation.",
+                text: t("addPhotoSubmitted"),
               });
             }}
             onUploadError={(error: Error) => {

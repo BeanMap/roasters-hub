@@ -116,15 +116,38 @@
     "previous": "Zurück",
     "noResults": "Keine Ergebnisse gefunden.",
     "home": "Startseite",
-    "sortBy": "Sortieren:"
+    "sortBy": "Sortieren:",
+    "sortNewest": "Neueste",
+    "sortHighest": "Höchstbewertet",
+    "sortNewestFirst": "Neueste zuerst",
+    "addPhotoTitle": "Foto hinzufügen",
+    "addPhotoReviewNote": "Fotos werden vor der Veröffentlichung geprüft. Bitte laden Sie nur eigene Fotos hoch.",
+    "addPhotoSubmitted": "Foto zur Überprüfung eingereicht! Es erscheint nach der Moderation.",
+    "dismiss": "Schließen",
+    "deleteImageConfirm": "Dieses Bild löschen?",
+    "imageDeleted": "Bild gelöscht.",
+    "primaryImageUpdated": "Hauptbild aktualisiert.",
+    "gallery": "Galerie",
+    "galleryImages": "Bilder",
+    "galleryYouCanAdd": "— Sie können",
+    "galleryMore": "weitere hinzufügen",
+    "awaitingApproval": "Wartet auf Freigabe",
+    "cover": "Titelbild",
+    "setAsCover": "Als Titelbild festlegen",
+    "addFirstPhoto": "Erstes Foto hinzufügen",
+    "addAnotherPhoto": "Weiteres Foto hinzufügen",
+    "photoUploadedSubmitted": "Foto hochgeladen und zur Überprüfung eingereicht.",
+    "maxImagesReached": "Sie haben die maximale Anzahl an Bildern erreicht."
   },
   "legal": {
     "privacyTitle": "Datenschutzerklärung",
+    "privacyDesc": "Datenschutzerklärung von Bean Map — wie wir deine Daten schützen.",
     "termsTitle": "Nutzungsbedingungen",
+    "termsDesc": "Nutzungsbedingungen für Bean Map.",
     "cookiesTitle": "Cookie-Richtlinie",
-    "betaDisclaimer": "Diese Seite ist in Vorbereitung. Bean Map ist derzeit in der offenen Beta — es werden keine kommerziellen Dienste angeboten.",
-    "contactLabel": "Kontakt",
-    "lastUpdated": "Zuletzt aktualisiert"
+    "cookiesDesc": "Cookie-Richtlinie von Bean Map — minimal und transparent.",
+    "impressumTitle": "Impressum",
+    "impressumDesc": "Impressum — Informationen zum Betreiber des Bean Map Dienstes."
   },
   "roasters": {
     "pageTitle": "Kaffeeröster",
@@ -384,8 +407,16 @@
     "suggestRoasteryIntro": "Kennst du eine tolle Specialty-Rösterei? Fülle aus, was du weißt — der Rest ist optional."
   },
   "register": {
-    "stepsRoaster": ["Grundinformationen", "Kontakt & Links", "Spezialisierung"],
-    "stepsCafe": ["Grundinformationen", "Kontakt & Standort", "Überprüfung & Absenden"],
+    "stepsRoaster": [
+      "Grundinformationen",
+      "Kontakt & Links",
+      "Spezialisierung"
+    ],
+    "stepsCafe": [
+      "Grundinformationen",
+      "Kontakt & Standort",
+      "Überprüfung & Absenden"
+    ],
     "successTitleRoaster": "Dein Profil wurde eingereicht!",
     "successDescRoaster": "Wir prüfen dein Rösterei-Profil innerhalb von 48 Stunden. Du erhältst eine E-Mail, sobald es verifiziert und live ist.",
     "successBrowseRoasters": "Entdecke andere Röstereien, während du wartest →",
@@ -474,16 +505,6 @@
     "consent": "Ich stimme zu, den Bean Map Newsletter an die angegebene E-Mail-Adresse zu erhalten. Ich kann meine Zustimmung jederzeit widerrufen. Details in der <privacyLink>Datenschutzerklärung</privacyLink>. *",
     "segmentConsumer": "Ich bin Kaffeeliebhaber",
     "segmentCafe": "Ich bin Café-Besitzer"
-  },
-  "legal": {
-    "privacyTitle": "Datenschutzerklärung",
-    "privacyDesc": "Datenschutzerklärung von Bean Map — wie wir deine Daten schützen.",
-    "termsTitle": "Nutzungsbedingungen",
-    "termsDesc": "Nutzungsbedingungen für Bean Map.",
-    "cookiesTitle": "Cookie-Richtlinie",
-    "cookiesDesc": "Cookie-Richtlinie von Bean Map — minimal und transparent.",
-    "impressumTitle": "Impressum",
-    "impressumDesc": "Impressum — Informationen zum Betreiber des Bean Map Dienstes."
   },
   "cookies": {
     "message": "Wir verwenden essenzielle Cookies für Login und Funktionalität. Wir verfolgen dich nicht.",
