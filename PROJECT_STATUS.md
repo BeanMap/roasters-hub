@@ -79,7 +79,7 @@ web/src/lib/supabase.ts       — NOT NEEDED (replaced by Clerk)
 **@MN:** [IN PROGRESS] Taksonomia danych + Zasilenie bazy kawiarni w PL
 **@MN:** [P1] Clerk Production environment — utworzenie Production instance w Clerk, podmiana kluczy w Vercel
 **@MN:** [P1] Environment segregation audit — Uploadthing, Resend, Plausible klucze Dev vs Prod
-**@MN:** [P1] Podpięcie domeny — DNS na Vercel, `beanmap.pl` wciąż na parkingu
+**@MN:** [P1] Podpięcie domeny — DNS na Vercel, `beanmap.pl` ✅
 **@MN:** [P1] Strony prawne — uzupełnienie placeholderów (NIP, REGON, adres, IOD)
 **@MN:** [P3] Dark mode — pełna implementacja (tylko `dark:prose-invert` na legal pages)
 **@MN:** [P3] SEO — `sitemap.ts`, `robots.ts`, JSON-LD structured data, canonical URLs, OG images
@@ -124,8 +124,8 @@ web/src/lib/supabase.ts       — NOT NEEDED (replaced by Clerk)
 
 **TERAZ (MN):** [P1] Clerk Production — `sk_live_`/`pk_live_` klucze.
 **TERAZ (MN):** [P1] Environment segregation — osobne tokeny Uploadthing/Resend dla dev.
-**TERAZ (MN):** [P1] Podpięcie domeny — `beanmap.pl` na Vercel.
 **TERAZ (MN):** [P3] SEO — `sitemap.ts`, `robots.ts`, JSON-LD structured data, canonical URLs, OG images.
+**TERAZ (AGENT):** [P3] SEO audit — sprawdzenie co już istnieje, przygotowanie sitemap/robots/JSON-LD/OG.`
 
 **HUMAN ONLY blockers:** re-seed prod DB (`prisma db seed`), run new migrations on prod, buy production domain.
 
