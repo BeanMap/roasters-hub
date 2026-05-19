@@ -13,6 +13,7 @@ import { ReviewSection } from "@/components/shared/ReviewSection";
 import { ImageGallery } from "@/components/shared/ImageGallery";
 import { AddPhotoButton } from "@/components/shared/AddPhotoButton";
 import { SaveRoasterButton } from "@/components/roasters/SaveRoasterButton";
+import { LocalBusinessJsonLd, BreadcrumbJsonLd } from "@/components/shared/JsonLd";
 import { isRoasterSaved } from "@/actions/saved-roaster.actions";
 import { db } from "@/lib/db";
 import type { Metadata } from "next";
@@ -125,9 +126,32 @@ export default async function RoasterProfilePage({
   const flag = countryFlag(roaster.countryCode);
   const primaryImage = roaster.images[0];
   const isVerified = roaster.status === "VERIFIED";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://beanmap.pl";
+  const profileUrl = `${baseUrl}/roasters/${slug}`;
+  const sameAs = [roaster.website, roaster.instagram].filter(Boolean) as string[];
 
   return (
     <>
+      <LocalBusinessJsonLd
+        name={roaster.name}
+        url={profileUrl}
+        description={roaster.description}
+        address={roaster.address}
+        city={roaster.city}
+        country={roaster.country}
+        image={primaryImage?.url}
+        telephone={roaster.phone}
+        email={roaster.email}
+        sameAs={sameAs}
+        type="Store"
+      />
+      <BreadcrumbJsonLd
+        items={[
+          { name: t("home"), url: baseUrl },
+          { name: t("roasters"), url: `${baseUrl}/roasters` },
+          { name: roaster.name, url: profileUrl },
+        ]}
+      />
       <Header />
       <ProfileTracker roasterId={roaster.id} />
 

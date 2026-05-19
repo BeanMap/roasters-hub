@@ -13,6 +13,7 @@ import { VerifiedBadge } from "@/components/roasters/VerifiedBadge";
 import { CafeProfileTracker } from "@/components/cafes/CafeProfileTracker";
 import { CafeTrackedLink } from "@/components/cafes/CafeTrackedLink";
 import { SaveCafeButton } from "@/components/cafes/SaveCafeButton";
+import { LocalBusinessJsonLd, BreadcrumbJsonLd } from "@/components/shared/JsonLd";
 import { isCafeSaved } from "@/actions/saved-cafe.actions";
 import { db } from "@/lib/db";
 
@@ -147,9 +148,31 @@ export default async function CafeProfilePage({
 
   const saved = await isCafeSaved(cafe.id);
   const isVerified = cafe.status === "VERIFIED";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://beanmap.pl";
+  const profileUrl = `${baseUrl}/cafes/${slug}`;
+  const sameAs = [cafe.website, cafe.instagram].filter(Boolean) as string[];
 
   return (
     <>
+      <LocalBusinessJsonLd
+        name={cafe.name}
+        url={profileUrl}
+        description={cafe.description}
+        address={cafe.address}
+        city={cafe.city}
+        country={cafe.country}
+        image={cafe.coverImageUrl}
+        telephone={cafe.phone}
+        sameAs={sameAs}
+        type="CafeOrCoffeeShop"
+      />
+      <BreadcrumbJsonLd
+        items={[
+          { name: t("home"), url: baseUrl },
+          { name: t("cafes"), url: `${baseUrl}/cafes` },
+          { name: cafe.name, url: profileUrl },
+        ]}
+      />
       <Header />
       <CafeProfileTracker cafeId={cafe.id} />
 

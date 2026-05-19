@@ -6,6 +6,7 @@ import { Footer } from "@/components/shared/Footer";
 import { NewsletterForm } from "@/components/shared/NewsletterForm";
 import { RoasterCard } from "@/components/roasters/RoasterCard";
 import { HeroVideo } from "@/components/shared/HeroVideo";
+import { OrganizationJsonLd } from "@/components/shared/JsonLd";
 import { db } from "@/lib/db";
 import type { Metadata } from "next";
 
@@ -60,6 +61,11 @@ export default async function HomePage({
 
   return (
     <>
+      <OrganizationJsonLd
+        name="Bean Map"
+        url={process.env.NEXT_PUBLIC_APP_URL || "https://beanmap.pl"}
+        description={t("heroDesc")}
+      />
       <Header />
       <main>
         {/* Hero Section — full-screen video background */}
