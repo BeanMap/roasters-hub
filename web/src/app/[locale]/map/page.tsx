@@ -1,14 +1,20 @@
 import type { Metadata } from "next";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { db } from "@/lib/db";
+import { buildAlternates, buildOpenGraph, seoKeywords } from "@/lib/seo";
 import { MapContent } from "./MapContent";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "map" });
+  const title = t("title");
+  const description = t("description");
   return {
-    title: t("title"),
-    description: t("description"),
+    title,
+    description,
+    keywords: seoKeywords("map"),
+    alternates: buildAlternates(locale, "/map"),
+    openGraph: buildOpenGraph(title, description),
   };
 }
 

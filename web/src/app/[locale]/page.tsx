@@ -7,6 +7,7 @@ import { NewsletterForm } from "@/components/shared/NewsletterForm";
 import { RoasterCard } from "@/components/roasters/RoasterCard";
 import { HeroVideo } from "@/components/shared/HeroVideo";
 import { OrganizationJsonLd } from "@/components/shared/JsonLd";
+import { buildAlternates, buildOpenGraph, seoKeywords } from "@/lib/seo";
 import { db } from "@/lib/db";
 import type { Metadata } from "next";
 
@@ -21,9 +22,14 @@ export async function generateMetadata({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "home" });
+  const title = t("heroTitle");
+  const description = t("heroDesc");
   return {
-    title: t("heroTitle"),
-    description: t("heroDesc"),
+    title,
+    description,
+    keywords: seoKeywords("home"),
+    alternates: buildAlternates(locale),
+    openGraph: buildOpenGraph(title, description),
   };
 }
 

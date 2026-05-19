@@ -6,7 +6,9 @@ import { Footer } from "@/components/shared/Footer";
 import { RoasterCard } from "@/components/roasters/RoasterCard";
 import { RoasterFilters } from "@/components/roasters/RoasterFilters";
 import { SortSelect } from "@/components/shared/SortSelect";
+import { ItemListJsonLd } from "@/components/shared/JsonLd";
 import { db } from "@/lib/db";
+import { buildAlternates, buildOpenGraph, buildCanonical, seoKeywords } from "@/lib/seo";
 import { buildPageHref } from "@/lib/search-params";
 import type { Metadata } from "next";
 import type { Prisma } from "@prisma/client";
@@ -21,9 +23,14 @@ export async function generateMetadata({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "roasters" });
+  const title = t("h1");
+  const description = t("pageDescription");
   return {
-    title: t("h1"),
-    description: t("pageDescription"),
+    title,
+    description,
+    keywords: seoKeywords("roasters"),
+    alternates: buildAlternates(locale, "/roasters"),
+    openGraph: buildOpenGraph(title, description),
   };
 }
 
@@ -90,6 +97,13 @@ export default async function CatalogPage({
 
   return (
     <>
+      <ItemListJsonLd
+        listName={t("h1")}
+        items={roasters.map((r) => ({
+          name: r.name,
+          url: buildCanonical(locale, `/roasters/${r.slug}`),
+        }))}
+      />
       <Header />
       <main className="max-w-7xl mx-auto px-6 py-12">
         {/* Breadcrumbs */}

@@ -4,7 +4,9 @@ import { getTranslations } from "next-intl/server";
 import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
 import { RoasterCard } from "@/components/roasters/RoasterCard";
+import { ItemListJsonLd } from "@/components/shared/JsonLd";
 import { db } from "@/lib/db";
+import { buildAlternates, buildOpenGraph, buildCanonical, seoKeywords } from "@/lib/seo";
 import type { Metadata } from "next";
 
 export const revalidate = 3600;
@@ -34,10 +36,22 @@ export async function generateMetadata({
     where: { countryCode: country, status: "VERIFIED" },
     select: { country: true },
   });
-  if (!row) return { title: t("specialtyCoffeeRoasters") };
+  if (!row) {
+    const title = t("specialtyCoffeeRoasters");
+    return {
+      title,
+      keywords: seoKeywords("roasters"),
+      alternates: buildAlternates(locale, `/roasters/country/${country}`),
+    };
+  }
+  const title = t("countryRoastersTitle", { country: row.country });
+  const description = t("countryRoastersDescription", { country: row.country });
   return {
-    title: t("countryRoastersTitle", { country: row.country }),
-    description: t("countryRoastersDescription", { country: row.country }),
+    title,
+    description,
+    keywords: seoKeywords("roasters"),
+    alternates: buildAlternates(locale, `/roasters/country/${country}`),
+    openGraph: buildOpenGraph(title, description),
   };
 }
 
@@ -61,6 +75,13 @@ export default async function CountryPage({
 
   return (
     <>
+      <ItemListJsonLd
+        listName={t("countryRoastersTitle", { country: countryName })}
+        items={roasters.map((r) => ({
+          name: r.name,
+          url: buildCanonical(locale, `/roasters/${r.slug}`),
+        }))}
+      />
       <Header />
       <main className="max-w-7xl mx-auto px-6 py-12">
         <nav className="mb-4 text-on-surface-variant flex items-center gap-2 text-xs uppercase tracking-widest">
