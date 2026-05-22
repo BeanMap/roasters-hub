@@ -13,7 +13,8 @@ import { ReviewSection } from "@/components/shared/ReviewSection";
 import { ImageGallery } from "@/components/shared/ImageGallery";
 import { AddPhotoButton } from "@/components/shared/AddPhotoButton";
 import { SaveRoasterButton } from "@/components/roasters/SaveRoasterButton";
-import { LocalBusinessJsonLd, BreadcrumbJsonLd } from "@/components/shared/JsonLd";
+import { LocalBusinessJsonLd, BreadcrumbJsonLd, ReviewJsonLd } from "@/components/shared/JsonLd";
+import { buildAlternates, buildOgImage, buildOpenGraph, seoKeywords } from "@/lib/seo";
 import { isRoasterSaved } from "@/actions/saved-roaster.actions";
 import { db } from "@/lib/db";
 import type { Metadata } from "next";
@@ -35,13 +36,30 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: "profiles" });
   const title = t("roasterMetaTitle", { name: roaster.name, city: roaster.city });
   const description = roaster.description || t("roasterMetaDescription", { name: roaster.name, city: roaster.city, country: roaster.country });
+
+  const primaryImageUrl = (
+    await db.roaster.findUnique({
+      where: { slug },
+      include: { images: { orderBy: { sortOrder: "asc" }, take: 1 } },
+    })
+  )?.images[0]?.url;
+
+  const ogImages = primaryImageUrl
+    ? [buildOgImage(primaryImageUrl, `${roaster.name} roastery`)]
+    : undefined;
+
   return {
     title,
     description,
-    openGraph: {
+    keywords: seoKeywords("roasters"),
+    alternates: buildAlternates(locale, `/roasters/${slug}`),
+    openGraph: buildOpenGraph(title, description, ogImages, "profile"),
+    twitter: {
+      card: "summary_large_image" as const,
+      site: "@beanmap",
       title,
       description,
-      type: "profile",
+      ...(ogImages ? { images: ogImages } : {}),
     },
   };
 }
@@ -152,6 +170,17 @@ export default async function RoasterProfilePage({
           { name: roaster.name, url: profileUrl },
         ]}
       />
+      {approvedReviews.slice(0, 5).map((review) => (
+        <ReviewJsonLd
+          key={review.id}
+          itemReviewed={roaster.name}
+          url={profileUrl}
+          author={review.authorName}
+          rating={review.rating}
+          reviewBody={review.comment}
+          datePublished={review.createdAt.toISOString()}
+        />
+      ))}
       <Header />
       <ProfileTracker roasterId={roaster.id} />
 

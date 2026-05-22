@@ -6,7 +6,9 @@ import { Footer } from "@/components/shared/Footer";
 import { CafeCard } from "@/components/cafes/CafeCard";
 import { CafeFilters } from "@/components/cafes/CafeFilters";
 import { SortSelect } from "@/components/shared/SortSelect";
+import { ItemListJsonLd } from "@/components/shared/JsonLd";
 import { db } from "@/lib/db";
+import { buildAlternates, buildOpenGraph, buildCanonical, seoKeywords } from "@/lib/seo";
 import { buildPageHref } from "@/lib/search-params";
 import type { Metadata } from "next";
 import type { Prisma } from "@prisma/client";
@@ -21,9 +23,14 @@ export async function generateMetadata({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "cafes" });
+  const title = t("h1");
+  const description = t("pageDescription");
   return {
-    title: t("h1"),
-    description: t("pageDescription"),
+    title,
+    description,
+    keywords: seoKeywords("cafes"),
+    alternates: buildAlternates(locale, "/cafes"),
+    openGraph: buildOpenGraph(title, description),
   };
 }
 
@@ -123,6 +130,13 @@ export default async function CafesPage({
 
   return (
     <>
+      <ItemListJsonLd
+        listName={t("h1")}
+        items={cafes.map((c) => ({
+          name: c.name,
+          url: buildCanonical(locale, `/cafes/${c.slug}`),
+        }))}
+      />
       <Header />
       <main className="max-w-7xl mx-auto px-6 py-12">
         <nav className="mb-4 text-on-surface-variant flex items-center gap-2 text-xs uppercase tracking-widest">

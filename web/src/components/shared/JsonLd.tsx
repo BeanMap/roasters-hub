@@ -112,4 +112,90 @@ export function BreadcrumbJsonLd({ items }: BreadcrumbJsonLdProps) {
   return <JsonLd data={data} />;
 }
 
+interface ItemListJsonLdProps {
+  items: { name: string; url: string }[];
+  listName?: string;
+}
+
+export function ItemListJsonLd({ items, listName }: ItemListJsonLdProps) {
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    ...(listName ? { name: listName } : {}),
+    itemListElement: items.map((item, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: item.name,
+      url: item.url,
+    })),
+  };
+  return <JsonLd data={data} />;
+}
+
+interface WebSiteJsonLdProps {
+  name: string;
+  url: string;
+  description?: string;
+}
+
+export function WebSiteJsonLd({ name, url, description }: WebSiteJsonLdProps) {
+  const data: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name,
+    url,
+    ...(description ? { description } : {}),
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${url}/roasters?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+  return <JsonLd data={data} />;
+}
+
+interface ReviewJsonLdProps {
+  itemReviewed: string;
+  url: string;
+  author: string;
+  rating: number;
+  reviewBody?: string | null;
+  datePublished: string;
+}
+
+export function ReviewJsonLd({
+  itemReviewed,
+  url,
+  author,
+  rating,
+  reviewBody,
+  datePublished,
+}: ReviewJsonLdProps) {
+  const data: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Review",
+    itemReviewed: {
+      "@type": "LocalBusiness",
+      name: itemReviewed,
+      url,
+    },
+    author: {
+      "@type": "Person",
+      name: author,
+    },
+    reviewRating: {
+      "@type": "Rating",
+      ratingValue: rating,
+      bestRating: 5,
+      worstRating: 1,
+    },
+    datePublished,
+    ...(reviewBody ? { reviewBody } : {}),
+  };
+  return <JsonLd data={data} />;
+}
+
 export type { BreadcrumbItem };

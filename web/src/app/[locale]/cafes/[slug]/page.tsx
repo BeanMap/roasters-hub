@@ -13,7 +13,8 @@ import { VerifiedBadge } from "@/components/roasters/VerifiedBadge";
 import { CafeProfileTracker } from "@/components/cafes/CafeProfileTracker";
 import { CafeTrackedLink } from "@/components/cafes/CafeTrackedLink";
 import { SaveCafeButton } from "@/components/cafes/SaveCafeButton";
-import { LocalBusinessJsonLd, BreadcrumbJsonLd } from "@/components/shared/JsonLd";
+import { LocalBusinessJsonLd, BreadcrumbJsonLd, ReviewJsonLd } from "@/components/shared/JsonLd";
+import { buildAlternates, buildOgImage, buildOpenGraph, seoKeywords } from "@/lib/seo";
 import { isCafeSaved } from "@/actions/saved-cafe.actions";
 import { db } from "@/lib/db";
 
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug, locale } = await params;
   const cafe = await db.cafe.findUnique({
     where: { slug },
-    select: { name: true, city: true, country: true, description: true },
+    select: { name: true, city: true, country: true, description: true, coverImageUrl: true },
   });
   if (!cafe) {
     const t = await getTranslations({ locale, namespace: "profiles" });
@@ -32,13 +33,24 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
   const t = await getTranslations({ locale, namespace: "profiles" });
   const title = t("cafeMetaTitle", { name: cafe.name, city: cafe.city, country: cafe.country });
+  const description = cafe.description ?? t("cafeMetaDescription", { name: cafe.name, city: cafe.city });
+
+  const ogImages = cafe.coverImageUrl
+    ? [buildOgImage(cafe.coverImageUrl!, `${cafe.name} cafe`)]
+    : undefined;
+
   return {
     title,
-    description: cafe.description ?? t("cafeMetaDescription", { name: cafe.name, city: cafe.city }),
-    openGraph: {
+    description,
+    keywords: seoKeywords("cafes"),
+    alternates: buildAlternates(locale, `/cafes/${slug}`),
+    openGraph: buildOpenGraph(title, description, ogImages, "profile"),
+    twitter: {
+      card: "summary_large_image" as const,
+      site: "@beanmap",
       title,
-      description: cafe.description ?? t("cafeMetaDescription", { name: cafe.name, city: cafe.city }),
-      type: "profile",
+      description,
+      ...(ogImages ? { images: ogImages } : {}),
     },
   };
 }
@@ -173,6 +185,17 @@ export default async function CafeProfilePage({
           { name: cafe.name, url: profileUrl },
         ]}
       />
+      {approvedReviews.slice(0, 5).map((review) => (
+        <ReviewJsonLd
+          key={review.id}
+          itemReviewed={cafe.name}
+          url={profileUrl}
+          author={review.authorName}
+          rating={review.rating}
+          reviewBody={review.comment}
+          datePublished={review.createdAt.toISOString()}
+        />
+      ))}
       <Header />
       <CafeProfileTracker cafeId={cafe.id} />
 

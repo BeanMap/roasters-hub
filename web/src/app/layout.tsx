@@ -4,6 +4,8 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Fraunces, Source_Sans_3 } from "next/font/google";
 import { getLocale, getTranslations } from "next-intl/server";
 import { BetaBanner } from "@/components/shared/BetaBanner";
+import { WebSiteJsonLd } from "@/components/shared/JsonLd";
+import { getBaseUrl, defaultOgImage } from "@/lib/seo";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -45,6 +47,15 @@ export const metadata: Metadata = {
     "max-image-preview": "large",
     "max-video-preview": -1,
   },
+  keywords: [
+    "specialty coffee",
+    "coffee roasters",
+    "specialty cafes",
+    "coffee map",
+    "coffee directory",
+    "bean map",
+    "coffee discovery",
+  ],
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -52,12 +63,15 @@ export const metadata: Metadata = {
     title: "Bean Map — Discover Specialty Coffee Roasters",
     description:
       "The global directory connecting cafés and coffee lovers with verified specialty roasters.",
+    images: [defaultOgImage()],
   },
   twitter: {
     card: "summary_large_image",
+    site: "@beanmap",
     title: "Bean Map — Discover Specialty Coffee Roasters",
     description:
       "The global directory connecting cafés and coffee lovers with verified specialty roasters.",
+    images: [defaultOgImage()],
   },
 };
 
@@ -90,6 +104,11 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col antialiased" suppressHydrationWarning>
         <BetaBanner message={betaMessage} dismissLabel={betaDismiss} />
+        <WebSiteJsonLd
+          name="Bean Map"
+          url={getBaseUrl()}
+          description="The global directory connecting cafés and coffee lovers with verified specialty roasters."
+        />
         <ClerkProvider>{children}</ClerkProvider>
         {process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN && (
           <Script

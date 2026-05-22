@@ -1,6 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { buildAlternates, buildOpenGraph, seoKeywords } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -9,9 +10,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "legal" });
+  const title = t("cookiesTitle");
+  const description = t("cookiesDesc");
   return {
-    title: t("cookiesTitle"),
-    description: t("cookiesDesc"),
+    title,
+    description,
+    keywords: seoKeywords("legal"),
+    alternates: buildAlternates(locale, "/cookies"),
+    openGraph: buildOpenGraph(title, description),
   };
 }
 
