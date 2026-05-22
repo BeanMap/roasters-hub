@@ -7,7 +7,7 @@
 ---
 
 ## Last Updated
-2026-05-18 21:30 | @AGENT — Code review fixes merged (6 PRs: ISR slug revalidation, UploadThing server-side limits, pagination filter preservation, N+1 → groupBy, admin auth consolidation, build hygiene). All @AGENT tasks completed.
+2026-05-19 19:50 | @AGENT — SEO audit + implementation merged (PR #105): OG images, canonical URLs, hreflang, JSON-LD, Twitter cards, keywords on all pages.
 
 ---
 
@@ -121,11 +121,9 @@ web/src/lib/supabase.ts       — NOT NEEDED (replaced by Clerk)
 ## Next Unblocked Task
 
 **TERAZ (@AGENT):** (brak — wszystkie zadania zrealizowane. Czekam na nowe taski od @MN.)
-
 **TERAZ (MN):** [P1] Clerk Production — `sk_live_`/`pk_live_` klucze.
 **TERAZ (MN):** [P1] Environment segregation — osobne tokeny Uploadthing/Resend dla dev.
-**TERAZ (MN):** [P3] SEO — `sitemap.ts`, `robots.ts`, JSON-LD structured data, canonical URLs, OG images.
-**TERAZ (AGENT):** [P3] SEO audit — sprawdzenie co już istnieje, przygotowanie sitemap/robots/JSON-LD/OG.`
+**TERAZ (MN):** [P3] SEO — `sitemap.ts`, `robots.ts` ✅ (PR #105). Dark mode — pozostałe.`
 
 **HUMAN ONLY blockers:** re-seed prod DB (`prisma db seed`), run new migrations on prod, buy production domain.
 
