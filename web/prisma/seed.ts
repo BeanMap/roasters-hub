@@ -6,7 +6,7 @@ const adapter = new PrismaNeon({
 });
 const prisma = new PrismaClient({ adapter });
 
-const SEED_ROASTERS = [
+export const SEED_ROASTERS = [
   {
     name: "Onyx Coffee Lab",
     slug: "onyx-coffee-lab",
@@ -1188,7 +1188,7 @@ async function main() {
 
     const created = await prisma.roaster.upsert({
       where: { slug: data.slug },
-      update: data,
+      update: { ...data, coverImageUrl: imageUrl },
       create: {
         ...data,
         verifiedAt: new Date(),
@@ -1202,9 +1202,11 @@ async function main() {
   console.log(`\nSeeded ${SEED_ROASTERS.length} roasters.`);
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(() => prisma.$disconnect());
+if (process.argv[1]?.endsWith("seed.ts") || process.argv[1]?.endsWith("seed")) {
+  main()
+    .catch((e) => {
+      console.error(e);
+      process.exit(1);
+    })
+    .finally(() => prisma.$disconnect());
+}
