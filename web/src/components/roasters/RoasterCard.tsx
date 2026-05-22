@@ -15,6 +15,7 @@ interface RoasterCardProps {
     status: string;
     featured: boolean;
     description?: string | null;
+    coverImageUrl?: string | null;
     images: { url: string; alt: string | null }[];
   };
   variant?: "default" | "compact";
@@ -23,6 +24,8 @@ interface RoasterCardProps {
 
 export function RoasterCard({ roaster, variant = "default", className }: RoasterCardProps) {
   const primaryImage = roaster.images[0];
+  const fallbackUrl = primaryImage?.url || roaster.coverImageUrl;
+  const fallbackAlt = primaryImage?.alt || `${roaster.name} roastery`;
   const isVerified = roaster.status === "VERIFIED";
 
   if (variant === "compact") {
@@ -36,10 +39,10 @@ export function RoasterCard({ roaster, variant = "default", className }: Roaster
       >
         <div className="flex gap-4">
           <div className="w-24 h-24 rounded-lg overflow-hidden shrink-0 relative bg-surface-container">
-            {primaryImage ? (
+            {fallbackUrl ? (
               <ImageWithFallback
-                src={primaryImage.url}
-                alt={primaryImage.alt || `${roaster.name} roastery`}
+                src={fallbackUrl}
+                alt={fallbackAlt}
                 fill
                 className="object-cover transition-transform group-hover:scale-105"
                 sizes="96px"
@@ -82,10 +85,10 @@ export function RoasterCard({ roaster, variant = "default", className }: Roaster
     >
       <article>
         <div className="relative mb-4 aspect-[4/5] overflow-hidden rounded-xl bg-surface-container shadow-sm group-hover:shadow-md transition-all duration-300">
-          {primaryImage ? (
+          {fallbackUrl ? (
             <ImageWithFallback
-              src={primaryImage.url}
-              alt={primaryImage.alt || `${roaster.name} — specialty coffee roastery in ${roaster.city}`}
+              src={fallbackUrl}
+              alt={fallbackAlt}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-700"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

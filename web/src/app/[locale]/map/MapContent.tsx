@@ -119,7 +119,7 @@ export function MapContent({ roasters, cafes }: { roasters: RoasterWithImages[];
           country: r.country,
           lat: r.lat!,
           lng: r.lng!,
-          image: r.images[0]?.url,
+          image: r.images[0]?.url || r.coverImageUrl || undefined,
           verified: r.status === "VERIFIED",
           certifications: r.certifications,
           rating: avgRating,

@@ -40,12 +40,14 @@ export async function generateMetadata({
   const primaryImageUrl = (
     await db.roaster.findUnique({
       where: { slug },
-      include: { images: { orderBy: { sortOrder: "asc" }, take: 1 } },
+      select: { coverImageUrl: true, images: { orderBy: { sortOrder: "asc" }, take: 1 } },
     })
-  )?.images[0]?.url;
+  )?.images[0]?.url || null;
 
-  const ogImages = primaryImageUrl
-    ? [buildOgImage(primaryImageUrl, `${roaster.name} roastery`)]
+  const ogImageUrl = primaryImageUrl || roaster.coverImageUrl;
+
+  const ogImages = ogImageUrl
+    ? [buildOgImage(ogImageUrl, `${roaster.name} roastery`)]
     : undefined;
 
   return {
@@ -143,6 +145,7 @@ export default async function RoasterProfilePage({
 
   const flag = countryFlag(roaster.countryCode);
   const primaryImage = roaster.images[0];
+  const imageUrl = primaryImage?.url || roaster.coverImageUrl;
   const isVerified = roaster.status === "VERIFIED";
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://beanmap.pl";
   const profileUrl = `${baseUrl}/roasters/${slug}`;
@@ -202,10 +205,10 @@ export default async function RoasterProfilePage({
       {/* Hero */}
       <header className="w-full h-[400px] md:h-[500px] mt-6 relative overflow-hidden">
         <div className="absolute inset-0 bg-stone-900">
-          {primaryImage && (
+          {imageUrl && (
             <Image
-              src={primaryImage.url}
-              alt={primaryImage.alt || `${roaster.name} roastery`}
+              src={imageUrl}
+              alt={primaryImage?.alt || `${roaster.name} roastery`}
               fill
               className="object-cover opacity-70"
               sizes="100vw"
