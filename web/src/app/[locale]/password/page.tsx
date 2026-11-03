@@ -54,7 +54,7 @@ export default function PasswordPage() {
         <div className="flex justify-center mb-10">
           <Image
             src="/brand/beanmap-logo.png"
-            alt="BeenMap"
+            alt="Bean Map"
             width={120}
             height={47}
             className="h-[47px] w-auto brightness-0 invert opacity-90"
@@ -68,7 +68,7 @@ export default function PasswordPage() {
             Private Beta
           </h1>
           <p className="text-white/55 text-[15px] leading-[1.6]">
-            Enter your access code to explore BeenMap before the public launch.
+            Enter your access code to explore Bean Map before the public launch.
           </p>
         </div>
 
@@ -101,7 +101,7 @@ export default function PasswordPage() {
 
         {/* Footer note */}
         <p className="text-center text-white/25 text-xs mt-10 tracking-wide">
-          © BeenMap · Private Beta
+          © Bean Map · Private Beta
         </p>
       </div>
     </div>
