@@ -16,11 +16,11 @@
 
 | Pakiet | Faktyczna wersja |
 |--------|-----------------|
-| Next.js | **16.2.1** |
+| Next.js | **16.4.4** |
 | React | **19.2.4** |
-| Prisma | **7.5.0** |
+| Prisma | **7.10.1** |
 | Tailwind CSS | **4** |
-| Auth | **Clerk** (`@clerk/nextjs` ^6) |
+| Auth | **Clerk** (`@clerk/nextjs` ^6.39.8) |
 | DB | **Vercel Postgres** (Neon) |
 | Storage | **Uploadthing** (MVP) → Cloudflare R2 |
 | TypeScript | **5** | — |
@@ -35,7 +35,7 @@ Przed pisaniem kodu sprawdź istniejące wzorce w `src/`.
 
 - **Prisma 7: `url`/`directUrl` NIE w `schema.prisma`** — powoduje błąd P1012. W `prisma.config.ts` blok `datasource` obsługuje TYLKO `url` i `shadowDatabaseUrl` (bez `directUrl`).
 - **`prisma/schema.prisma` migracje muszą być sekwencyjne** — ogłoś w teamie przed uruchomieniem `prisma migrate dev`
-- **`src/middleware.ts` — jedna osoba modyfikuje na raz** — wpływa na całą aplikację
+- **`src/proxy.ts` (dawniej middleware.ts) — jedna osoba modyfikuje na raz** — wpływa na całą aplikację
 - **Kolizje slugów** — obsługuje `src/lib/slug.ts` (`hard-beans` → `hard-beans-opole` → `hard-beans-opole-2`)
 
 ---
@@ -159,3 +159,13 @@ Każdy PR dostaje izolowany Neon branch — preview deploye nie dotykają produk
 | `src/types/certifications.ts` | Typy i stałe dla certyfikatów, roast styles, origins |
 | `docs/architecture/api-design.md` | Blueprint dla `ActionResult<T>`, Zod schemas, Server Actions |
 | `docs/seed-roasters.md` | Lista 60+ palarni do seedu produkcyjnego |
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

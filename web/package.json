@@ -1,6 +1,6 @@
 {
   "name": "web",
-  "version": "0.1.24",
+  "version": "0.1.25",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -24,19 +24,19 @@
     "version:major": "npm version major --no-git-tag-version"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6",
+    "@clerk/nextjs": "^6.39.8",
     "@neondatabase/serverless": "^1.0.2",
-    "@prisma/adapter-neon": "^7.5.0",
-    "@prisma/client": "^7.5.0",
+    "@prisma/adapter-neon": "^7.10.1",
+    "@prisma/client": "^7.10.1",
     "@types/leaflet": "^1.9.21",
     "@uploadthing/react": "^7.3.3",
     "@uploadthing/shared": "^7.1.10",
     "clsx": "^2.1.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.577.0",
-    "next": "16.2.1",
+    "next": "^16.4.4",
     "next-intl": "^4.9.1",
-    "prisma": "^7.5.0",
+    "prisma": "^7.10.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-leaflet": "^5.0.0",
@@ -44,26 +44,31 @@
     "slugify": "^1.6.8",
     "tailwind-merge": "^3.5.0",
     "uploadthing": "^7.7.4",
-    "zod": "^4.3.6"
+    "zod": "^4.6.7"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@playwright/test": "^1.59.1",
     "@vitest/coverage-v8": "^4.1.2",
     "dotenv": "^16.4.7",
     "eslint": "^9",
-    "eslint-config-next": "16.2.1",
+    "eslint-config-next": "^16.4.4",
     "playwright": "^1.59.1",
     "png-to-ico": "^3.0.1",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5",
     "vitest": "^4.1.2"
+  },
+  "overrides": {
+    "express": "^5.3.0",
+    "proxy-addr": "^2.0.8",
+    "body-parser": "^2.4.0"
   }
 }

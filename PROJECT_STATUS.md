@@ -7,7 +7,7 @@
 ---
 
 ## Last Updated
-2026-05-19 19:50 | @AGENT — SEO audit + implementation merged (PR #105): OG images, canonical URLs, hreflang, JSON-LD, Twitter cards, keywords on all pages.
+2026-11-03 | @MN — Security hardening: Clerk 6.39.8, Next 16.4.4, Prisma 7.10.1, signed beta cookie, lazy Resend, middleware → proxy.ts.
 
 ---
 
@@ -15,9 +15,9 @@
 
 | Warstwa | Technologia | Status |
 |---------|-------------|--------|
-| Framework | Next.js 16.2.1 (App Router) | ✅ deployed |
+| Framework | Next.js 16.4.4 (App Router) | ✅ deployed |
 | DB | **Vercel Postgres (Neon)** | ✅ provisioned, 4 migrations (init + reviews + cafe + api_keys), 9 models, 50 seed roasters |
-| ORM | Prisma 7.5 + @prisma/adapter-neon | ✅ schema ready, singleton active (`db`), Neon adapter configured |
+| ORM | Prisma 7.10 + @prisma/adapter-neon | ✅ schema ready, singleton active (`db`), Neon adapter configured |
 | Auth | **Clerk** (`@clerk/nextjs`) | ✅ ClerkProvider in layout, sign-in/sign-up routes, clerkMiddleware, auth helpers |
 | Storage | **Uploadthing** (MVP) → Cloudflare R2 (growth) | ✅ configured, route handler + dashboard upload UI |
 | Hosting | Vercel | ✅ deployed |
@@ -88,6 +88,7 @@ web/src/lib/supabase.ts       — NOT NEEDED (replaced by Clerk)
 **@MN:** [P2] SVG warianty logo
 
 **Completed recently:**
+- ✅ Security hardening (2026-11-03): `npm audit` prod — 0 critical (było 4), 5 high (było 24; pozostałe w `uploadthing`/`effect` i `source-map-js`, brak poprawki w v7). Beta gate cookie podpisane HMAC (`lib/beta-auth.ts`), Resend tworzony leniwie (build nie wymaga już `RESEND_API_KEY`), `src/middleware.ts` → `src/proxy.ts`.
 - ✅ Code review fixes (2026-05-18, PRs #94-99):
   - ISR slug revalidation — `revalidateEntity()` helper, 6 sites fixed in `image.actions.ts` + `cafe.actions.ts`
   - UploadThing server-side limits — `userImage.onUploadComplete` validates before `db.image.create()`

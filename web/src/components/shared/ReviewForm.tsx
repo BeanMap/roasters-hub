@@ -27,6 +27,8 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
         const draft = localStorage.getItem(REVIEW_DRAFT_KEY);
         if (draft) {
           const parsed = JSON.parse(draft);
+          // One-time restore from localStorage (external system) after sign-in.
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           if (parsed.rating) setRating(parsed.rating);
           if (parsed.comment) setComment(parsed.comment);
           localStorage.removeItem(REVIEW_DRAFT_KEY);

@@ -1,7 +1,13 @@
 import { Resend } from "resend";
 import { db } from "@/lib/db";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Created lazily: `new Resend()` throws without an API key, which used to break
+// `next build` (page data collection) whenever RESEND_API_KEY was not set.
+let resendClient: Resend | null = null;
+function getResend(): Resend {
+  resendClient ??= new Resend(process.env.RESEND_API_KEY);
+  return resendClient;
+}
 
 const fromEmail =
   process.env.RESEND_FROM_EMAIL || "Bean Map <noreply@beanmap.cafe>";
@@ -21,7 +27,7 @@ async function send(opts: {
   }
 
   try {
-    const { error } = await resend.emails.send({
+    const { error } = await getResend().emails.send({
       from: fromEmail,
       to: opts.to,
       subject: opts.subject,
