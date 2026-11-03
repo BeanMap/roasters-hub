@@ -313,6 +313,7 @@ Kanon stanu zadań: ten plik. Aktualizuj po każdej sesji (agent lub developer).
 
 ## DONE
 
+- [x] **Security hardening 2026-11** — upgrade `@clerk/nextjs` 6.39.8 + `next` 16.4.4 (krytyczne luki: obejście ochrony tras w middleware, DoS), Prisma 7.10.1, Zod 4.6.7, overrides express/proxy-addr/body-parser; podpisane HMAC ciasteczko bramki beta (`web/src/lib/beta-auth.ts`); leniwy klient Resend w `web/src/lib/email.ts`; `middleware.ts` → `web/src/proxy.ts` (@MN) ✅
 - [x] **Data Consistency + Public Proposal Flow** — Cafe.openingHours String→Json migration, OpeningHoursPicker component (Smart Monday), /suggest/cafe + /suggest/roastery public forms, admin cafe master editor (7 sections), admin roaster master editor (8 sections), nawigacja CTA "Zaproponuj miejsce" w header/footer/listingach (@MN) ✅
 - [x] **Enrichment UX redesign** — AdminNav global nav, run list z keywords/location inline, new run form z EnrichmentTag (persistent tags per entityType), split layout (EntityListPanel + EntityCard + SplitLayout), photo selection via Unsplash + UploadThing, single-click apply (applyEntityProposals), bulkApplyByConfidence, APPROVED status removed (@MN) ✅
 - [x] Prisma schema — 9 modeli (+ Review, SavedRoaster, ApiKey), wszystkie indeksy, relacje

@@ -24,9 +24,13 @@ export function CityAutocomplete({
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const abortRef = useRef<AbortController | undefined>(undefined);
 
-  useEffect(() => {
+  // Sync local query when the controlled value changes from outside
+  // (adjust state during render instead of in an effect).
+  const [prevValue, setPrevValue] = useState(value);
+  if (value !== prevValue) {
+    setPrevValue(value);
     setQuery(value);
-  }, [value]);
+  }
 
   useEffect(() => {
     return () => {
