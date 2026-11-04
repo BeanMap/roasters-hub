@@ -588,6 +588,26 @@
       "ColdBrew": "Cold brew",
       "Decaf": "Bezkofeinowa",
       "Nitro": "Nitro"
-    }
+    },
+    "locationPlaceholder": "Kraj lub miasto…",
+    "noLocation": "Brak pasującego miejsca",
+    "countryKind": "kraj",
+    "cityKind": "miasto"
+  },
+  "reviewForm": {
+    "rating": "Ocena",
+    "comment": "Komentarz",
+    "optional": "(opcjonalnie)",
+    "placeholder": "Podziel się wrażeniami…",
+    "signInPrompt": "Zaloguj się, aby dodać opinię",
+    "signIn": "Zaloguj się",
+    "thanks": "Dziękujemy! Opinia pojawi się po moderacji.",
+    "yourName": "Imię",
+    "namePlaceholder": "Twoje imię",
+    "selectRating": "Wybierz ocenę",
+    "error": "Coś poszło nie tak. Spróbuj ponownie.",
+    "submitting": "Wysyłanie…",
+    "submit": "Dodaj opinię",
+    "stars": "{count, plural, one {# gwiazdka} few {# gwiazdki} many {# gwiazdek} other {# gwiazdki}}"
   }
 }

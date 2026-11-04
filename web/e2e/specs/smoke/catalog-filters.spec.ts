@@ -6,8 +6,10 @@ for (const path of ["/pl/roasters", "/pl/cafes"]) {
     test("has the shared panel: search, location (country + city), coffee", async ({ page }) => {
       await page.goto(path);
       await expect(page.getByRole("searchbox")).toBeVisible();
-      await expect(page.getByLabel("Kraj")).toBeAttached();
-      await expect(page.getByLabel("Miasto")).toBeAttached();
+      // On phones the panel is collapsed behind the "Filtry" toggle.
+      const toggle = page.getByRole("button", { name: /^Filtry/ });
+      if (await toggle.isVisible()) await toggle.click();
+      await expect(page.getByRole("combobox", { name: "Lokalizacja" })).toBeVisible();
       await expect(page.getByText("Kawa", { exact: true })).toBeAttached();
       await expect(page.getByRole("combobox", { name: "Sort" })).toBeVisible();
     });
@@ -21,6 +23,16 @@ for (const path of ["/pl/roasters", "/pl/cafes"]) {
       await expect(chip).toBeVisible();
       await chip.click();
       await expect(page).not.toHaveURL(/style=/);
+    });
+
+    test("location picker suggests cities without diacritics and filters by them", async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto(path);
+      const box = page.getByRole("combobox", { name: "Lokalizacja" });
+      await box.fill("berl");
+      await page.getByRole("option", { name: /Berlin/ }).first().click();
+      await expect(page).toHaveURL(/city=Berlin/);
+      await expect(page).toHaveURL(/country=DE/);
     });
 
     test("search matches city names too", async ({ page }) => {

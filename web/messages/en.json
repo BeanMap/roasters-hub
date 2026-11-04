@@ -588,6 +588,26 @@
       "ColdBrew": "Cold brew",
       "Decaf": "Decaf",
       "Nitro": "Nitro"
-    }
+    },
+    "locationPlaceholder": "Country or city…",
+    "noLocation": "No matching place",
+    "countryKind": "country",
+    "cityKind": "city"
+  },
+  "reviewForm": {
+    "rating": "Rating",
+    "comment": "Comment",
+    "optional": "(optional)",
+    "placeholder": "Share your experience…",
+    "signInPrompt": "Sign in to leave a review",
+    "signIn": "Sign in",
+    "thanks": "Thank you! Your review will appear after moderation.",
+    "yourName": "Your name",
+    "namePlaceholder": "Your name",
+    "selectRating": "Please select a rating",
+    "error": "Something went wrong. Please try again.",
+    "submitting": "Sending…",
+    "submit": "Submit review",
+    "stars": "{count, plural, one {# star} other {# stars}}"
   }
 }

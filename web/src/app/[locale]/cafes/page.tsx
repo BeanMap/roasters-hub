@@ -9,7 +9,7 @@ import { CatalogToolbar } from "@/components/shared/CatalogToolbar";
 import type { ActiveFilter } from "@/components/shared/ActiveFilters";
 import { AmenityIcon } from "@/components/cafes/AmenityIcon";
 import { CAFE_SERVICES } from "@/constants/cafe-services";
-import { CAFE_STYLE_TO_SERVING, commonOrderBy, commonWhere, listParam, parseCatalogParams, toCities } from "@/lib/catalog";
+import { CAFE_STYLE_TO_SERVING, commonOrderBy, commonWhere, listParam, parseCatalogParams, buildLocations, cityVariantsFor } from "@/lib/catalog";
 import { ItemListJsonLd } from "@/components/shared/JsonLd";
 import { db } from "@/lib/db";
 import { buildAlternates, buildOpenGraph, buildCanonical, seoKeywords } from "@/lib/seo";
@@ -56,19 +56,27 @@ export default async function CafesPage({
 
   const sp = await searchParams;
   const { page, q, country, city, styles, sort } = parseCatalogParams(sp);
+  const locationRows = await db.cafe.groupBy({
+    by: ["countryCode", "city"],
+    where: { status: "VERIFIED" },
+    _count: { _all: true },
+  });
+  const locations = buildLocations(locationRows, locale);
+  const totalVerified = locationRows.reduce((n, r) => n + r._count._all, 0);
+  const cityVariants = cityVariantsFor(locations, city);
   const amenities = listParam(sp, "amenity", "amenities");
   const serving = styles.map((v) => CAFE_STYLE_TO_SERVING[v]).filter(Boolean);
 
   const where: Prisma.CafeWhereInput = {
     status: "VERIFIED",
-    ...commonWhere({ q, country, city }),
+    ...commonWhere({ q, country, city, cityVariants }),
     ...(serving.length > 0 && { serving: { hasSome: serving } }),
     ...(amenities.length > 0 && { services: { hasSome: amenities } }),
   };
 
   const orderBy = commonOrderBy(sort);
 
-  const [total, cafes, countryRows, cityRows] = await Promise.all([
+  const [total, cafes] = await Promise.all([
     db.cafe.count({ where }),
     db.cafe.findMany({
       where,
@@ -98,26 +106,9 @@ export default async function CafesPage({
         _count: { select: { roasters: true, reviews: true } },
       },
     }),
-    db.cafe.groupBy({
-      by: ["countryCode", "country"],
-      where: { status: "VERIFIED" },
-      _count: { _all: true },
-      orderBy: { country: "asc" },
-    }),
-    db.cafe.groupBy({
-      by: ["city", "countryCode"],
-      where: { status: "VERIFIED" },
-      _count: { _all: true },
-    }),
   ]);
 
-  const countries = countryRows.map((r) => ({
-    code: r.countryCode,
-    name: r.country,
-    count: r._count._all,
-  }));
 
-  const cities = toCities(cityRows);
 
   const facets: Facet[] = [
     {
@@ -137,7 +128,7 @@ export default async function CafesPage({
   ];
   const active: ActiveFilter[] = [
     ...(q ? [{ key: "q", value: q, label: `“${q}”` }] : []),
-    ...(country ? [{ key: "country", value: country, label: countries.find((c) => c.code === country)?.name ?? country }] : []),
+    ...(country ? [{ key: "country", value: country, label: locations.find((l) => l.kind === "country" && l.value === country.toUpperCase())?.label ?? country }] : []),
     ...(city ? [{ key: "city", value: city, label: city }] : []),
     ...facets.flatMap((f) =>
       listParam(sp, f.key, f.key === "amenity" ? "amenities" : undefined).map((v) => ({
@@ -187,7 +178,7 @@ export default async function CafesPage({
           </h1>
           <p className="mt-4 label-mono text-on-surface-variant flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-secondary" />
-            {t("countLabel", { count: total })}
+            {t("countLabel", { count: totalVerified })}
           </p>
         </header>
 
@@ -196,8 +187,7 @@ export default async function CafesPage({
             <CatalogFilters
               basePath="/cafes"
               searchPlaceholder={tFilters("cafePlaceholder")}
-              countries={countries}
-              cities={cities}
+              locations={locations}
               facets={facets}
             />
           </Suspense>

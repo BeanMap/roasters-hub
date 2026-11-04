@@ -588,6 +588,26 @@
       "ColdBrew": "Cold Brew",
       "Decaf": "Entkoffeiniert",
       "Nitro": "Nitro"
-    }
+    },
+    "locationPlaceholder": "Land oder Stadt…",
+    "noLocation": "Kein passender Ort",
+    "countryKind": "Land",
+    "cityKind": "Stadt"
+  },
+  "reviewForm": {
+    "rating": "Bewertung",
+    "comment": "Kommentar",
+    "optional": "(optional)",
+    "placeholder": "Teile deine Erfahrung…",
+    "signInPrompt": "Melde dich an, um eine Bewertung zu schreiben",
+    "signIn": "Anmelden",
+    "thanks": "Danke! Deine Bewertung erscheint nach der Prüfung.",
+    "yourName": "Name",
+    "namePlaceholder": "Dein Name",
+    "selectRating": "Bitte wähle eine Bewertung",
+    "error": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+    "submitting": "Wird gesendet…",
+    "submit": "Bewertung senden",
+    "stars": "{count, plural, one {# Stern} other {# Sterne}}"
   }
 }

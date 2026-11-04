@@ -4,6 +4,8 @@ import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
+import { LocationCombobox } from "@/components/shared/LocationCombobox";
+import type { LocationOption } from "@/lib/catalog";
 
 export type FacetOption = { value: string; label: string; icon?: ReactNode };
 export type Facet = { key: string; label: string; options: FacetOption[] };
@@ -11,8 +13,7 @@ export type Facet = { key: string; label: string; options: FacetOption[] };
 type CatalogFiltersProps = {
   basePath: "/roasters" | "/cafes";
   searchPlaceholder: string;
-  countries: { code: string; name: string; count: number }[];
-  cities: { name: string; countryCode: string; count: number }[];
+  locations: LocationOption[];
   /** Shared "coffee" facet first, then type-specific facets. Same chip UI for all. */
   facets: Facet[];
 };
@@ -24,7 +25,7 @@ const field =
  * One filter panel for every catalog (roasters, cafés): same order, same
  * controls, same URL params. Only the type-specific facets differ.
  */
-export function CatalogFilters({ basePath, searchPlaceholder, countries, cities, facets }: CatalogFiltersProps) {
+export function CatalogFilters({ basePath, searchPlaceholder, locations, facets }: CatalogFiltersProps) {
   const t = useTranslations("filters");
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -71,7 +72,6 @@ export function CatalogFilters({ basePath, searchPlaceholder, countries, cities,
 
   const activeCountry = searchParams.get("country") ?? "";
   const activeCity = searchParams.get("city") ?? "";
-  const visibleCities = activeCountry ? cities.filter((c) => c.countryCode === activeCountry) : cities;
   const activeCount =
     (activeCountry ? 1 : 0) +
     (activeCity ? 1 : 0) +
@@ -133,42 +133,23 @@ export function CatalogFilters({ basePath, searchPlaceholder, countries, cities,
           )}
         </div>
 
-        {/* Location — same for every listing type */}
-        <fieldset className="space-y-3">
+        {/* Location — one type-ahead field (country or city), same for every listing type */}
+        <fieldset>
           <legend className="label-mono text-outline mb-3">{t("location")}</legend>
-          <select
-            aria-label={t("country")}
-            className={field}
-            value={activeCountry}
-            onChange={(e) =>
+          <LocationCombobox
+            options={locations}
+            country={activeCountry}
+            city={activeCity}
+            inputClassName={field}
+            onSelect={({ country, city }) =>
               navigate((p) => {
-                if (e.target.value) p.set("country", e.target.value);
+                if (country) p.set("country", country);
                 else p.delete("country");
-                p.delete("city");
+                if (city) p.set("city", city);
+                else p.delete("city");
               })
             }
-          >
-            <option value="">{t("allCountries")}</option>
-            {countries.map((c) => (
-              <option key={c.code} value={c.code}>
-                {c.name} ({c.count})
-              </option>
-            ))}
-          </select>
-          <select
-            aria-label={t("city")}
-            className={field}
-            value={activeCity}
-            onChange={(e) => setParam("city", e.target.value || null)}
-            disabled={visibleCities.length === 0}
-          >
-            <option value="">{t("allCities")}</option>
-            {visibleCities.map((c) => (
-              <option key={`${c.countryCode}-${c.name}`} value={c.name}>
-                {c.name} ({c.count})
-              </option>
-            ))}
-          </select>
+          />
         </fieldset>
 
         {/* Facets — identical chip controls for every facet */}

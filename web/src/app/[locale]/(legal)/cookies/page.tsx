@@ -66,7 +66,8 @@ function CookiesPl() {
       </p>
 
       <h3>Lista wykorzystywanych ciasteczek</h3>
-      <table className="w-full text-sm border-collapse">
+      <div className="-mx-6 px-6 overflow-x-auto sm:mx-0 sm:px-0">
+      <table className="w-full min-w-[560px] text-sm border-collapse">
         <thead>
           <tr className="border-b">
             <th className="text-left py-2 pr-4">Nazwa</th>
@@ -103,6 +104,7 @@ function CookiesPl() {
           </tr>
         </tbody>
       </table>
+      </div>
 
       <h2>3. Ciasteczka lokalne (localStorage)</h2>
       <p>
@@ -231,7 +233,8 @@ function CookiesEn() {
       </p>
 
       <h3>List of Cookies Used</h3>
-      <table className="w-full text-sm border-collapse">
+      <div className="-mx-6 px-6 overflow-x-auto sm:mx-0 sm:px-0">
+      <table className="w-full min-w-[560px] text-sm border-collapse">
         <thead>
           <tr className="border-b">
             <th className="text-left py-2 pr-4">Name</th>
@@ -268,6 +271,7 @@ function CookiesEn() {
           </tr>
         </tbody>
       </table>
+      </div>
 
       <h2>3. Local Storage</h2>
       <p>

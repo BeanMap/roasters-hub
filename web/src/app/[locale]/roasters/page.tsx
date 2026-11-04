@@ -7,7 +7,7 @@ import { RoasterCard } from "@/components/roasters/RoasterCard";
 import { CatalogFilters, type Facet } from "@/components/shared/CatalogFilters";
 import { CatalogToolbar } from "@/components/shared/CatalogToolbar";
 import type { ActiveFilter } from "@/components/shared/ActiveFilters";
-import { commonOrderBy, commonWhere, listParam, parseCatalogParams, ROASTER_STYLE_VALUES, toCities } from "@/lib/catalog";
+import { commonOrderBy, commonWhere, listParam, parseCatalogParams, ROASTER_STYLE_VALUES, buildLocations, cityVariantsFor } from "@/lib/catalog";
 import { CERTIFICATIONS, CERTIFICATION_LABELS, ORIGINS } from "@/types/certifications";
 import { ItemListJsonLd } from "@/components/shared/JsonLd";
 import { db } from "@/lib/db";
@@ -55,18 +55,26 @@ export default async function CatalogPage({
 
   const sp = await searchParams;
   const { page, q, country, city, styles, sort } = parseCatalogParams(sp);
+  const locationRows = await db.roaster.groupBy({
+    by: ["countryCode", "city"],
+    where: { status: "VERIFIED" },
+    _count: { _all: true },
+  });
+  const locations = buildLocations(locationRows, locale);
+  const totalVerified = locationRows.reduce((n, r) => n + r._count._all, 0);
+  const cityVariants = cityVariantsFor(locations, city);
   const origins = listParam(sp, "origin");
   const certs = listParam(sp, "cert");
 
   const where: Prisma.RoasterWhereInput = {
     status: "VERIFIED",
-    ...commonWhere({ q, country, city }),
+    ...commonWhere({ q, country, city, cityVariants }),
     ...(styles.length && { roastStyles: { hasSome: styles } }),
     ...(origins.length && { origins: { hasSome: origins } }),
     ...(certs.length && { certifications: { hasSome: certs } }),
   };
 
-  const [total, roasters, countryRows, cityRows] = await Promise.all([
+  const [total, roasters] = await Promise.all([
     db.roaster.count({ where }),
     db.roaster.findMany({
       where,
@@ -75,25 +83,8 @@ export default async function CatalogPage({
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
     }),
-    db.roaster.groupBy({
-      by: ["countryCode", "country"],
-      where: { status: "VERIFIED" },
-      _count: { _all: true },
-      orderBy: { country: "asc" },
-    }),
-    db.roaster.groupBy({
-      by: ["city", "countryCode"],
-      where: { status: "VERIFIED" },
-      _count: { _all: true },
-    }),
   ]);
 
-  const countries = countryRows.map((r) => ({
-    code: r.countryCode,
-    name: r.country,
-    count: r._count._all,
-  }));
-  const cities = toCities(cityRows);
 
   const styleLabel = (v: string) => tFilters(`style.${v}` as "style.Espresso");
   const facets: Facet[] = [
@@ -103,7 +94,7 @@ export default async function CatalogPage({
   ];
   const active: ActiveFilter[] = [
     ...(q ? [{ key: "q", value: q, label: `“${q}”` }] : []),
-    ...(country ? [{ key: "country", value: country, label: countries.find((c) => c.code === country)?.name ?? country }] : []),
+    ...(country ? [{ key: "country", value: country, label: locations.find((l) => l.kind === "country" && l.value === country.toUpperCase())?.label ?? country }] : []),
     ...(city ? [{ key: "city", value: city, label: city }] : []),
     ...facets.flatMap((f) =>
       listParam(sp, f.key, f.key === "style" ? "roast" : undefined).map((v) => ({
@@ -141,7 +132,7 @@ export default async function CatalogPage({
           </h1>
           <p className="mt-4 label-mono text-on-surface-variant flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-secondary" />
-            {t("countLabel", { count: total })}
+            {t("countLabel", { count: totalVerified })}
           </p>
         </header>
 
@@ -150,8 +141,7 @@ export default async function CatalogPage({
             <CatalogFilters
               basePath="/roasters"
               searchPlaceholder={tFilters("roasteryPlaceholder")}
-              countries={countries}
-              cities={cities}
+              locations={locations}
               facets={facets}
             />
           </Suspense>

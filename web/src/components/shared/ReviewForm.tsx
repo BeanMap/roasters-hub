@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useAuth, SignInButton, useUser } from "@clerk/nextjs";
+import { useTranslations } from "next-intl";
 
 const REVIEW_DRAFT_KEY = "review-draft";
 
@@ -11,6 +12,7 @@ type ReviewFormProps = {
 };
 
 export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
+  const t = useTranslations("reviewForm");
   const { isSignedIn } = useAuth();
   const { user } = useUser();
   const [rating, setRating] = useState(0);
@@ -41,7 +43,7 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (rating === 0) {
-      setError("Please select a rating");
+      setError(t("selectRating"));
       return;
     }
 
@@ -66,7 +68,7 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
     if (result.success) {
       setSubmitted(true);
     } else {
-      setError(result.error ?? "An error occurred");
+      setError(result.error ?? t("error"));
     }
   }
 
@@ -83,7 +85,7 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
       <div className="space-y-4">
         <div>
           <p className="block text-sm font-medium mb-1" id="rating-label">
-            Rating
+            {t("rating")}
           </p>
           <div
             className="flex gap-1"
@@ -98,7 +100,7 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
                 onMouseEnter={() => setHoverRating(star)}
                 onMouseLeave={() => setHoverRating(0)}
                 className="text-2xl transition-colors"
-                aria-label={`${star} star${star > 1 ? "s" : ""}`}
+                aria-label={t("stars", { count: star })}
               >
                 <span
                   className={
@@ -119,15 +121,15 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
             htmlFor="review-comment-draft"
             className="block text-sm font-medium mb-1"
           >
-            Comment{" "}
-            <span className="text-on-surface-variant/50">(optional)</span>
+            {t("comment")}{" "}
+            <span className="text-on-surface-variant/50">{t("optional")}</span>
           </label>
           <textarea
             id="review-comment-draft"
             rows={3}
             maxLength={2000}
             className="input-field resize-none"
-            placeholder="Share your experience..."
+            placeholder={t("placeholder")}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
           />
@@ -135,11 +137,11 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
 
         <div className="bg-surface-container-low border border-outline-variant rounded-xl p-4 text-center">
           <p className="text-sm text-on-surface-variant mb-2">
-            Sign in to leave a review
+            {t("signInPrompt")}
           </p>
           <SignInButton mode="modal">
-            <button onClick={saveDraft} className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent-hover">
-              Sign In
+            <button onClick={saveDraft} className="rounded-full border border-on-surface/20 px-4 py-1.5 text-sm font-semibold text-on-surface hover:border-primary hover:text-primary transition-colors">
+              {t("signIn")}
             </button>
           </SignInButton>
         </div>
@@ -149,9 +151,9 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
 
   if (submitted) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
-        <p className="text-green-700 font-medium text-sm">
-          Thank you for your review! It will appear after moderation.
+      <div className="bg-secondary-container border border-secondary/20 rounded-xl p-4 text-center">
+        <p className="text-on-secondary-container font-medium text-sm">
+          {t("thanks")}
         </p>
       </div>
     );
@@ -164,7 +166,7 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
       ) : (
         <div>
           <label htmlFor="review-name" className="block text-sm font-medium mb-1">
-            Your name
+            {t("yourName")}
           </label>
           <input
             id="review-name"
@@ -173,14 +175,14 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
             required
             minLength={2}
             className="input-field"
-            placeholder="Enter your name"
+            placeholder={t("namePlaceholder")}
           />
         </div>
       )}
 
       <div>
         <p className="block text-sm font-medium mb-1" id="rating-label">
-          Rating
+          {t("rating")}
         </p>
         <div
           className="flex gap-1"
@@ -195,7 +197,7 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
               onMouseEnter={() => setHoverRating(star)}
               onMouseLeave={() => setHoverRating(0)}
               className="text-2xl transition-colors"
-              aria-label={`${star} star${star > 1 ? "s" : ""}`}
+              aria-label={t("stars", { count: star })}
             >
               <span
                 className={
@@ -216,8 +218,8 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
           htmlFor="review-comment"
           className="block text-sm font-medium mb-1"
         >
-          Comment{" "}
-          <span className="text-on-surface-variant/50">(optional)</span>
+          {t("comment")}{" "}
+          <span className="text-on-surface-variant/50">{t("optional")}</span>
         </label>
         <textarea
           id="review-comment"
@@ -225,7 +227,7 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
           rows={3}
           maxLength={2000}
           className="input-field resize-none"
-          placeholder="Share your experience..."
+          placeholder={t("placeholder")}
           value={comment}
           onChange={(e) => setComment(e.target.value)}
         />
@@ -236,9 +238,9 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
       <button
         type="submit"
         disabled={loading}
-        className="bg-primary text-on-primary px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-container transition-all disabled:opacity-50"
+        className="rounded-full bg-primary text-on-primary px-6 py-2.5 text-sm font-semibold hover:bg-accent-hover transition-colors disabled:opacity-50"
       >
-        {loading ? "Submitting..." : "Submit Review"}
+        {loading ? t("submitting") : t("submit")}
       </button>
     </form>
   );

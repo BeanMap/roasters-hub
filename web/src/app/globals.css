@@ -106,80 +106,93 @@
   --radius-full: 9999px;
 }
 
-/* === BASE STYLES === */
-html {
-  -webkit-text-size-adjust: 100%;
-  text-rendering: optimizeLegibility;
+/* === BASE STYLES ===
+ * Wrapped in cascade layers: in Tailwind v4 unlayered CSS beats utilities,
+ * which previously let these rules override z-index/font utilities. */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-on-background);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  /* Pages render <main> as a flex item of <body>; without this a short page
+   * (few results) shrinks to its content width instead of the container. */
+  main {
+    width: 100%;
+  }
+
+  /* Subtle paper grain, painted behind all content (negative z-index). */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.35;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.32 0 0 0 0 0.2 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-headline);
+    font-weight: 700;
+    font-variation-settings: "opsz" 72, "wdth" 92;
+    letter-spacing: -0.035em;
+    line-height: 1.02;
+    text-wrap: balance;
+  }
+  h4,
+  h5 {
+    font-family: var(--font-headline);
+    font-weight: 650;
+    letter-spacing: -0.015em;
+  }
+
+  ::selection {
+    background: var(--color-primary);
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
 }
 
-body {
-  background-color: var(--color-background);
-  color: var(--color-on-background);
-  font-family: var(--font-body);
-  font-size: 1rem;
-  line-height: 1.6;
-  font-feature-settings: "ss01", "cv11";
-}
+@layer components {
+  .font-headline {
+    font-weight: 700;
+    font-variation-settings: "opsz" 72, "wdth" 92;
+    letter-spacing: -0.035em;
+  }
 
-/* Subtle paper grain — gives the warm background a tactile, printed feel. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.35;
-  mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.32 0 0 0 0 0.2 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-body > * {
-  position: relative;
-  z-index: 1;
-}
+  /* Coffee-bag style metadata label (origins, cities, counts). */
+  .label-mono {
+    font-family: var(--font-label);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
 
-.font-headline,
-h1,
-h2,
-h3 {
-  font-family: var(--font-headline);
-  font-weight: 700;
-  font-variation-settings: "opsz" 72, "wdth" 92;
-  letter-spacing: -0.035em;
-  line-height: 1.02;
-  text-wrap: balance;
-}
-h4,
-h5 {
-  font-family: var(--font-headline);
-  font-weight: 650;
-  letter-spacing: -0.015em;
-}
-
-/* Coffee-bag style metadata label (origins, cities, counts). */
-.label-mono {
-  font-family: var(--font-label);
-  font-size: 0.6875rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-::selection {
-  background: var(--color-primary);
-  color: #fff;
-}
-
-:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
+  .rise {
+    animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
 }
 
 @keyframes rise {
   from { opacity: 0; transform: translateY(14px); }
   to { opacity: 1; transform: none; }
-}
-.rise {
-  animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 @media (prefers-reduced-motion: reduce) {
   .rise { animation: none; }
