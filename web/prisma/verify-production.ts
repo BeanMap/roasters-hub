@@ -7,19 +7,13 @@
  * Usage: npx tsx prisma/verify-production.ts
  */
 
-import { PrismaClient } from "@prisma/client";
-import { PrismaNeon } from "@prisma/adapter-neon";
+import { createScriptClient } from "./script-client";
 
-const adapter = new PrismaNeon({
-  connectionString: process.env.DATABASE_URL!,
-});
-const db = new PrismaClient({ adapter });
+const db = createScriptClient();
 
 const MIN_COUNTS: Record<string, number> = {
   roasters: 50,
   cafes: 90,
-  reviews: 40,
-  userProfiles: 1,
   cafeRoasterRelations: 100,
 };
 

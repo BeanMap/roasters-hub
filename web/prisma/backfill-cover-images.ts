@@ -1,9 +1,7 @@
-import { PrismaClient } from "@prisma/client";
-import { PrismaNeon } from "@prisma/adapter-neon";
+import { createScriptClient } from "./script-client";
 
 const dbUrl = process.env.DATABASE_URL!;
-const adapter = new PrismaNeon({ connectionString: dbUrl });
-const prisma = new PrismaClient({ adapter });
+const prisma = createScriptClient();
 
 import { SEED_ROASTERS } from "./seed";
 

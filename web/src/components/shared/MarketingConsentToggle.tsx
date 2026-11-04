@@ -42,7 +42,7 @@ export function MarketingConsentToggle({
           onClick={handleToggle}
           disabled={saving}
           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-            value ? "bg-amber-600" : "bg-gray-300"
+            value ? "bg-primary" : "bg-gray-300"
           }`}
         >
           <span

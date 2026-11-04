@@ -58,7 +58,14 @@
   },
   "beta": {
     "message": "Beta — Dies ist eine Testversion von Bean Map. Daten können sich ändern und es werden keine kommerziellen Dienste angeboten.",
-    "dismiss": "Beta-Banner schließen"
+    "dismiss": "Beta-Banner schließen",
+    "label": "Private Beta",
+    "title": "Specialty Coffee, vor allen anderen.",
+    "desc": "Gib deinen Zugangscode ein, um Bean Map vor dem öffentlichen Start zu sehen.",
+    "placeholder": "Zugangscode",
+    "enter": "Eintreten",
+    "verifying": "Wird geprüft…",
+    "invalid": "Ungültiger Zugangscode"
   },
   "errors": {
     "notFoundCode": "404",
@@ -92,7 +99,7 @@
     "mapDesc": "Unsere interaktive Karte hilft dir, verifizierte Specialty-Röstereien in jeder Stadt zu finden.",
     "exploreMap": "Karte erkunden",
     "newsletterTitle": "Frische Bohnen in deinem Posteingang",
-    "newsletterDesc": "Schließe dich über 10.000 Abonnenten an — wöchentlich kuratierte Röstereien und limitierte Editionen.",
+    "newsletterDesc": "Eine kurze, gelegentliche E-Mail über neue Röstereien und Cafés auf Bean Map. Kein Spam, jederzeit abbestellbar.",
     "statsRoastersLabel": "Röstereien",
     "statsCafesLabel": "Cafés",
     "statsCountriesLabel": "Länder",
@@ -137,7 +144,8 @@
     "addFirstPhoto": "Erstes Foto hinzufügen",
     "addAnotherPhoto": "Weiteres Foto hinzufügen",
     "photoUploadedSubmitted": "Foto hochgeladen und zur Überprüfung eingereicht.",
-    "maxImagesReached": "Sie haben die maximale Anzahl an Bildern erreicht."
+    "maxImagesReached": "Sie haben die maximale Anzahl an Bildern erreicht.",
+    "page": "Seite"
   },
   "legal": {
     "privacyTitle": "Datenschutzerklärung",
@@ -160,7 +168,8 @@
     "sortNameAZ": "Name A–Z",
     "sortNewest": "Neueste",
     "noResultsFilters": "Keine Röstereien für diese Filter gefunden",
-    "clearFilters": "Filter löschen"
+    "clearFilters": "Filter löschen",
+    "countLabel": "{count, plural, one {# verifizierte Rösterei} other {# verifizierte Röstereien}}"
   },
   "cafes": {
     "pageTitle": "Specialty Cafés",
@@ -173,7 +182,8 @@
     "sortCity": "Stadt",
     "sortRating": "Bewertung",
     "noResultsFilters": "Keine Cafés für diese Filter gefunden",
-    "clearFilters": "Filter löschen"
+    "clearFilters": "Filter löschen",
+    "countLabel": "{count, plural, one {# Specialty-Café} other {# Specialty-Cafés}}"
   },
   "admin": {
     "dashboard": "Admin-Dashboard",
@@ -344,7 +354,12 @@
     "verifiedCafeCountWithCountry": "{count, plural, one {# verifiziertes Café} other {# verifizierte Cafés}} · {country}",
     "noFilterMatch": "Kein {entity} entspricht diesem Filter.",
     "specialtyCoffeeRoasters": "Specialty-Coffee-Röstereien",
-    "specialtyCoffeeCafes": "Specialty-Coffee-Cafés"
+    "specialtyCoffeeCafes": "Specialty-Coffee-Cafés",
+    "photos": "Fotos",
+    "signInToAddPhoto": "Melde dich an, um ein Foto hinzuzufügen",
+    "signInShort": "Anmelden",
+    "saveRoaster": "Rösterei speichern",
+    "savedRoaster": "Gespeichert"
   },
   "map": {
     "title": "Karte der Kaffeeröstereien & Cafés",
@@ -520,5 +535,79 @@
     "cancel": "Abbrechen",
     "confirmDelete": "Ja, Konto löschen",
     "deleting": "Wird gelöscht..."
+  },
+  "filters": {
+    "searchName": "Suche",
+    "roasteryPlaceholder": "Rösterei oder Stadt…",
+    "cafePlaceholder": "Café oder Stadt…",
+    "title": "Filter",
+    "clearAll": "Alle löschen",
+    "country": "Land",
+    "allCountries": "Alle Länder",
+    "originRegions": "Herkunftsregionen",
+    "certifications": "Zertifizierungen",
+    "roastStyle": "Röstgrad",
+    "amenities": "Ausstattung",
+    "showing": "{shown} von {total} Ergebnissen",
+    "verified": "Verifiziert",
+    "featured": "Empfohlen",
+    "roastersCount": "{count, plural, one {# Rösterei} other {# Röstereien}}",
+    "location": "Ort",
+    "city": "Stadt",
+    "allCities": "Alle Städte",
+    "coffee": "Kaffee",
+    "activeFilters": "Aktive Filter",
+    "removeFilter": "Filter entfernen",
+    "sortRecommended": "Empfohlen",
+    "sortNameAZ": "Name A–Z",
+    "sortNewest": "Neueste",
+    "sortMostReviewed": "Meiste Bewertungen",
+    "noResults": "Keine Treffer für diese Filter.",
+    "search": "Suche",
+    "amenity": {
+      "wifi": "WLAN",
+      "workspace": "Arbeitsplatz",
+      "outdoor_seating": "Außenbereich",
+      "dog_friendly": "Hundefreundlich",
+      "vegan": "Vegane Optionen",
+      "vegetarian": "Vegetarisch",
+      "food": "Speisen",
+      "specialty_only": "Nur Specialty",
+      "alternative_brew": "Alternative Zubereitung",
+      "takeaway": "Zum Mitnehmen",
+      "in_store": "Vor Ort",
+      "events": "Events",
+      "cuppings": "Cuppings"
+    },
+    "style": {
+      "Light": "Helle Röstung",
+      "Medium": "Mittlere Röstung",
+      "Dark": "Dunkle Röstung",
+      "Espresso": "Espresso",
+      "Filter": "Filter",
+      "ColdBrew": "Cold Brew",
+      "Decaf": "Entkoffeiniert",
+      "Nitro": "Nitro"
+    },
+    "locationPlaceholder": "Land oder Stadt…",
+    "noLocation": "Kein passender Ort",
+    "countryKind": "Land",
+    "cityKind": "Stadt"
+  },
+  "reviewForm": {
+    "rating": "Bewertung",
+    "comment": "Kommentar",
+    "optional": "(optional)",
+    "placeholder": "Teile deine Erfahrung…",
+    "signInPrompt": "Melde dich an, um eine Bewertung zu schreiben",
+    "signIn": "Anmelden",
+    "thanks": "Danke! Deine Bewertung erscheint nach der Prüfung.",
+    "yourName": "Name",
+    "namePlaceholder": "Dein Name",
+    "selectRating": "Bitte wähle eine Bewertung",
+    "error": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+    "submitting": "Wird gesendet…",
+    "submit": "Bewertung senden",
+    "stars": "{count, plural, one {# Stern} other {# Sterne}}"
   }
 }

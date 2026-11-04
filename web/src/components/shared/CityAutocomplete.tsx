@@ -122,8 +122,8 @@ export function CityAutocomplete({
                 onChange(s);
                 setIsOpen(false);
               }}
-              className={`cursor-pointer px-3 py-2 text-sm hover:bg-amber-50 ${
-                i === activeIndex ? "bg-amber-50" : ""
+              className={`cursor-pointer px-3 py-2 text-sm hover:bg-surface-container-low ${
+                i === activeIndex ? "bg-surface-container-low" : ""
               }`}
             >
               {s}

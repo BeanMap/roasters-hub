@@ -1,11 +1,7 @@
-import { PrismaClient } from "@prisma/client";
-import { PrismaNeon } from "@prisma/adapter-neon";
+import { createScriptClient } from "./script-client";
 
 // Production seed workflow test - 2026-04-03
-const adapter = new PrismaNeon({
-  connectionString: process.env.DIRECT_URL ?? process.env.DATABASE_URL!,
-});
-const prisma = new PrismaClient({ adapter });
+const prisma = createScriptClient();
 
 const SEED_CAFES = [
   {

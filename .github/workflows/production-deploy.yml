@@ -1,190 +1,88 @@
-name: Production Deploy
+name: Production Database
+
+# Migrations are applied by the Vercel production build itself
+# (web/scripts/vercel-build.mjs → `prisma migrate deploy` before `next build`),
+# so new code can never go live before its schema, and a failed migration
+# keeps the previous deployment online.
+#
+# This workflow therefore only:
+#   1. on push to main: verifies production data counts (read-only), and
+#   2. on manual dispatch: (re)seeds the BASE directory data (roasters, cafes,
+#      cafe↔roaster relations). These seeds are idempotent upserts.
+#
+# Demo/fake data (reviews, analytics events, saved items, admin notes, test
+# users) is NEVER written to production. Previously every migration commit
+# re-ran all seeds on production, and seed_reviews.ts deleted every review.
 
 on:
   push:
     branches: [main]
     paths:
-      - "web/prisma/seed*.ts"
-      - "web/prisma/migrations/**"
-      - "web/prisma/schema.prisma"
+      - "web/prisma/**"
       - ".github/workflows/production-deploy.yml"
+  workflow_dispatch:
+    inputs:
+      seed_base_data:
+        description: "Upsert base directory data (roasters, cafes, relations) into PRODUCTION"
+        type: boolean
+        default: false
+      confirm:
+        description: 'Type "production" to confirm'
+        type: string
+        default: ""
 
 concurrency:
-  group: production-deploy
+  group: production-database
   cancel-in-progress: false
 
 jobs:
-  ci:
-    name: Lint, Type Check & Tests
+  seed-base-data:
+    name: Seed base data (manual)
+    if: github.event_name == 'workflow_dispatch' && inputs.seed_base_data && inputs.confirm == 'production'
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: web
-
+    env:
+      DATABASE_URL: ${{ secrets.DIRECT_URL || secrets.DATABASE_URL }}
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
           cache-dependency-path: web/package-lock.json
-
       - run: npm install
+      - name: Check migrations are applied
+        run: npx prisma migrate status
+      - name: Upsert roasters
+        run: npx tsx prisma/seed.ts
+      - name: Upsert cafes
+        run: npx tsx prisma/seed_cafes.ts
+      - name: Upsert cafe-roaster relations
+        run: npx tsx prisma/seed_cafe_roasters_explicit.ts
 
-      - name: ESLint
-        run: npm run lint
-
-      - name: TypeScript
-        run: npx tsc --noEmit
-
-      - name: Unit Tests
-        run: npm run test
-
-  migrate-and-seed:
-    name: Migrate & Seed Production DB
-    needs: ci
+  verify:
+    name: Verify production data (read-only)
+    needs: [seed-base-data]
+    if: always() && (needs.seed-base-data.result == 'success' || needs.seed-base-data.result == 'skipped')
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: web
-
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
           cache-dependency-path: web/package-lock.json
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Check required secrets
-        run: |
-          if [ -z "${{ secrets.DATABASE_URL }}" ]; then
-            echo "❌ Error: DATABASE_URL secret is not set"
-            echo ""
-            echo "To fix this, add the following secrets to GitHub:"
-            echo "1. Go to: https://github.com/BeanMap/roasters-hub/settings/secrets/actions"
-            echo "2. Click 'New repository secret'"
-            echo "3. Add DATABASE_URL (get value from Vercel Dashboard)"
-            echo "4. Add DIRECT_URL (same as DATABASE_URL or use direct Neon host)"
-            exit 1
-          fi
-          echo "✅ DATABASE_URL is configured"
-
-      - name: Resolve failed migration state
-        run: |
-          npx prisma db execute --stdin <<'SQL'
-          UPDATE "_prisma_migrations"
-          SET "finished_at" = NOW(), "applied_steps_count" = 1, "logs" = NULL
-          WHERE "migration_name" = '20260412000000_enrichment_engine'
-            AND "finished_at" IS NULL;
-          SQL
+      - run: npm install
+      - name: Migration status
+        run: npx prisma migrate status || echo "::warning::Pending migrations — they are applied by the next Vercel production build."
         env:
-          DATABASE_URL: ${{ secrets.DIRECT_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-
-      - name: Run database migrations
-        run: |
-          set +e
-          npx prisma migrate deploy 2>&1 | tee /tmp/migrate_out.txt
-          EXIT_CODE=${PIPESTATUS[0]}
-          if [ $EXIT_CODE -ne 0 ]; then
-            if grep -q "advisory lock" /tmp/migrate_out.txt; then
-              echo "⚠️  Advisory lock timeout — schema already applied via db push. Continuing."
-            else
-              echo "❌ Migration failed:"
-              cat /tmp/migrate_out.txt
-              exit 1
-            fi
-          fi
-        env:
-          DATABASE_URL: ${{ secrets.DIRECT_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-
-      - name: Check for new migrations
-        id: new_migrations
-        run: |
-          NEW=$(git diff --name-only HEAD~1 HEAD | grep "^web/prisma/migrations/" || true)
-          if [ -n "$NEW" ]; then
-            echo "has_new=true" >> $GITHUB_OUTPUT
-            echo "New migrations detected — running full seed"
-          else
-            echo "has_new=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Seed Roasters
-        if: contains(github.event.head_commit.message, 'seed') || contains(github.event.head_commit.modified, 'prisma/seed.ts') || steps.new_migrations.outputs.has_new == 'true'
-        run: npx tsx prisma/seed.ts
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-
-      - name: Seed Cafes
-        if: contains(github.event.head_commit.message, 'seed') || contains(github.event.head_commit.modified, 'prisma/seed_cafes.ts') || steps.new_migrations.outputs.has_new == 'true'
-        run: npx tsx prisma/seed_cafes.ts
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-
-      - name: Seed Cafe-Roaster Relations
-        if: contains(github.event.head_commit.message, 'seed') || contains(github.event.head_commit.modified, 'prisma/seed_cafe_roasters_explicit.ts') || steps.new_migrations.outputs.has_new == 'true'
-        run: npx tsx prisma/seed_cafe_roasters_explicit.ts
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-
-      - name: Seed User Profiles
-        if: contains(github.event.head_commit.message, 'seed') || contains(github.event.head_commit.modified, 'prisma/seed_user_profiles.ts') || steps.new_migrations.outputs.has_new == 'true'
-        run: npx tsx prisma/seed_user_profiles.ts
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-
-      - name: Seed Reviews
-        if: contains(github.event.head_commit.message, 'seed') || contains(github.event.head_commit.modified, 'prisma/seed_reviews.ts') || steps.new_migrations.outputs.has_new == 'true'
-        run: npx tsx prisma/seed_reviews.ts
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-
-      - name: Seed Profile Events
-        if: contains(github.event.head_commit.message, 'seed') || contains(github.event.head_commit.modified, 'prisma/seed_profile_events.ts') || steps.new_migrations.outputs.has_new == 'true'
-        run: npx tsx prisma/seed_profile_events.ts
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-
-      - name: Seed Saved Roasters
-        if: contains(github.event.head_commit.message, 'seed') || contains(github.event.head_commit.modified, 'prisma/seed_saved_roasters.ts') || steps.new_migrations.outputs.has_new == 'true'
-        run: npx tsx prisma/seed_saved_roasters.ts
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-
-      - name: Seed Admin Notes
-        if: contains(github.event.head_commit.message, 'seed') || contains(github.event.head_commit.modified, 'prisma/seed_admin_notes.ts') || steps.new_migrations.outputs.has_new == 'true'
-        run: npx tsx prisma/seed_admin_notes.ts
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-
-      - name: Verify production data integrity
+          DATABASE_URL: ${{ secrets.DIRECT_URL || secrets.DATABASE_URL }}
+      - name: Data integrity
         run: npx tsx prisma/verify-production.ts
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-
-      - name: Log deployment summary
-        run: |
-          echo "✅ Production database updated successfully"
-          echo "Migrations: applied"
-          echo "Seed: ${{ contains(github.event.head_commit.message, 'seed') && 'executed' || 'conditional' }}"
-
-  # Note: Vercel automatically deploys on push to main
-  # This workflow focuses on database migrations and seeding
-  # Vercel deployment status can be monitored at:
-  # https://vercel.com/krzysztof-8092s-projects/beanmap-web

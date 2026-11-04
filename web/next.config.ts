@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
   },
   // Build uses Turbopack (default for Next.js 16)
   images: {
+    formats: ["image/avif", "image/webp"],
+    // Remote photos (Unsplash, UploadThing) never change under the same URL.
+    minimumCacheTTL: 60 * 60 * 24 * 30,
     remotePatterns: [
       {
         protocol: "https",

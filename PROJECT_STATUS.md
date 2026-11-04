@@ -7,7 +7,7 @@
 ---
 
 ## Last Updated
-2026-11-03 | @MN — Security hardening: Clerk 6.39.8, Next 16.4.4, Prisma 7.10.1, signed beta cookie, lazy Resend, middleware → proxy.ts.
+2026-11-04 | @MN — Deploy/DB hardening (migracje w buildzie Vercela, brak auto-seedu prod, preview na własnej bazie, CI z bazą od zera + E2E) + iteracja UX.
 
 ---
 
@@ -88,6 +88,8 @@ web/src/lib/supabase.ts       — NOT NEEDED (replaced by Clerk)
 **@MN:** [P2] SVG warianty logo
 
 **Completed recently:**
+- ✅ Deploy & DB hardening (2026-11-04): migracje uruchamia `npm run vercel-build` (prod) przed buildem; workflow *Production Database* tylko weryfikuje dane, seed bazowy wyłącznie ręcznie; preview bez własnej bazy jest pomijany; migracja `20261104000000_reconcile_schema_drift` (idempotentna) wyrównuje schemat po dawnym `db push`; lokalny Postgres (`docker-compose.dev.yml`, `@prisma/adapter-pg`); CI job *Fresh DB + E2E Smoke*.
+- ✅ UX iteration (2026-11-04): paginacja mobile, i18n filtrów, skeletony, error boundary, kontrast, 34 testy E2E (desktop + mobile).
 - ✅ Security hardening (2026-11-03): `npm audit` prod — 0 critical (było 4), 5 high (było 24; pozostałe w `uploadthing`/`effect` i `source-map-js`, brak poprawki w v7). Beta gate cookie podpisane HMAC (`lib/beta-auth.ts`), Resend tworzony leniwie (build nie wymaga już `RESEND_API_KEY`), `src/middleware.ts` → `src/proxy.ts`.
 - ✅ Code review fixes (2026-05-18, PRs #94-99):
   - ISR slug revalidation — `revalidateEntity()` helper, 6 sites fixed in `image.actions.ts` + `cafe.actions.ts`

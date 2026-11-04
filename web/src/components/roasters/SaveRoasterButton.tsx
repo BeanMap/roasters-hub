@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { saveRoaster, unsaveRoaster } from "@/actions/saved-roaster.actions";
 
 export function SaveRoasterButton({
@@ -10,6 +11,7 @@ export function SaveRoasterButton({
   roasterId: string;
   initialSaved: boolean;
 }) {
+  const t = useTranslations("profiles");
   const [saved, setSaved] = useState(initialSaved);
   const [isPending, startTransition] = useTransition();
 
@@ -49,7 +51,7 @@ export function SaveRoasterButton({
           d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
         />
       </svg>
-      {isPending ? "..." : saved ? "Saved" : "Save Roaster"}
+      {isPending ? "…" : saved ? t("savedRoaster") : t("saveRoaster")}
     </button>
   );
 }

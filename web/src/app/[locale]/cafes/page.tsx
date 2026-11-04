@@ -1,15 +1,19 @@
 import { Suspense } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
 import { CafeCard } from "@/components/cafes/CafeCard";
-import { CafeFilters } from "@/components/cafes/CafeFilters";
-import { SortSelect } from "@/components/shared/SortSelect";
+import { CatalogFilters, type Facet } from "@/components/shared/CatalogFilters";
+import { CatalogToolbar } from "@/components/shared/CatalogToolbar";
+import type { ActiveFilter } from "@/components/shared/ActiveFilters";
+import { AmenityIcon } from "@/components/cafes/AmenityIcon";
+import { CAFE_SERVICES } from "@/constants/cafe-services";
+import { CAFE_STYLE_TO_SERVING, commonOrderBy, commonWhere, listParam, parseCatalogParams, buildLocations, cityVariantsFor } from "@/lib/catalog";
 import { ItemListJsonLd } from "@/components/shared/JsonLd";
 import { db } from "@/lib/db";
 import { buildAlternates, buildOpenGraph, buildCanonical, seoKeywords } from "@/lib/seo";
-import { buildPageHref } from "@/lib/search-params";
+import { Pagination } from "@/components/shared/Pagination";
 import type { Metadata } from "next";
 import type { Prisma } from "@prisma/client";
 
@@ -47,28 +51,32 @@ export default async function CafesPage({
   setRequestLocale(locale);
 
   const t = await getTranslations({ locale, namespace: "cafes" });
+  const tFilters = await getTranslations({ locale, namespace: "filters" });
   const tCommon = await getTranslations({ locale, namespace: "common" });
 
   const sp = await searchParams;
-  const page = Number(sp.page) || 1;
-  const sort = typeof sp.sort === "string" ? sp.sort : "nameAZ";
-  const country = typeof sp.country === "string" ? sp.country : undefined;
-  const q = typeof sp.q === "string" ? sp.q : undefined;
-  const amenities = typeof sp.amenities === "string"
-    ? sp.amenities.split(",").filter(Boolean)
-    : [];
+  const { page, q, country, city, styles, sort } = parseCatalogParams(sp);
+  const locationRows = await db.cafe.groupBy({
+    by: ["countryCode", "city"],
+    where: { status: "VERIFIED" },
+    _count: { _all: true },
+  });
+  const locations = buildLocations(locationRows, locale);
+  const totalVerified = locationRows.reduce((n, r) => n + r._count._all, 0);
+  const cityVariants = cityVariantsFor(locations, city);
+  const amenities = listParam(sp, "amenity", "amenities");
+  const serving = styles.map((v) => CAFE_STYLE_TO_SERVING[v]).filter(Boolean);
 
   const where: Prisma.CafeWhereInput = {
     status: "VERIFIED",
-    ...(country && { countryCode: country }),
-    ...(q && { name: { contains: q, mode: "insensitive" as const } }),
+    ...commonWhere({ q, country, city, cityVariants }),
+    ...(serving.length > 0 && { serving: { hasSome: serving } }),
     ...(amenities.length > 0 && { services: { hasSome: amenities } }),
   };
 
-  const orderBy: Prisma.CafeOrderByWithRelationInput =
-    sort === "city" ? { city: "asc" } : sort === "rating" ? { reviews: { _count: "desc" } } : { name: "asc" };
+  const orderBy = commonOrderBy(sort);
 
-  const [total, cafes, countryRows] = await Promise.all([
+  const [total, cafes] = await Promise.all([
     db.cafe.count({ where }),
     db.cafe.findMany({
       where,
@@ -98,19 +106,38 @@ export default async function CafesPage({
         _count: { select: { roasters: true, reviews: true } },
       },
     }),
-    db.cafe.groupBy({
-      by: ["countryCode", "country"],
-      where: { status: "VERIFIED" },
-      _count: { _all: true },
-      orderBy: { country: "asc" },
-    }),
   ]);
 
-  const countries = countryRows.map((r) => ({
-    code: r.countryCode,
-    name: r.country,
-    count: r._count._all,
-  }));
+
+
+  const facets: Facet[] = [
+    {
+      key: "style",
+      label: tFilters("coffee"),
+      options: Object.keys(CAFE_STYLE_TO_SERVING).map((v) => ({ value: v, label: tFilters(`style.${v}` as "style.Espresso") })),
+    },
+    {
+      key: "amenity",
+      label: tFilters("amenities"),
+      options: CAFE_SERVICES.map((svc) => ({
+        value: svc.value,
+        label: tFilters(`amenity.${svc.value}` as "amenity.wifi"),
+        icon: <AmenityIcon service={svc.value} className="w-3.5 h-3.5" />,
+      })),
+    },
+  ];
+  const active: ActiveFilter[] = [
+    ...(q ? [{ key: "q", value: q, label: `“${q}”` }] : []),
+    ...(country ? [{ key: "country", value: country, label: locations.find((l) => l.kind === "country" && l.value === country.toUpperCase())?.label ?? country }] : []),
+    ...(city ? [{ key: "city", value: city, label: city }] : []),
+    ...facets.flatMap((f) =>
+      listParam(sp, f.key, f.key === "amenity" ? "amenities" : undefined).map((v) => ({
+        key: f.key,
+        value: v,
+        label: f.options.find((o) => o.value === v)?.label ?? v,
+      })),
+    ),
+  ];
 
   const cafeIds = cafes.map((c) => c.id);
   const ratingAggs = cafeIds.length > 0
@@ -139,49 +166,37 @@ export default async function CafesPage({
       />
       <Header />
       <main className="max-w-7xl mx-auto px-6 py-12">
-        <nav className="mb-4 text-on-surface-variant flex items-center gap-2 text-xs uppercase tracking-widest">
+        <nav className="mb-5 label-mono text-outline flex items-center gap-2">
           <Link className="hover:text-primary transition-colors" href="/">{tCommon("home")}</Link>
           <span className="text-[10px]">&rsaquo;</span>
           <span className="text-on-surface">{t("breadcrumb")}</span>
         </nav>
 
-        <header className="mb-12">
-          <h1 className="font-headline text-5xl md:text-6xl text-on-surface text-editorial-tight mb-2">
+        <header className="mb-12 pb-8 border-b border-outline-variant/70">
+          <h1 className="text-[clamp(2.75rem,7vw,5.5rem)] leading-[0.92] tracking-[-0.05em] text-on-surface">
             {t("h1")}
           </h1>
-          <p className="text-on-surface-variant flex items-center gap-2">
+          <p className="mt-4 label-mono text-on-surface-variant flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-secondary" />
-            {total} {t("pageDescription")}
+            {t("countLabel", { count: totalVerified })}
           </p>
         </header>
 
-        <div className="flex flex-col lg:flex-row gap-16">
-          <Suspense fallback={<div className="w-[300px]" />}>
-            <CafeFilters countries={countries} />
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-16">
+          <Suspense fallback={<div className="lg:w-[280px]" />}>
+            <CatalogFilters
+              basePath="/cafes"
+              searchPlaceholder={tFilters("cafePlaceholder")}
+              locations={locations}
+              facets={facets}
+            />
           </Suspense>
 
           <section className="flex-1">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-surface-container-low">
-              <span className="text-sm text-on-surface-variant">
-                Showing {cafes.length} of {total} results
-              </span>
-              <div className="flex items-center gap-4">
-                <span className="text-xs uppercase tracking-widest font-semibold">{tCommon("sortBy")}</span>
-                <Suspense fallback={<select className="bg-transparent border-none text-sm font-medium text-primary"><option>{t("sortNameAZ")}</option></select>}>
-                  <SortSelect
-                    basePath="/cafes"
-                    options={[
-                      { label: t("sortNameAZ"), value: "nameAZ" },
-                      { label: t("sortCity"), value: "city" },
-                      { label: t("sortRating"), value: "rating" },
-                    ]}
-                  />
-                </Suspense>
-              </div>
-            </div>
+            <CatalogToolbar basePath="/cafes" shown={cafes.length} total={total} active={active} />
 
             {cafesWithRating.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12">
                 {cafesWithRating.map((cafe) => (
                   <CafeCard key={cafe.id} cafe={cafe} />
                 ))}
@@ -193,35 +208,13 @@ export default async function CafesPage({
               </div>
             )}
 
-            {totalPages > 1 && (
-              <nav className="mt-20 flex items-center justify-center gap-4">
-                {page > 1 && (
-                  <Link href={buildPageHref("/cafes", sp, page - 1)} className="flex items-center gap-1 px-4 py-2 text-sm text-on-surface-variant hover:text-primary transition-colors">
-                    &larr; {tCommon("previous")}
-                  </Link>
-                )}
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                    <Link
-                      key={p}
-                      href={buildPageHref("/cafes", sp, p)}
-                      className={
-                        p === page
-                          ? "w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold bg-primary text-on-primary"
-                          : "w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium hover:bg-surface-container transition-colors"
-                      }
-                    >
-                      {p}
-                    </Link>
-                  ))}
-                </div>
-                {page < totalPages && (
-                  <Link href={buildPageHref("/cafes", sp, page + 1)} className="flex items-center gap-1 px-4 py-2 text-sm text-on-surface-variant hover:text-primary transition-colors">
-                    {tCommon("next")} &rarr;
-                  </Link>
-                )}
-              </nav>
-            )}
+            <Pagination
+              basePath="/cafes"
+              searchParams={sp}
+              page={page}
+              totalPages={totalPages}
+              labels={{ previous: tCommon("previous"), next: tCommon("next"), page: tCommon("page") }}
+            />
           </section>
         </div>
 

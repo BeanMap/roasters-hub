@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -189,7 +189,7 @@ export default async function RoasterProfilePage({
 
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-6 pt-8">
-        <nav className="flex text-xs uppercase tracking-widest text-on-surface-variant/60 gap-2">
+        <nav className="flex flex-wrap label-mono text-outline gap-2">
           <Link className="hover:text-primary transition-colors" href="/">{t("home")}</Link>
           <span>›</span>
           <Link className="hover:text-primary transition-colors" href="/roasters">{t("roasters")}</Link>
@@ -203,37 +203,39 @@ export default async function RoasterProfilePage({
       </div>
 
       {/* Hero */}
-      <header className="w-full h-[400px] md:h-[500px] mt-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-stone-900">
+      <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 mt-6">
+      <header className="w-full h-[420px] md:h-[560px] relative overflow-hidden rounded-2xl">
+        <div className="absolute inset-0 bg-[#2a1f19]">
           {imageUrl && (
             <Image
               src={imageUrl}
               alt={primaryImage?.alt || `${roaster.name} roastery`}
               fill
-              className="object-cover opacity-70"
-              sizes="100vw"
+              className="object-cover opacity-80"
+              sizes="(max-width: 1280px) 100vw, 1280px"
               priority
             />
           )}
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        <div className="max-w-7xl mx-auto h-full px-6 relative flex flex-col justify-end pb-12">
+        <div className="absolute inset-0 bg-gradient-to-t from-[#1f1611]/90 via-[#1f1611]/30 to-transparent" />
+        <div className="h-full px-6 md:px-10 relative flex flex-col justify-end pb-8 md:pb-12">
           {isVerified && (
-            <div className="absolute top-8 right-6">
-              <VerifiedBadge size="lg" />
+            <div className="absolute top-6 right-6">
+              <VerifiedBadge size="md" />
             </div>
           )}
-          <h1 className="font-headline text-6xl md:text-7xl lg:text-8xl text-white tracking-tighter leading-none mb-4">
+          <h1 className="text-[clamp(2.75rem,8vw,6.5rem)] text-[#fbf8f3] leading-[0.9] tracking-[-0.05em] mb-5">
             {roaster.name}
           </h1>
-          <div className="flex items-center text-white/90 gap-2 text-sm md:text-base">
+          <div className="flex items-center text-[#f5efe6]/85 gap-2 label-mono text-[0.75rem]">
             <svg className="w-5 h-5 text-primary-fixed-dim" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
             </svg>
-            {flag} {roaster.city}, {roaster.country}
+            {flag} {roaster.city} — {roaster.country}
           </div>
         </div>
       </header>
+      </div>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-16">
@@ -241,8 +243,8 @@ export default async function RoasterProfilePage({
         <div className="space-y-16">
           {/* About */}
           <section>
-            <h2 className="font-headline text-3xl mb-8 tracking-tight">{t("about", { name: roaster.name })}</h2>
-            <p className="text-lg leading-relaxed text-on-surface-variant font-light">
+            <h2 className="text-[clamp(1.75rem,3vw,2.5rem)] mb-6">{t("about", { name: roaster.name })}</h2>
+            <p className="text-lg md:text-xl leading-relaxed text-on-surface-variant max-w-[62ch]">
               {roaster.description}
             </p>
           </section>
@@ -250,7 +252,7 @@ export default async function RoasterProfilePage({
           {/* Gallery */}
           {galleryImages.length > 0 && (
             <section>
-              <h2 className="font-headline text-3xl mb-8 tracking-tight">Photos</h2>
+              <h2 className="text-[clamp(1.75rem,3vw,2.5rem)] mb-6">{t("photos")}</h2>
               <ImageGallery images={galleryImages} />
             </section>
           )}
@@ -262,7 +264,7 @@ export default async function RoasterProfilePage({
           {/* Location Map Link */}
           {roaster.lat && roaster.lng && (
             <section>
-              <h2 className="font-headline text-3xl mb-8 tracking-tight">{t("location")}</h2>
+              <h2 className="text-[clamp(1.75rem,3vw,2.5rem)] mb-6">{t("location")}</h2>
               <a
                 href={`/map?lat=${roaster.lat}&lng=${roaster.lng}&zoom=14&name=${encodeURIComponent(roaster.name)}`}
                 className="block bg-surface-container rounded-2xl overflow-hidden border border-outline-variant/10 hover:border-primary/30 transition-colors group"

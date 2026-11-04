@@ -58,7 +58,14 @@
   },
   "beta": {
     "message": "Beta — To jest wersja testowa Bean Map. Dane mogą ulec zmianie i nie świadczymy usług komercyjnych.",
-    "dismiss": "Zamknij baner beta"
+    "dismiss": "Zamknij baner beta",
+    "label": "Prywatna beta",
+    "title": "Kawa specialty, zanim zobaczą ją inni.",
+    "desc": "Wpisz kod dostępu, aby zobaczyć Bean Map przed publicznym startem.",
+    "placeholder": "Kod dostępu",
+    "enter": "Wejdź",
+    "verifying": "Sprawdzam…",
+    "invalid": "Nieprawidłowy kod dostępu"
   },
   "errors": {
     "notFoundCode": "404",
@@ -92,7 +99,7 @@
     "mapDesc": "Nasza interaktywna mapa pozwala znaleźć zweryfikowane palarnie specialty w każdym mieście.",
     "exploreMap": "Eksploruj mapę",
     "newsletterTitle": "Świeże ziarna w Twojej skrzynce",
-    "newsletterDesc": "Dołącz do ponad 10 000 subskrybentów — co tydzień kuratowane nowości od palarni i limitowane edycje.",
+    "newsletterDesc": "Krótki, okazjonalny mail o nowych palarniach i kawiarniach na Bean Map. Bez spamu, wypiszesz się w każdej chwili.",
     "statsRoastersLabel": "Palarnie",
     "statsCafesLabel": "Kawiarnie",
     "statsCountriesLabel": "Kraje",
@@ -137,7 +144,8 @@
     "addFirstPhoto": "Dodaj pierwsze zdjęcie",
     "addAnotherPhoto": "Dodaj kolejne zdjęcie",
     "photoUploadedSubmitted": "Zdjęcie przesłane i wysłane do sprawdzenia.",
-    "maxImagesReached": "Osiągnąłeś maksymalną liczbę zdjęć."
+    "maxImagesReached": "Osiągnąłeś maksymalną liczbę zdjęć.",
+    "page": "Strona"
   },
   "legal": {
     "privacyTitle": "Polityka Prywatności",
@@ -160,7 +168,8 @@
     "sortNameAZ": "Nazwa A–Z",
     "sortNewest": "Najnowsze",
     "noResultsFilters": "Nie znaleziono palarni dla tych filtrów",
-    "clearFilters": "Wyczyść filtry"
+    "clearFilters": "Wyczyść filtry",
+    "countLabel": "{count, plural, one {# zweryfikowana palarnia} few {# zweryfikowane palarnie} many {# zweryfikowanych palarni} other {# zweryfikowanej palarni}}"
   },
   "cafes": {
     "pageTitle": "Kawiarnie specialty",
@@ -173,7 +182,8 @@
     "sortCity": "Miasto",
     "sortRating": "Ocena",
     "noResultsFilters": "Nie znaleziono kawiarni dla tych filtrów",
-    "clearFilters": "Wyczyść filtry"
+    "clearFilters": "Wyczyść filtry",
+    "countLabel": "{count, plural, one {# kawiarnia specialty} few {# kawiarnie specialty} many {# kawiarni specialty} other {# kawiarni specialty}}"
   },
   "admin": {
     "dashboard": "Panel administracyjny",
@@ -344,7 +354,12 @@
     "verifiedCafeCountWithCountry": "{count, plural, one {# zweryfikowana kawiarnia} other {# zweryfikowanych kawiarni}} · {country}",
     "noFilterMatch": "Brak {entity} pasujących do filtra.",
     "specialtyCoffeeRoasters": "Palarnie kawy specialty",
-    "specialtyCoffeeCafes": "Kawiarnie kawy specialty"
+    "specialtyCoffeeCafes": "Kawiarnie kawy specialty",
+    "photos": "Zdjęcia",
+    "signInToAddPhoto": "Zaloguj się, aby dodać zdjęcie",
+    "signInShort": "Zaloguj się",
+    "saveRoaster": "Zapisz palarnię",
+    "savedRoaster": "Zapisano"
   },
   "map": {
     "title": "Mapa palarni i kawiarni",
@@ -520,5 +535,79 @@
     "cancel": "Anuluj",
     "confirmDelete": "Tak, usuń konto",
     "deleting": "Usuwanie..."
+  },
+  "filters": {
+    "searchName": "Szukaj",
+    "roasteryPlaceholder": "Palarnia lub miasto…",
+    "cafePlaceholder": "Kawiarnia lub miasto…",
+    "title": "Filtry",
+    "clearAll": "Wyczyść",
+    "country": "Kraj",
+    "allCountries": "Wszystkie kraje",
+    "originRegions": "Regiony pochodzenia",
+    "certifications": "Certyfikaty",
+    "roastStyle": "Stopień palenia",
+    "amenities": "Udogodnienia",
+    "showing": "Wyświetlono {shown} z {total}",
+    "verified": "Zweryfikowane",
+    "featured": "Polecane",
+    "roastersCount": "{count, plural, one {# palarnia} few {# palarnie} many {# palarni} other {# palarni}}",
+    "location": "Lokalizacja",
+    "city": "Miasto",
+    "allCities": "Wszystkie miasta",
+    "coffee": "Kawa",
+    "activeFilters": "Aktywne filtry",
+    "removeFilter": "Usuń filtr",
+    "sortRecommended": "Polecane",
+    "sortNameAZ": "Nazwa A–Z",
+    "sortNewest": "Najnowsze",
+    "sortMostReviewed": "Najwięcej opinii",
+    "noResults": "Brak wyników dla tych filtrów.",
+    "search": "Szukaj",
+    "amenity": {
+      "wifi": "Wi-Fi",
+      "workspace": "Miejsce do pracy",
+      "outdoor_seating": "Ogródek",
+      "dog_friendly": "Przyjazne psom",
+      "vegan": "Opcje wegańskie",
+      "vegetarian": "Wegetariańskie",
+      "food": "Jedzenie",
+      "specialty_only": "Tylko specialty",
+      "alternative_brew": "Metody alternatywne",
+      "takeaway": "Na wynos",
+      "in_store": "Na miejscu",
+      "events": "Wydarzenia",
+      "cuppings": "Cuppingi"
+    },
+    "style": {
+      "Light": "Jasne palenie",
+      "Medium": "Średnie palenie",
+      "Dark": "Ciemne palenie",
+      "Espresso": "Espresso",
+      "Filter": "Przelew",
+      "ColdBrew": "Cold brew",
+      "Decaf": "Bezkofeinowa",
+      "Nitro": "Nitro"
+    },
+    "locationPlaceholder": "Kraj lub miasto…",
+    "noLocation": "Brak pasującego miejsca",
+    "countryKind": "kraj",
+    "cityKind": "miasto"
+  },
+  "reviewForm": {
+    "rating": "Ocena",
+    "comment": "Komentarz",
+    "optional": "(opcjonalnie)",
+    "placeholder": "Podziel się wrażeniami…",
+    "signInPrompt": "Zaloguj się, aby dodać opinię",
+    "signIn": "Zaloguj się",
+    "thanks": "Dziękujemy! Opinia pojawi się po moderacji.",
+    "yourName": "Imię",
+    "namePlaceholder": "Twoje imię",
+    "selectRating": "Wybierz ocenę",
+    "error": "Coś poszło nie tak. Spróbuj ponownie.",
+    "submitting": "Wysyłanie…",
+    "submit": "Dodaj opinię",
+    "stars": "{count, plural, one {# gwiazdka} few {# gwiazdki} many {# gwiazdek} other {# gwiazdki}}"
   }
 }

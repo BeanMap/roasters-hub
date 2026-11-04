@@ -52,7 +52,7 @@ model Roaster {
   postalCode            String?
   phone                 String?
   foundedYear           Int?
-  brewingMethods        String[]
+  brewingMethods        String[]  @default([])
   wholesaleAvailable    Boolean?
   subscriptionAvailable Boolean?
   openingHours          Json?
@@ -299,7 +299,7 @@ model EnrichmentRun {
   id          String               @id @default(cuid())
   entityType  String
   query       Json
-  sources     String[]
+  sources     String[]  @default([])
   status      EnrichmentRunStatus  @default(RUNNING)
   stats       Json                 @default("{}")
   proposals   EnrichmentProposal[]

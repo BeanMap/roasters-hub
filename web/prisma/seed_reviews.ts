@@ -4,13 +4,9 @@
  *
  * Usage: npx tsx --env-file=.env.local prisma/seed_reviews.ts
  */
-import { PrismaClient } from "@prisma/client";
-import { PrismaNeon } from "@prisma/adapter-neon";
+import { createScriptClient } from "./script-client";
 
-const adapter = new PrismaNeon({
-  connectionString: process.env.DIRECT_URL ?? process.env.DATABASE_URL!,
-});
-const prisma = new PrismaClient({ adapter });
+const prisma = createScriptClient();
 
 const ROASTER_REVIEWS = [
   // APPROVED — positive
@@ -115,24 +111,16 @@ async function main() {
     return true;
   });
 
-  // Delete existing reviews for these roasters/cafes to prevent duplicates
-  // when running the seed script multiple times
-  const existingRoasterIds = roasters.map((r) => r.id);
-  const existingCafeIds = cafes.map((c) => c.id);
-
-  if (existingRoasterIds.length > 0) {
-    const deleted = await prisma.review.deleteMany({
-      where: { roasterId: { in: existingRoasterIds } },
-    });
-    console.log(`  Deleted ${deleted.count} existing roaster reviews`);
-  }
-
-  if (existingCafeIds.length > 0) {
-    const deleted = await prisma.review.deleteMany({
-      where: { cafeId: { in: existingCafeIds } },
-    });
-    console.log(`  Deleted ${deleted.count} existing cafe reviews`);
-  }
+  // Idempotency: remove only reviews that this script created earlier
+  // (anonymous + one of the seed author names). Real user reviews always
+  // carry a Clerk userId and are never touched. The previous version deleted
+  // EVERY review of every roaster/cafe, which wiped real reviews whenever the
+  // seed ran on production.
+  const seedAuthors = [...new Set(validData.map((r) => r.authorName))];
+  const deleted = await prisma.review.deleteMany({
+    where: { userId: null, authorName: { in: seedAuthors } },
+  });
+  console.log(`  Removed ${deleted.count} previously seeded reviews`);
 
   const result = await prisma.review.createMany({
     data: validData,

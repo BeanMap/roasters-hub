@@ -80,7 +80,7 @@ jobs:
         run: cd web && npm install
 
       - name: Run migrations on preview branch
-        if: github.event.action != 'closed' && steps.migrations.outputs.has_migrations == 'true'
+        if: github.event.action != 'closed'
         run: cd web && npx prisma migrate deploy
         env:
           DATABASE_URL: ${{ steps.neon.outputs.db_url }}
@@ -103,6 +103,7 @@ jobs:
           DIRECT_URL: ${{ steps.neon.outputs.db_url }}
 
       - name: Upsert Vercel env var
+        id: envvar
         if: github.event.action != 'closed'
         run: |
           BRANCH="${{ github.head_ref }}"
@@ -120,12 +121,13 @@ jobs:
             -H "Authorization: Bearer ${TOKEN}" \
             | jq -r --arg key "$ENV_KEY" '.envs[] | select(.key == $key) | .id // empty')
 
-          # Delete if exists
+          # Keep an existing variable: the Neon branch (and its URL) is reused on
+          # every push, and deleting/recreating it would make Vercel builds that
+          # start in between skip themselves (no DB) without a redeploy.
           if [ -n "$EXISTING_ID" ]; then
-            echo "Deleting existing $ENV_KEY (id: $EXISTING_ID)"
-            curl -s -X DELETE \
-              "https://api.vercel.com/v9/projects/${PROJECT_ID}/env/${EXISTING_ID}" \
-              -H "Authorization: Bearer ${TOKEN}"
+            echo "$ENV_KEY already set (id: $EXISTING_ID) — keeping it."
+            echo "created=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
           # Create branch-specific DATABASE_URL — used by getDatabaseUrl() in preview builds
@@ -140,6 +142,37 @@ jobs:
               \"type\": \"plain\",
               \"target\": [\"preview\"]
             }"
+          echo "created=true" >> "$GITHUB_OUTPUT"
+
+      # Only when the variable was just created: the first Vercel build of a PR
+      # stops in web/scripts/vercel-build.mjs because the branch database did not
+      # exist yet (previews never fall back to production). Now that it does,
+      # rebuild the preview for the same commit.
+      - name: Trigger preview deployment
+        if: github.event.action != 'closed' && steps.envvar.outputs.created == 'true'
+        run: |
+          # No "target" field: preview is the API default ("preview" is not a valid value).
+          BODY='{
+            "name": "beanmap",
+            "project": "${{ secrets.VERCEL_PROJECT_ID }}",
+            "gitSource": {
+              "type": "github",
+              "repoId": "${{ github.event.repository.id }}",
+              "ref": "${{ github.head_ref }}",
+              "sha": "${{ github.event.pull_request.head.sha }}"
+            }
+          }'
+          HTTP_CODE=$(curl -s -o /tmp/deploy.json -w "%{http_code}" -X POST \
+            "https://api.vercel.com/v13/deployments?forceNew=1" \
+            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "$BODY")
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            jq '{id, url, readyState}' /tmp/deploy.json
+          else
+            echo "::warning::Preview deployment not triggered (HTTP $HTTP_CODE). Redeploy it from the Vercel dashboard."
+            jq '.error // .' /tmp/deploy.json || cat /tmp/deploy.json
+          fi
 
       # --- DESTROY (on closed) ---
       - name: Delete Vercel env var

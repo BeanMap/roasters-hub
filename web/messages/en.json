@@ -58,7 +58,14 @@
   },
   "beta": {
     "message": "Beta — This is a test version of Bean Map. Data may change and no commercial services are offered.",
-    "dismiss": "Dismiss beta banner"
+    "dismiss": "Dismiss beta banner",
+    "label": "Private beta",
+    "title": "Specialty coffee, before everyone else.",
+    "desc": "Enter your access code to explore Bean Map before the public launch.",
+    "placeholder": "Access code",
+    "enter": "Enter",
+    "verifying": "Checking…",
+    "invalid": "Invalid access code"
   },
   "errors": {
     "notFoundCode": "404",
@@ -92,7 +99,7 @@
     "mapDesc": "Our interactive map allows you to find verified specialty roasters in any city.",
     "exploreMap": "Explore the Map",
     "newsletterTitle": "Fresh beans in your inbox",
-    "newsletterDesc": "Join 10,000+ subscribers for weekly curation of new roasters and limited releases.",
+    "newsletterDesc": "A short, occasional email about new roasters and cafés on Bean Map. No spam, unsubscribe anytime.",
     "statsRoastersLabel": "Roasters",
     "statsCafesLabel": "Cafes",
     "statsCountriesLabel": "Countries",
@@ -137,7 +144,8 @@
     "addFirstPhoto": "Add your first photo",
     "addAnotherPhoto": "Add another photo",
     "photoUploadedSubmitted": "Photo uploaded and submitted for review.",
-    "maxImagesReached": "You've reached the maximum number of images."
+    "maxImagesReached": "You've reached the maximum number of images.",
+    "page": "Page"
   },
   "legal": {
     "privacyTitle": "Privacy Policy",
@@ -160,7 +168,8 @@
     "sortNameAZ": "Name A–Z",
     "sortNewest": "Newest",
     "noResultsFilters": "No roasters found for these filters",
-    "clearFilters": "Clear filters"
+    "clearFilters": "Clear filters",
+    "countLabel": "{count, plural, one {# verified roaster} other {# verified roasters}}"
   },
   "cafes": {
     "pageTitle": "Specialty Cafés",
@@ -173,7 +182,8 @@
     "sortCity": "City",
     "sortRating": "Rating",
     "noResultsFilters": "No cafes found for these filters",
-    "clearFilters": "Clear filters"
+    "clearFilters": "Clear filters",
+    "countLabel": "{count, plural, one {# specialty café} other {# specialty cafés}}"
   },
   "admin": {
     "dashboard": "Admin dashboard",
@@ -344,7 +354,12 @@
     "verifiedCafeCountWithCountry": "{count, plural, one {# verified cafe} other {# verified cafes}} · {country}",
     "noFilterMatch": "No {entity} match this filter.",
     "specialtyCoffeeRoasters": "Specialty Coffee Roasters",
-    "specialtyCoffeeCafes": "Specialty Coffee Cafes"
+    "specialtyCoffeeCafes": "Specialty Coffee Cafes",
+    "photos": "Photos",
+    "signInToAddPhoto": "Sign in to add a photo",
+    "signInShort": "Sign in",
+    "saveRoaster": "Save roaster",
+    "savedRoaster": "Saved"
   },
   "map": {
     "title": "Coffee Roasters & Cafes Map",
@@ -520,5 +535,79 @@
     "cancel": "Cancel",
     "confirmDelete": "Yes, delete my account",
     "deleting": "Deleting..."
+  },
+  "filters": {
+    "searchName": "Search",
+    "roasteryPlaceholder": "Roastery or city…",
+    "cafePlaceholder": "Café or city…",
+    "title": "Filters",
+    "clearAll": "Clear all",
+    "country": "Country",
+    "allCountries": "All countries",
+    "originRegions": "Origin regions",
+    "certifications": "Certifications",
+    "roastStyle": "Roast style",
+    "amenities": "Amenities",
+    "showing": "Showing {shown} of {total} results",
+    "verified": "Verified",
+    "featured": "Featured",
+    "roastersCount": "{count, plural, one {# roaster} other {# roasters}}",
+    "location": "Location",
+    "city": "City",
+    "allCities": "All cities",
+    "coffee": "Coffee",
+    "activeFilters": "Active filters",
+    "removeFilter": "Remove filter",
+    "sortRecommended": "Recommended",
+    "sortNameAZ": "Name A–Z",
+    "sortNewest": "Newest",
+    "sortMostReviewed": "Most reviewed",
+    "noResults": "Nothing matches these filters.",
+    "search": "Search",
+    "amenity": {
+      "wifi": "Wi-Fi",
+      "workspace": "Workspace",
+      "outdoor_seating": "Outdoor seating",
+      "dog_friendly": "Dog friendly",
+      "vegan": "Vegan options",
+      "vegetarian": "Vegetarian",
+      "food": "Food menu",
+      "specialty_only": "Specialty only",
+      "alternative_brew": "Alt brew methods",
+      "takeaway": "Takeaway",
+      "in_store": "Dine in",
+      "events": "Events",
+      "cuppings": "Cuppings"
+    },
+    "style": {
+      "Light": "Light roast",
+      "Medium": "Medium roast",
+      "Dark": "Dark roast",
+      "Espresso": "Espresso",
+      "Filter": "Filter",
+      "ColdBrew": "Cold brew",
+      "Decaf": "Decaf",
+      "Nitro": "Nitro"
+    },
+    "locationPlaceholder": "Country or city…",
+    "noLocation": "No matching place",
+    "countryKind": "country",
+    "cityKind": "city"
+  },
+  "reviewForm": {
+    "rating": "Rating",
+    "comment": "Comment",
+    "optional": "(optional)",
+    "placeholder": "Share your experience…",
+    "signInPrompt": "Sign in to leave a review",
+    "signIn": "Sign in",
+    "thanks": "Thank you! Your review will appear after moderation.",
+    "yourName": "Your name",
+    "namePlaceholder": "Your name",
+    "selectRating": "Please select a rating",
+    "error": "Something went wrong. Please try again.",
+    "submitting": "Sending…",
+    "submit": "Submit review",
+    "stars": "{count, plural, one {# star} other {# stars}}"
   }
 }

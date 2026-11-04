@@ -76,7 +76,7 @@ export function ImageGallery({
               </span>
             )}
             {img.isPrimary && (
-              <span className="absolute top-2 right-2 bg-amber-600 text-white text-[10px] px-1.5 py-0.5 rounded">
+              <span className="absolute top-2 right-2 bg-primary text-white text-[10px] px-1.5 py-0.5 rounded">
                 Cover
               </span>
             )}

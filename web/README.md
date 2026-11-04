@@ -31,6 +31,31 @@ npm run dev
 # → http://localhost:3000
 ```
 
+## Lokalnie bez Neona (Docker) i testy
+
+```bash
+npm run db:local:up                       # Postgres 16 w Dockerze
+export DATABASE_URL=postgresql://postgres:postgres@localhost:5432/beanmap
+npm run db:local:reset                    # migracje od zera + dane demo
+npm run dev                               # http://localhost:3000
+```
+
+Aplikacja sama wybiera sterownik: lokalny Postgres → `pg`, Neon → serverless.
+
+| Co | Komenda |
+|----|---------|
+| Lint + typy + unit | `npm run lint && npx tsc --noEmit && npm test` |
+| E2E smoke (app musi działać) | `E2E_BASE_URL=http://localhost:3000 npm run e2e:smoke -- --project=chromium --project="Mobile Chrome"` |
+| Rozjazd schematu vs migracje | `npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script` |
+
+## Baza danych — zasady (ważne)
+
+- **Zmiana schematu = nowa migracja** (`npx prisma migrate dev --name ...`). Nigdy `prisma db push` na produkcji — CI (job *Fresh DB + E2E Smoke*) wykrywa rozjazd.
+- **Migracje produkcyjne** uruchamia build Vercela (`scripts/vercel-build.mjs`) *przed* `next build`. Nieudana migracja = nieudany build = zostaje poprzednia wersja.
+- **Preview** zawsze na własnej gałęzi Neon (workflow *Preview Database*). Bez niej build preview kończy się czytelnym błędem (pierwszy push PR-a), a workflow po utworzeniu bazy sam uruchamia deploy — preview nigdy nie łączy się z produkcją.
+- **Produkcja nie jest seedowana automatycznie.** Dane bazowe (palarnie, kawiarnie): Actions → *Production Database* → Run workflow. Dane demo (recenzje, eventy) nie trafiają na produkcję.
+- Migracje muszą być **addytywne** (dodaj kolumnę → przenieś dane → usuń starą w osobnym PR), żeby poprzednia wersja aplikacji działała podczas rollbacku.
+
 ## Aktualny Stan
 
 Sprawdź [`/PROJECT_STATUS.md`](../PROJECT_STATUS.md) — co działa, co nie, co jest następne.

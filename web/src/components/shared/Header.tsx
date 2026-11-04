@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { Suspense, useState } from "react";
@@ -56,6 +56,7 @@ function HeaderSearch({ pathname }: { pathname: string }) {
             : "text-outline hover:bg-surface-container-high"
         }`}
         aria-label={t("searchRoastersLabel")}
+        title={t("searchRoastersLabel")}
         aria-pressed={entityType === "roasters"}
       >
         <CoffeeBean className="w-[17px] h-[17px]" />
@@ -69,6 +70,7 @@ function HeaderSearch({ pathname }: { pathname: string }) {
             : "text-outline hover:bg-surface-container-high"
         }`}
         aria-label={t("searchCafesLabel")}
+        title={t("searchCafesLabel")}
         aria-pressed={entityType === "cafes"}
       >
         <CoffeeCup className="w-[17px] h-[17px]" />
@@ -103,8 +105,8 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-[1000] glass-nav border-b border-surface-container-high/50">
-      <div className="flex justify-between items-center w-full px-6 max-w-7xl mx-auto h-[66px]">
+    <header className="sticky top-0 z-[1000] glass-nav border-b border-outline-variant/60">
+      <div className="flex justify-between items-center w-full px-6 max-w-7xl mx-auto h-16">
         <div className="flex items-center gap-8">
           <Link href="/" aria-label={t("homeLabel")} className="flex items-center">
             <Image
@@ -116,7 +118,7 @@ export function Header() {
               className="h-10 w-auto"
             />
           </Link>
-          <nav className="hidden md:flex items-center gap-6" aria-label="Main navigation">
+          <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
@@ -125,8 +127,8 @@ export function Header() {
                   href={link.href}
                   className={
                     isActive
-                      ? "text-primary font-bold border-b-2 border-primary pb-1 text-base tracking-tight"
-                      : "text-on-surface-variant hover:text-on-surface transition-colors text-base font-bold tracking-tight"
+                      ? "rounded-full bg-on-surface text-surface px-3.5 py-1.5 text-[0.9375rem] font-semibold"
+                      : "rounded-full px-3.5 py-1.5 text-[0.9375rem] font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors"
                   }
                 >
                   {link.label}

@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
@@ -201,7 +201,7 @@ export default async function CafeProfilePage({
 
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-6 pt-8">
-        <nav className="flex text-xs uppercase tracking-widest text-on-surface-variant/60 gap-2">
+        <nav className="flex flex-wrap label-mono text-outline gap-2">
           <Link className="hover:text-primary transition-colors" href="/">{t("home")}</Link>
           <span>›</span>
           <Link className="hover:text-primary transition-colors" href="/cafes">{t("cafes")}</Link>
@@ -225,41 +225,43 @@ export default async function CafeProfilePage({
       </div>
 
       {/* Hero */}
-      <header className="w-full h-[300px] md:h-[400px] mt-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-stone-900">
+      <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 mt-6">
+      <header className="w-full h-[360px] md:h-[480px] relative overflow-hidden rounded-2xl">
+        <div className="absolute inset-0 bg-[#2a1f19]">
           {cafe.coverImageUrl && (
             <Image
               src={cafe.coverImageUrl}
               alt={cafe.name}
               fill
-              className="object-cover opacity-70"
-              sizes="100vw"
+              className="object-cover opacity-80"
+              sizes="(max-width: 1280px) 100vw, 1280px"
               priority
             />
           )}
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        <div className="max-w-7xl mx-auto h-full px-6 relative flex flex-col justify-end pb-12">
+        <div className="absolute inset-0 bg-gradient-to-t from-[#1f1611]/90 via-[#1f1611]/30 to-transparent" />
+        <div className="h-full px-6 md:px-10 relative flex flex-col justify-end pb-8 md:pb-12">
           {isVerified && (
-            <div className="absolute top-8 right-6">
-              <VerifiedBadge size="lg" />
+            <div className="absolute top-6 right-6">
+              <VerifiedBadge size="md" />
             </div>
           )}
-          <h1 className="font-headline text-5xl md:text-6xl lg:text-7xl text-white tracking-tighter leading-none mb-4">
+          <h1 className="text-[clamp(2.5rem,7vw,5.75rem)] text-[#fbf8f3] leading-[0.9] tracking-[-0.05em] mb-5">
             {cafe.name}
           </h1>
-          <div className="flex items-center text-white/90 gap-2 text-sm md:text-base">
+          <div className="flex flex-wrap items-center text-[#f5efe6]/85 gap-2 label-mono text-[0.75rem]">
             <svg className="w-5 h-5 text-primary-fixed-dim" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
             </svg>
-            {cafe.city}, {cafe.country}
+            {cafe.city} — {cafe.country}
             {avgRating !== null && (
-              <span className="ml-2 text-primary font-semibold">
+              <span className="ml-2 text-[#f2a77d]">
                 ★ {avgRating.toFixed(1)} ({approvedReviews.length} {approvedReviews.length === 1 ? t("reviewCount", { count: 1 }) : t("reviewCount", { count: approvedReviews.length })})</span>
             )}
           </div>
         </div>
       </header>
+      </div>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-16">
@@ -268,8 +270,8 @@ export default async function CafeProfilePage({
           {/* About */}
           {cafe.description && (
             <section>
-              <h2 className="font-headline text-3xl mb-8 tracking-tight">{t("about", { name: cafe.name })}</h2>
-              <p className="text-lg leading-relaxed text-on-surface-variant font-light">
+              <h2 className="text-[clamp(1.75rem,3vw,2.5rem)] mb-6">{t("about", { name: cafe.name })}</h2>
+              <p className="text-lg md:text-xl leading-relaxed text-on-surface-variant max-w-[62ch]">
                 {cafe.description}
               </p>
             </section>
@@ -278,7 +280,7 @@ export default async function CafeProfilePage({
           {/* Gallery */}
           {galleryImages.length > 0 && (
             <section>
-              <h2 className="font-headline text-3xl mb-8 tracking-tight">Photos</h2>
+              <h2 className="text-[clamp(1.75rem,3vw,2.5rem)] mb-6">{t("photos")}</h2>
               <ImageGallery images={galleryImages} />
             </section>
           )}
@@ -343,7 +345,7 @@ export default async function CafeProfilePage({
 
           {/* Roasters we serve */}
           <section>
-            <h2 className="font-headline text-3xl tracking-tight mb-6">{t("roastersWeServe")}</h2>
+            <h2 className="text-[clamp(1.75rem,3vw,2.5rem)] mb-6">{t("roastersWeServe")}</h2>
             {cafe.roasters.length === 0 ? (
               <p className="text-on-surface-variant/60 text-sm">{t("noRoastersListed")}</p>
             ) : (

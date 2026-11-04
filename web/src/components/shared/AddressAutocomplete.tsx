@@ -152,8 +152,8 @@ export function AddressAutocomplete({
             <li
               key={`${s.lat}-${s.lng}-${i}`}
               onMouseDown={() => selectSuggestion(s)}
-              className={`cursor-pointer px-4 py-2.5 text-sm hover:bg-amber-50 ${
-                i === activeIndex ? "bg-amber-50" : ""
+              className={`cursor-pointer px-4 py-2.5 text-sm hover:bg-surface-container-low ${
+                i === activeIndex ? "bg-surface-container-low" : ""
               }`}
             >
               {s.displayName}

@@ -46,7 +46,7 @@ export function ReviewSortControls({
               setOpen(false);
             }}
             className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
-              value === "newest" ? "text-amber-600 font-medium" : "text-gray-700"
+              value === "newest" ? "text-primary font-medium" : "text-gray-700"
             }`}
           >
             {t("sortNewestFirst")}
@@ -57,7 +57,7 @@ export function ReviewSortControls({
               setOpen(false);
             }}
             className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
-              value === "highest" ? "text-amber-600 font-medium" : "text-gray-700"
+              value === "highest" ? "text-primary font-medium" : "text-gray-700"
             }`}
           >
             {t("sortHighest")}

@@ -1,8 +1,10 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { VerifiedBadge } from "./VerifiedBadge";
 import { CertificationBadge } from "./CertificationBadge";
 import { ImageWithFallback } from "./ImageWithFallback";
 import { cn } from "@/lib/utils";
+import { ImagePlaceholder } from "@/components/shared/ImagePlaceholder";
 
 interface RoasterCardProps {
   roaster: {
@@ -27,6 +29,7 @@ export function RoasterCard({ roaster, variant = "default", className }: Roaster
   const fallbackUrl = primaryImage?.url || roaster.coverImageUrl;
   const fallbackAlt = primaryImage?.alt || `${roaster.name} roastery`;
   const isVerified = roaster.status === "VERIFIED";
+  const t = useTranslations("filters");
 
   if (variant === "compact") {
     return (
@@ -78,53 +81,58 @@ export function RoasterCard({ roaster, variant = "default", className }: Roaster
     );
   }
 
+  const origins = roaster.origins.slice(0, 3);
+
   return (
     <Link
       href={`/roasters/${roaster.slug}`}
-      className={cn("group cursor-pointer block", className)}
+      className={cn("group block rounded-2xl focus-visible:outline-offset-4", className)}
     >
-      <article>
-        <div className="relative mb-4 aspect-[4/5] overflow-hidden rounded-xl bg-surface-container shadow-sm group-hover:shadow-md transition-all duration-300">
+      <article className="h-full flex flex-col">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#2a1f19] transition-shadow duration-300 group-hover:shadow-[var(--shadow-card-hover)]">
           {fallbackUrl ? (
             <ImageWithFallback
               src={fallbackUrl}
               alt={fallbackAlt}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-700"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-on-surface-variant/30 bg-surface-container-low">
-              <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M2 20h20V4H2v16zm2-2V6h16v12H4z"/></svg>
+            <ImagePlaceholder label={roaster.name} />
+          )}
+          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/45 to-transparent pointer-events-none" />
+          <div className="absolute left-3 right-3 bottom-3 flex items-center justify-between gap-2">
+            {roaster.featured ? (
+              <span className="label-mono rounded-full bg-[#f5efe6] text-[#1f1611] px-2.5 py-1">★ {t("featured")}</span>
+            ) : <span />}
+            {isVerified && <VerifiedBadge size="sm" className="shadow-sm" />}
+          </div>
+        </div>
+
+        <div className="pt-4 flex-1 flex flex-col">
+          <p className="label-mono text-outline truncate">
+            {roaster.city} — {roaster.country}
+          </p>
+          <h3 className="mt-1.5 text-[1.375rem] leading-[1.1] text-on-surface group-hover:text-primary transition-colors">
+            {roaster.name}
+          </h3>
+          {roaster.description && (
+            <p className="mt-2 text-[0.9375rem] text-on-surface-variant line-clamp-2 leading-relaxed">
+              {roaster.description}
+            </p>
+          )}
+          {(origins.length > 0 || roaster.certifications.length > 0) && (
+            <div className="mt-auto pt-4 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-outline-variant/70">
+              {origins.length > 0 && (
+                <span className="label-mono text-on-surface-variant">{origins.join(" · ")}</span>
+              )}
+              {roaster.certifications.slice(0, 1).map((cert) => (
+                <CertificationBadge key={cert} certification={cert} />
+              ))}
             </div>
           )}
-          {isVerified && (
-            <span className="absolute top-4 right-4">
-              <VerifiedBadge size="md" className="shadow-lg" />
-            </span>
-          )}
-          {roaster.featured && (
-            <span className="absolute top-4 left-4 bg-primary text-on-primary text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full">
-              Featured
-            </span>
-          )}
         </div>
-        <h3 className="font-headline text-xl mb-1 group-hover:text-primary transition-colors">
-          {roaster.name}
-        </h3>
-        <p className="text-xs text-on-surface-variant mb-3">
-          {roaster.city} &bull; {roaster.country}
-        </p>
-        <div className="flex flex-wrap gap-2 mb-3">
-          {roaster.certifications.slice(0, 2).map((cert) => (
-            <CertificationBadge key={cert} certification={cert} />
-          ))}
-        </div>
-        {roaster.description && (
-          <p className="text-sm text-on-surface-variant line-clamp-2 leading-relaxed">
-            {roaster.description}
-          </p>
-        )}
       </article>
     </Link>
   );
