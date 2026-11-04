@@ -58,7 +58,14 @@
   },
   "beta": {
     "message": "Beta — To jest wersja testowa Bean Map. Dane mogą ulec zmianie i nie świadczymy usług komercyjnych.",
-    "dismiss": "Zamknij baner beta"
+    "dismiss": "Zamknij baner beta",
+    "label": "Prywatna beta",
+    "title": "Kawa specialty, zanim zobaczą ją inni.",
+    "desc": "Wpisz kod dostępu, aby zobaczyć Bean Map przed publicznym startem.",
+    "placeholder": "Kod dostępu",
+    "enter": "Wejdź",
+    "verifying": "Sprawdzam…",
+    "invalid": "Nieprawidłowy kod dostępu"
   },
   "errors": {
     "notFoundCode": "404",

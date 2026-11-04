@@ -58,7 +58,14 @@
   },
   "beta": {
     "message": "Beta — This is a test version of Bean Map. Data may change and no commercial services are offered.",
-    "dismiss": "Dismiss beta banner"
+    "dismiss": "Dismiss beta banner",
+    "label": "Private beta",
+    "title": "Specialty coffee, before everyone else.",
+    "desc": "Enter your access code to explore Bean Map before the public launch.",
+    "placeholder": "Access code",
+    "enter": "Enter",
+    "verifying": "Checking…",
+    "invalid": "Invalid access code"
   },
   "errors": {
     "notFoundCode": "404",

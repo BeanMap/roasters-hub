@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 export default function PasswordPage() {
+  const t = useTranslations("beta");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,7 +27,7 @@ export default function PasswordPage() {
     if (res.ok) {
       window.location.href = redirect;
     } else {
-      setError("Incorrect password. Try again.");
+      setError(t("invalid"));
       setLoading(false);
     }
   }
@@ -64,12 +66,11 @@ export default function PasswordPage() {
 
         {/* Heading */}
         <div className="text-center mb-8">
-          <h1 className="font-headline text-[2rem] font-semibold text-white leading-[1.1] tracking-[-0.02em] mb-3">
-            Private Beta
+          <p className="label-mono text-[#f2a77d] mb-4">{t("label")}</p>
+          <h1 className="text-[2.5rem] leading-[0.95] tracking-[-0.045em] text-[#fbf8f3] mb-4">
+            {t("title")}
           </h1>
-          <p className="text-white/55 text-[15px] leading-[1.6]">
-            Enter your access code to explore Bean Map before the public launch.
-          </p>
+          <p className="text-[#f5efe6]/60 text-[15px] leading-[1.6]">{t("desc")}</p>
         </div>
 
         {/* Form */}
@@ -78,8 +79,8 @@ export default function PasswordPage() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Access code"
-            className="w-full px-4 py-[14px] rounded-lg text-white placeholder-white/30 text-[15px] focus:outline-none focus:ring-2 focus:ring-primary/70 transition-shadow"
+            placeholder={t("placeholder")}
+            className="w-full px-5 py-[14px] rounded-full text-white placeholder-white/35 text-[15px] focus:outline-none focus:ring-2 focus:ring-primary/70 transition-shadow"
             style={{
               background: "rgba(255,255,255,0.07)",
               border: "1px solid rgba(255,255,255,0.12)",
@@ -93,14 +94,14 @@ export default function PasswordPage() {
           <button
             type="submit"
             disabled={loading || !password}
-            className="w-full px-4 py-[14px] rounded-lg bg-primary text-on-primary font-semibold text-[15px] hover:bg-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-4 py-[14px] rounded-full bg-[#f5efe6] text-[#1f1611] font-semibold hover:bg-white text-[15px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Verifying…" : "Enter"}
+            {loading ? t("verifying") : t("enter")}
           </button>
         </form>
 
         {/* Footer note */}
-        <p className="text-center text-white/25 text-xs mt-10 tracking-wide">
+        <p className="text-center label-mono text-white/30 mt-10">
           © Bean Map · Private Beta
         </p>
       </div>

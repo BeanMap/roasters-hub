@@ -58,7 +58,14 @@
   },
   "beta": {
     "message": "Beta — Dies ist eine Testversion von Bean Map. Daten können sich ändern und es werden keine kommerziellen Dienste angeboten.",
-    "dismiss": "Beta-Banner schließen"
+    "dismiss": "Beta-Banner schließen",
+    "label": "Private Beta",
+    "title": "Specialty Coffee, vor allen anderen.",
+    "desc": "Gib deinen Zugangscode ein, um Bean Map vor dem öffentlichen Start zu sehen.",
+    "placeholder": "Zugangscode",
+    "enter": "Eintreten",
+    "verifying": "Wird geprüft…",
+    "invalid": "Ungültiger Zugangscode"
   },
   "errors": {
     "notFoundCode": "404",
