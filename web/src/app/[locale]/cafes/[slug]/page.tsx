@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
   const t = await getTranslations({ locale, namespace: "profiles" });
   const title = t("cafeMetaTitle", { name: cafe.name, city: cafe.city, country: cafe.country });
-  const description = cafe.description ?? t("cafeMetaDescription", { name: cafe.name, city: cafe.city });
+  const description = cafe.description ?? t("cafeMetaDescription", { name: cafe.name, city: cafe.city, country: cafe.country ?? "" });
 
   const ogImages = cafe.coverImageUrl
     ? [buildOgImage(cafe.coverImageUrl!, `${cafe.name} cafe`)]
