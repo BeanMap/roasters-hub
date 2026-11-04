@@ -52,7 +52,7 @@ Aplikacja sama wybiera sterownik: lokalny Postgres → `pg`, Neon → serverless
 
 - **Zmiana schematu = nowa migracja** (`npx prisma migrate dev --name ...`). Nigdy `prisma db push` na produkcji — CI (job *Fresh DB + E2E Smoke*) wykrywa rozjazd.
 - **Migracje produkcyjne** uruchamia build Vercela (`scripts/vercel-build.mjs`) *przed* `next build`. Nieudana migracja = nieudany build = zostaje poprzednia wersja.
-- **Preview** zawsze na własnej gałęzi Neon (workflow *Preview Database*). Bez niej build preview jest pomijany — nigdy nie łączy się z produkcją.
+- **Preview** zawsze na własnej gałęzi Neon (workflow *Preview Database*). Bez niej build preview kończy się czytelnym błędem (pierwszy push PR-a), a workflow po utworzeniu bazy sam uruchamia deploy — preview nigdy nie łączy się z produkcją.
 - **Produkcja nie jest seedowana automatycznie.** Dane bazowe (palarnie, kawiarnie): Actions → *Production Database* → Run workflow. Dane demo (recenzje, eventy) nie trafiają na produkcję.
 - Migracje muszą być **addytywne** (dodaj kolumnę → przenieś dane → usuń starą w osobnym PR), żeby poprzednia wersja aplikacji działała podczas rollbacku.
 
