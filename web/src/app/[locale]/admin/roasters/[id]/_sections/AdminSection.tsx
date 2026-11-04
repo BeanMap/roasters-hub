@@ -8,7 +8,7 @@ const STATUS_COLORS: Record<string, string> = {
   PENDING: "bg-amber-100 text-amber-900",
   VERIFIED: "bg-green-100 text-green-900",
   REJECTED: "bg-red-100 text-red-900",
-  INACTIVE: "bg-gray-100 text-gray-800",
+  INACTIVE: "bg-surface-container-low text-on-surface",
 }
 
 interface Props {
@@ -57,7 +57,7 @@ export function AdminSection({ roasterId, initial }: Props) {
       <Field label="Status (read-only — change via toolbar buttons)">
         <div>
           <span
-            className={`inline-block rounded-full px-3 py-1 text-sm font-bold ${STATUS_COLORS[initial.status] ?? "bg-gray-100 text-gray-800"}`}
+            className={`inline-block rounded-full px-3 py-1 text-sm font-bold ${STATUS_COLORS[initial.status] ?? "bg-surface-container-low text-on-surface"}`}
           >
             {initial.status}
           </span>

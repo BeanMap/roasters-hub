@@ -302,7 +302,11 @@
     "rejectCafe": "Reject cafe",
     "rejectReasonHint": "Provide a reason for rejection — it will be sent to the owner.",
     "reasonPlaceholder": "Reason for rejection...",
-    "rejecting": "Rejecting..."
+    "rejecting": "Rejecting...",
+    "navImages": "Photos",
+    "navSettings": "Settings",
+    "navActivity": "Activity",
+    "navSite": "View site"
   },
   "profiles": {
     "home": "Home",
@@ -372,7 +376,12 @@
     "closeList": "Close list",
     "all": "All →",
     "noRoastersFilter": "No roasters match this filter.",
-    "noCafesFilter": "No cafes match this filter."
+    "noCafesFilter": "No cafes match this filter.",
+    "viewProfile": "View profile",
+    "viewCafe": "View café",
+    "verified": "Verified",
+    "loading": "Loading map…",
+    "filterAll": "All"
   },
   "suggest": {
     "thankYou": "Thank you!",

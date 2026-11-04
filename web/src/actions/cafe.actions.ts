@@ -6,7 +6,7 @@ import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { requireAdmin, requireCafeOwner } from "@/lib/auth";
 import { generateUniqueCafeSlug } from "@/lib/slug";
-import { resolveCountryCode } from "@/lib/country-codes";
+import { normalizeLocation, normalizeLocationPatch } from "@/lib/country-codes";
 import { CreateCafeSchema, UpdateCafeSchema, type ActionResult } from "@/types/actions";
 
 export async function createCafe(
@@ -55,8 +55,8 @@ export async function createCafe(
       }
     }
 
-    const slug = await generateUniqueCafeSlug(name, city);
-    const countryCode = resolveCountryCode(country);
+    const location = normalizeLocation({ country, city });
+    const slug = await generateUniqueCafeSlug(name, location.city);
 
     let openingHours: Prisma.InputJsonValue | undefined = undefined;
     if (hoursRaw) {
@@ -72,9 +72,9 @@ export async function createCafe(
         name,
         slug,
         description: description || null,
-        country,
-        countryCode,
-        city,
+        country: location.country,
+        countryCode: location.countryCode,
+        city: location.city,
         address: address || null,
         lat: typeof lat === "number" ? lat : null,
         lng: typeof lng === "number" ? lng : null,
@@ -253,7 +253,7 @@ export async function adminUpdateCafe(
     const cafe = await db.cafe.update({
       where: { id: cafeId },
       data: {
-        ...rest,
+        ...normalizeLocationPatch(rest),
         ...ownerUpdate,
         ...hoursUpdate,
       },

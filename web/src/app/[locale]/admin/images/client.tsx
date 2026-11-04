@@ -38,20 +38,20 @@ export function AdminImagesClient({ images }: { images: ImageItem[] }) {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold">Default Image Pool</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-on-surface-variant mt-1">
             {images.length} images in pool
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <div className="flex gap-1 rounded-lg border border-gray-300 bg-white p-0.5">
+          <div className="flex gap-1 rounded-lg border border-outline-variant bg-surface-container-lowest p-0.5">
             {(["ALL", "CAFE", "ROASTER"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setTypeFilter(tab)}
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                   typeFilter === tab
-                    ? "bg-amber-600 text-white"
-                    : "text-gray-600 hover:text-gray-900"
+                    ? "bg-primary text-white"
+                    : "text-on-surface-variant hover:text-on-surface"
                 }`}
               >
                 {tab === "ALL" ? "All" : tab.charAt(0) + tab.slice(1).toLowerCase() + "s"}
@@ -66,14 +66,14 @@ export function AdminImagesClient({ images }: { images: ImageItem[] }) {
             }}
             appearance={{
               button:
-                "bg-amber-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-amber-700 ut-ready:bg-amber-600 ut-uploading:bg-amber-400",
+                "bg-primary text-white text-sm px-4 py-2 rounded-lg hover:bg-accent-hover ut-ready:bg-primary ut-uploading:bg-amber-400",
             }}
           />
         </div>
       </div>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
+        <div className="text-center py-20 text-on-surface-variant">
           <p className="text-lg">No default images yet</p>
           <p className="text-sm mt-1">
             Upload your first default image to help new entries look great.
@@ -84,7 +84,7 @@ export function AdminImagesClient({ images }: { images: ImageItem[] }) {
           {filtered.map((img) => (
             <div
               key={img.id}
-              className="group relative rounded-lg overflow-hidden border border-gray-200 bg-white"
+              className="group relative rounded-lg overflow-hidden border border-outline-variant bg-surface-container-lowest"
             >
               <div className="aspect-[4/3] relative">
                 <Image
@@ -96,7 +96,7 @@ export function AdminImagesClient({ images }: { images: ImageItem[] }) {
                 />
               </div>
               <div className="p-2 flex items-center justify-between">
-                <span className="text-xs text-gray-500 uppercase">
+                <span className="text-xs text-on-surface-variant uppercase">
                   {img.entityType}
                 </span>
                 <button

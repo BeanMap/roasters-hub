@@ -109,21 +109,21 @@ export function EntityCard({
         {/* Photo */}
         <div className="relative flex-shrink-0">
           <div
-            className="h-[90px] w-[130px] overflow-hidden rounded-xl border-2 border-dashed border-stone-300 bg-stone-100"
+            className="h-[90px] w-[130px] overflow-hidden rounded-xl border-2 border-dashed border-outline-variant bg-surface-container-low"
             style={photoUrl ? { backgroundImage: `url(${photoUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
           >
             {!photoUrl && (
-              <div className="flex h-full items-center justify-center text-2xl text-stone-300">📷</div>
+              <div className="flex h-full items-center justify-center text-2xl text-on-surface-variant">📷</div>
             )}
           </div>
           <div className="mt-1.5 flex gap-1">
             <button
               onClick={rollPhoto}
-              className="flex-1 rounded border border-stone-200 bg-stone-50 py-0.5 text-center text-[10px] text-stone-500 hover:bg-stone-100"
+              className="flex-1 rounded border border-outline-variant bg-surface-container-low py-0.5 text-center text-[10px] text-on-surface-variant hover:bg-surface-container-low"
             >
               ↺ Losuj
             </button>
-            <label className="flex-1 cursor-pointer rounded border border-stone-200 bg-stone-50 py-0.5 text-center text-[10px] text-stone-500 hover:bg-stone-100">
+            <label className="flex-1 cursor-pointer rounded border border-outline-variant bg-surface-container-low py-0.5 text-center text-[10px] text-on-surface-variant hover:bg-surface-container-low">
               {isUploading ? "Wgrywanie…" : "↑ Wgraj"}
               <input
                 type="file"
@@ -143,7 +143,7 @@ export function EntityCard({
             </label>
           </div>
           {photoCredit && (
-            <p className="mt-1 text-[9px] text-stone-300">
+            <p className="mt-1 text-[9px] text-on-surface-variant">
               Unsplash · <a href={photoCredit.link} target="_blank" rel="noreferrer" className="underline">{photoCredit.name}</a>
             </p>
           )}
@@ -152,12 +152,12 @@ export function EntityCard({
         {/* Meta */}
         <div className="flex-1">
           <div className="mb-1 flex items-center gap-2">
-            <h2 className="text-xl font-bold text-stone-900">{entityName}</h2>
+            <h2 className="text-xl font-bold text-on-surface">{entityName}</h2>
             {isNew && (
               <span className="rounded bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700">NOWA ENCJA</span>
             )}
           </div>
-          <p className="mb-3 text-xs text-stone-400">{entityType} · {(existingFields.city as string) ?? "—"}</p>
+          <p className="mb-3 text-xs text-on-surface-variant">{entityType} · {(existingFields.city as string) ?? "—"}</p>
 
           {error && <p className="mb-2 text-xs text-red-600">{error}</p>}
 
@@ -172,13 +172,13 @@ export function EntityCard({
             <button
               onClick={handleSkip}
               disabled={isPending}
-              className="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm text-stone-500 hover:bg-stone-50"
+              className="rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm text-on-surface-variant hover:bg-surface-container-low"
             >
               Pomiń
             </button>
             <button
               disabled={isPending}
-              className="rounded-lg border border-red-200 bg-white px-3 py-2 text-xs text-red-500 hover:bg-red-50"
+              className="rounded-lg border border-red-200 bg-surface-container-lowest px-3 py-2 text-xs text-red-500 hover:bg-red-50"
             >
               Oznacz jako nieaktywna
             </button>
@@ -193,20 +193,20 @@ export function EntityCard({
 
         return (
           <div key={group.key}>
-            <p className="mb-2 border-b border-stone-200 pb-1 text-[10px] font-bold uppercase tracking-widest text-stone-400">
+            <p className="mb-2 border-b border-outline-variant pb-1 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
               {group.label}
             </p>
-            <div className="overflow-hidden rounded-lg border border-stone-200 bg-white">
+            <div className="overflow-hidden rounded-lg border border-outline-variant bg-surface-container-lowest">
               {groupProposals.map((p) => (
                 <div key={p.id} className="flex items-baseline gap-3 border-b border-stone-50 px-3 py-2 last:border-0">
-                  <span className="w-[90px] flex-shrink-0 text-[10px] uppercase text-stone-300">{p.fieldKey}</span>
+                  <span className="w-[90px] flex-shrink-0 text-[10px] uppercase text-on-surface-variant">{p.fieldKey}</span>
                   {p.proposedValue !== null && p.proposedValue !== undefined ? (
                     <span className="flex-1 text-xs text-green-700">
                       {String(p.proposedValue)}
-                      <span className="ml-1.5 rounded bg-stone-100 px-1 py-0.5 text-[9px] text-stone-400">{p.sourceId.toUpperCase()}</span>
+                      <span className="ml-1.5 rounded bg-surface-container-low px-1 py-0.5 text-[9px] text-on-surface-variant">{p.sourceId.toUpperCase()}</span>
                     </span>
                   ) : (
-                    <input className="flex-1 rounded border border-stone-200 px-2 py-0.5 text-xs text-stone-600 outline-none focus:border-amber-700" placeholder={`Wpisz ${p.fieldKey}…`} />
+                    <input className="flex-1 rounded border border-outline-variant px-2 py-0.5 text-xs text-on-surface-variant outline-none focus:border-amber-700" placeholder={`Wpisz ${p.fieldKey}…`} />
                   )}
                 </div>
               ))}
@@ -218,8 +218,8 @@ export function EntityCard({
       {/* Pending proposals section */}
       {pendingProposals.length > 0 && (
         <div>
-          <div className="mb-2 flex items-center justify-between border-b border-stone-200 pb-1">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
+          <div className="mb-2 flex items-center justify-between border-b border-outline-variant pb-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
               Propozycje ({pendingProposals.length} oczekujące)
             </p>
             <div className="flex gap-2">
@@ -227,11 +227,11 @@ export function EntityCard({
               <button className="text-[10px] text-red-400 hover:underline">Odrzuć wszystkie</button>
             </div>
           </div>
-          <div className="overflow-hidden rounded-lg border border-stone-200 bg-white">
+          <div className="overflow-hidden rounded-lg border border-outline-variant bg-surface-container-lowest">
             {pendingProposals.map((p) => (
               <div key={p.id} className="flex items-center gap-3 border-b border-stone-50 px-3 py-2 text-xs last:border-0">
-                <span className="w-[80px] flex-shrink-0 text-[10px] uppercase text-stone-400">{p.fieldKey}</span>
-                <span className="flex-1 text-stone-700">{String(p.proposedValue ?? "—")}</span>
+                <span className="w-[80px] flex-shrink-0 text-[10px] uppercase text-on-surface-variant">{p.fieldKey}</span>
+                <span className="flex-1 text-on-surface-variant">{String(p.proposedValue ?? "—")}</span>
                 <span className="text-[10px] font-semibold text-amber-600">{Math.round(p.confidence * 100)}%</span>
                 <div className="flex gap-1">
                   <button
@@ -244,7 +244,7 @@ export function EntityCard({
                   >✗</button>
                   <button
                     onClick={() => updateProposalStatus(p.id, "SKIPPED")}
-                    className="flex h-6 w-6 items-center justify-center rounded border border-stone-200 text-stone-400 hover:bg-stone-50 text-[11px]"
+                    className="flex h-6 w-6 items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container-low text-[11px]"
                   >–</button>
                 </div>
               </div>

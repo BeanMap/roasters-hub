@@ -4,6 +4,9 @@ import { useSyncExternalStore, useEffect, useState, useRef, useCallback, useMemo
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
+import { CERTIFICATION_LABELS, type Certification } from "@/types/certifications";
 import "leaflet/dist/leaflet.css";
 
 const subscribe = () => () => {};
@@ -167,7 +170,32 @@ function FlyToCenter({ center, zoom }: { center: [number, number]; zoom: number 
   return null;
 }
 
+/** Opens the popup of the marker at the focused coordinates (deep link from a profile). */
+function FocusMarker({ focus }: { focus: { lat: number; lng: number } }) {
+  const map = useMap();
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      let best: L.Marker | null = null;
+      let bestDist = Infinity;
+      map.eachLayer((layer) => {
+        if (layer instanceof L.Marker) {
+          const p = layer.getLatLng();
+          const d = Math.hypot(p.lat - focus.lat, p.lng - focus.lng);
+          if (d < bestDist) {
+            bestDist = d;
+            best = layer;
+          }
+        }
+      });
+      if (best && bestDist < 0.01) (best as L.Marker).openPopup();
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [map, focus.lat, focus.lng]);
+  return null;
+}
+
 function RoasterPopup({ roaster }: { roaster: MapRoaster }) {
+  const t = useTranslations("map");
   const topTag = roaster.certifications[0];
   const hasRating = roaster.rating != null;
   return (
@@ -185,11 +213,11 @@ function RoasterPopup({ roaster }: { roaster: MapRoaster }) {
         </div>
       )}
       <h4 className="font-bold text-sm mb-0.5">{roaster.name}</h4>
-      <p className="text-xs text-gray-500 mb-1.5">{roaster.city}, {roaster.country}</p>
+      <p className="label-mono text-outline mb-2">{roaster.city} — {roaster.country}</p>
       <div className="flex items-center gap-1.5 mb-2 flex-wrap">
         {roaster.verified && (
-          <span className="inline-block bg-green-700 text-white text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-full">
-            Verified
+          <span className="label-mono inline-block bg-secondary text-on-secondary text-[9px] px-1.5 py-0.5 rounded-full">
+            {t("verified")}
           </span>
         )}
         {hasRating && (
@@ -201,23 +229,22 @@ function RoasterPopup({ roaster }: { roaster: MapRoaster }) {
           </span>
         )}
         {topTag && (
-          <span className="inline-block bg-surface-container-low text-on-surface-variant text-[9px] font-semibold px-1.5 py-0.5 rounded-full">
-            {topTag}
+          <span className="label-mono inline-block border border-outline-variant text-on-surface-variant text-[9px] px-1.5 py-0.5 rounded-full">
+            {CERTIFICATION_LABELS[topTag as Certification] ?? topTag}
           </span>
         )}
       </div>
-      <a
-        href={`/roasters/${roaster.slug}`}
-        className="text-xs text-primary font-medium hover:underline"
-        target="_self"
-      >
-        View Profile &rarr;
-      </a>
+      <Link href={`/roasters/${roaster.slug}`} className="text-xs text-primary font-semibold hover:underline">
+        {t("viewProfile")} &rarr;
+      </Link>
     </div>
   );
 }
 
 function CafePopup({ cafe }: { cafe: MapCafe }) {
+  const t = useTranslations("map");
+  const tf = useTranslations("filters");
+  const serviceLabel = (s: string) => (tf.has(`amenity.${s}`) ? tf(`amenity.${s}` as "amenity.wifi") : s);
   const imageUrl = cafe.logoUrl ?? cafe.coverImageUrl;
   const topServices = cafe.services.slice(0, 3);
   const hasRating = cafe.rating != null;
@@ -236,7 +263,7 @@ function CafePopup({ cafe }: { cafe: MapCafe }) {
         </div>
       )}
       <h4 className="font-bold text-sm mb-0.5">{cafe.name}</h4>
-      <p className="text-xs text-gray-500 mb-1.5">{cafe.city}, {cafe.country}</p>
+      <p className="label-mono text-outline mb-2">{cafe.city} — {cafe.country}</p>
       <div className="flex items-center gap-1.5 mb-2 flex-wrap">
           {hasRating && (
             <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-on-surface-variant">
@@ -251,24 +278,20 @@ function CafePopup({ cafe }: { cafe: MapCafe }) {
             {topServices.map((s) => (
               <span
                 key={s}
-                className="inline-block bg-surface-container-low text-on-surface text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
+                className="inline-block border border-outline-variant text-on-surface-variant text-[10px] px-1.5 py-0.5 rounded-full"
               >
-                {s}
+                {serviceLabel(s)}
               </span>
             ))}
             {cafe.services.length > 3 && (
-              <span className="text-[9px] text-gray-400">+{cafe.services.length - 3}</span>
+              <span className="text-[10px] text-outline">+{cafe.services.length - 3}</span>
             )}
           </>
         )}
       </div>
-      <a
-        href={`/cafes/${cafe.slug}`}
-        className="text-xs text-primary font-medium hover:underline"
-        target="_self"
-      >
-        View Cafe &rarr;
-      </a>
+      <Link href={`/cafes/${cafe.slug}`} className="text-xs text-primary font-semibold hover:underline">
+        {t("viewCafe")} &rarr;
+      </Link>
     </div>
   );
 }
@@ -279,6 +302,8 @@ interface RoasterMapProps {
   visibleRoasterIds?: Set<string>;
   visibleCafeIds?: Set<string>;
   onBoundsChange?: (visibleIds: { roasterIds: Set<string>; cafeIds: Set<string> }) => void;
+  /** Center the map on one place and open its popup (e.g. /map?lat=..&lng=..&zoom=14). */
+  focus?: { lat: number; lng: number; zoom?: number };
 }
 
 export function RoasterMap({
@@ -287,7 +312,9 @@ export function RoasterMap({
   visibleRoasterIds,
   visibleCafeIds,
   onBoundsChange,
+  focus,
 }: RoasterMapProps) {
+  const t = useTranslations("map");
   const mounted = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const userPosition = useGeolocation();
 
@@ -327,7 +354,7 @@ export function RoasterMap({
   if (!mounted) {
     return (
       <div className="w-full h-full bg-surface-container-low flex items-center justify-center">
-        <p className="text-on-surface-variant/60 text-sm">Loading map...</p>
+        <p className="text-on-surface-variant/60 text-sm">{t("loading")}</p>
       </div>
     );
   }
@@ -337,12 +364,13 @@ export function RoasterMap({
 
   return (
     <MapContainer
-      center={DEFAULT_CENTER}
-      zoom={DEFAULT_ZOOM}
+      center={focus ? [focus.lat, focus.lng] : DEFAULT_CENTER}
+      zoom={focus ? focus.zoom ?? 14 : DEFAULT_ZOOM}
       style={{ width: "100%", height: "100%" }}
       zoomControl={false}
     >
-      {userPosition && <FlyToCenter center={center} zoom={zoom} />}
+      {userPosition && !focus && <FlyToCenter center={center} zoom={zoom} />}
+      {focus && <FocusMarker focus={focus} />}
       <TileAltObserver />
       {onBoundsChange && <BoundsReporter allItems={allPoints} onBoundsChange={handleBoundsChange} />}
       <TileLayer

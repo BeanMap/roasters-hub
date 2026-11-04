@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { db } from "@/lib/db";
@@ -58,5 +59,10 @@ export default async function MapPage({
     }),
   ]);
 
-  return <MapContent roasters={roasters} cafes={cafes} />;
+  return (
+    // MapContent reads ?lat=&lng=&zoom= (deep links from profiles).
+    <Suspense fallback={null}>
+      <MapContent roasters={roasters} cafes={cafes} />
+    </Suspense>
+  );
 }

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { generateUniqueSlug } from "@/lib/slug";
-import { resolveCountryCode } from "@/lib/country-codes";
+import { normalizeLocation } from "@/lib/country-codes";
 import { requireRoasterOwner } from "@/lib/auth";
 import {
   CreateRoasterSchema,
@@ -75,9 +75,7 @@ export async function createRoasterRegistration(
       data: {
         name,
         slug,
-        city,
-        country: rest.country,
-        countryCode: resolveCountryCode(rest.country),
+        ...normalizeLocation({ country: rest.country, city }),
         description: description || null,
         address: rest.address || null,
         lat: typeof rest.lat === "number" ? rest.lat : null,

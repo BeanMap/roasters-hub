@@ -5,7 +5,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const adminName = await requireAdminPage();
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-surface-container-low">
       <AdminNav name={adminName} />
       {children}
     </div>

@@ -1,5 +1,7 @@
 "use server";
 
+import { normalizeLocation, normalizeLocationPatch } from "@/lib/country-codes";
+
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
@@ -48,27 +50,27 @@ export async function applyEntityProposals(
     if (Object.keys(fieldUpdates).length > 0) {
       if (entityType === "CAFE") {
         if (entityId) {
-          await db.cafe.update({ where: { id: entityId }, data: fieldUpdates });
+          await db.cafe.update({ where: { id: entityId }, data: normalizeLocationPatch(fieldUpdates as { country?: string; countryCode?: string; city?: string }) });
         } else {
           // NEW_PLACE: create new cafe — requires name, city, country at minimum
           const name = String(fieldUpdates.name ?? entityName);
           const city = String(fieldUpdates.city ?? "");
           const country = String(fieldUpdates.country ?? "");
-          const countryCode = String(
-            fieldUpdates.countryCode ?? country.slice(0, 2).toUpperCase()
-          );
+          const location = normalizeLocation({
+            country,
+            countryCode: fieldUpdates.countryCode ? String(fieldUpdates.countryCode) : undefined,
+            city,
+          });
           const slug =
             name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") +
             "-" +
             Date.now();
           await db.cafe.create({
             data: {
+              ...(fieldUpdates as Record<string, never>),
               name,
               slug,
-              city,
-              country,
-              countryCode,
-              ...(fieldUpdates as Record<string, never>),
+              ...location,
             },
           });
         }
@@ -76,26 +78,26 @@ export async function applyEntityProposals(
         revalidatePath("/map");
       } else if (entityType === "ROASTER") {
         if (entityId) {
-          await db.roaster.update({ where: { id: entityId }, data: fieldUpdates });
+          await db.roaster.update({ where: { id: entityId }, data: normalizeLocationPatch(fieldUpdates as { country?: string; countryCode?: string; city?: string }) });
         } else {
           const name = String(fieldUpdates.name ?? entityName);
           const city = String(fieldUpdates.city ?? "");
           const country = String(fieldUpdates.country ?? "");
-          const countryCode = String(
-            fieldUpdates.countryCode ?? country.slice(0, 2).toUpperCase()
-          );
+          const location = normalizeLocation({
+            country,
+            countryCode: fieldUpdates.countryCode ? String(fieldUpdates.countryCode) : undefined,
+            city,
+          });
           const slug =
             name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") +
             "-" +
             Date.now();
           await db.roaster.create({
             data: {
+              ...(fieldUpdates as Record<string, never>),
               name,
               slug,
-              city,
-              country,
-              countryCode,
-              ...(fieldUpdates as Record<string, never>),
+              ...location,
             },
           });
         }

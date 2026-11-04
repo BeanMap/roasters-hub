@@ -51,11 +51,11 @@ export function SplitLayout({
         selectedKey={selectedKey}
         onSelect={setSelectedKey}
       />
-      <div className="flex-1 overflow-y-auto bg-stone-50">
+      <div className="flex-1 overflow-y-auto bg-surface-container-low">
         {selectedKey === "__done__" || !selectedEntity ? (
-          <div className="flex h-full flex-col items-center justify-center gap-4 text-stone-400">
+          <div className="flex h-full flex-col items-center justify-center gap-4 text-on-surface-variant">
             <div className="text-5xl">✓</div>
-            <p className="text-lg font-semibold text-stone-600">{t("allEntitiesReviewed")}</p>
+            <p className="text-lg font-semibold text-on-surface-variant">{t("allEntitiesReviewed")}</p>
             <Link href="/admin/enrichment" className="text-sm text-amber-700 underline">
               {t("backToRunList")}
             </Link>

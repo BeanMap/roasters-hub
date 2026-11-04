@@ -5,6 +5,8 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { useState, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
+import { CERTIFICATION_LABELS } from "@/types/certifications";
 import { Header } from "@/components/shared/Header";
 import { RoasterCard } from "@/components/roasters/RoasterCard";
 import { filterByCert, filterByService } from "@/lib/map-filters";
@@ -31,12 +33,10 @@ type CafeMapItem = {
 };
 
 const ENTITY_TYPE_KEY = "beanmap_entity_type";
-const CAFE_FILTER_CHIPS = ["Free Wi-Fi", "Laptop Friendly", "Vegan Options", "Dog Friendly", "Outdoor Seating"];
-const ROASTER_CERT_CHIPS: { label: string; value: string | null }[] = [
-  { label: "ALL", value: null },
-  { label: "DIRECT TRADE", value: "DIRECT_TRADE" },
-  { label: "ORGANIC", value: "ORGANIC" },
-];
+// Values must match what is stored in Cafe.services / Roaster.certifications.
+// (The old chips used display strings like "Free Wi-Fi", so they never matched.)
+const CAFE_FILTER_CHIPS = ["wifi", "workspace", "vegan", "dog_friendly", "outdoor_seating"] as const;
+const ROASTER_CERT_CHIPS = ["DIRECT_TRADE", "ORGANIC", "FAIR_TRADE", "SCA_MEMBER"] as const;
 
 function CafeMapCard({ cafe }: { cafe: CafeMapItem }) {
   return (
@@ -75,6 +75,15 @@ function CafeMapCard({ cafe }: { cafe: CafeMapItem }) {
 
 export function MapContent({ roasters, cafes }: { roasters: RoasterWithImages[]; cafes: CafeMapItem[] }) {
   const t = useTranslations("map");
+  const tf = useTranslations("filters");
+  const searchParams = useSearchParams();
+  const focus = useMemo(() => {
+    const lat = Number(searchParams.get("lat"));
+    const lng = Number(searchParams.get("lng"));
+    if (!searchParams.get("lat") || !Number.isFinite(lat) || !Number.isFinite(lng)) return undefined;
+    const zoom = Number(searchParams.get("zoom")) || 14;
+    return { lat, lng, zoom };
+  }, [searchParams]);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showRoasters, setShowRoasters] = useState(true);
   const [showCafes, setShowCafes] = useState(true);
@@ -207,10 +216,11 @@ export function MapContent({ roasters, cafes }: { roasters: RoasterWithImages[];
             visibleRoasterIds={visibleRoasterIds}
             visibleCafeIds={visibleCafeIds}
             onBoundsChange={handleBoundsChange}
+            focus={focus}
           />
 
-          {/* Map marker toggles */}
-          <div className="absolute top-4 left-4 z-[500] flex gap-2">
+          {/* Map marker toggles — phones only; on desktop the sidebar has them */}
+          <div className="lg:hidden absolute top-4 left-4 z-[500] flex gap-2">
             <button
               onClick={() => setShowRoasters((v) => !v)}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors shadow ${
@@ -307,17 +317,17 @@ export function MapContent({ roasters, cafes }: { roasters: RoasterWithImages[];
             {/* Roaster filter chips */}
             {entityType === "roasters" && (
               <div className="flex gap-2 flex-wrap">
-                {ROASTER_CERT_CHIPS.map(({ label, value }) => (
+                {([null, ...ROASTER_CERT_CHIPS] as (string | null)[]).map((value) => (
                   <button
-                    key={label}
-                    onClick={() => setActiveCert(value)}
-                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition-colors ${
-                      activeCert === value
-                        ? "bg-primary text-white"
-                        : "bg-surface-container-high text-on-surface-variant hover:bg-surface-variant"
+                    key={value ?? "all"}
+                    type="button"
+                    aria-pressed={activeCert === value}
+                    onClick={() => setActiveCert(activeCert === value ? null : value)}
+                    className={`px-3 py-1.5 rounded-full border text-[0.8125rem] transition-colors ${
+                      activeCert === value ? "bg-on-surface text-surface border-on-surface" : "bg-surface-container-lowest text-on-surface-variant border-outline-variant hover:border-on-surface/40 hover:text-on-surface"
                     }`}
                   >
-                    {label}
+                    {value ? CERTIFICATION_LABELS[value as keyof typeof CERTIFICATION_LABELS] : t("filterAll")}
                   </button>
                 ))}
               </div>
@@ -327,26 +337,26 @@ export function MapContent({ roasters, cafes }: { roasters: RoasterWithImages[];
             {entityType === "cafes" && (
               <div className="flex gap-2 flex-wrap">
                 <button
+                  type="button"
+                  aria-pressed={activeService === null}
                   onClick={() => setActiveService(null)}
-                  className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition-colors ${
-                    activeService === null
-                      ? "bg-secondary text-on-secondary"
-                      : "bg-surface-container-high text-on-surface-variant hover:bg-surface-variant"
+                  className={`px-3 py-1.5 rounded-full border text-[0.8125rem] transition-colors ${
+                    activeService === null ? "bg-on-surface text-surface border-on-surface" : "bg-surface-container-lowest text-on-surface-variant border-outline-variant hover:border-on-surface/40 hover:text-on-surface"
                   }`}
                 >
-                  ALL
+                  {t("filterAll")}
                 </button>
                 {CAFE_FILTER_CHIPS.map((svc) => (
                   <button
                     key={svc}
+                    type="button"
+                    aria-pressed={activeService === svc}
                     onClick={() => setActiveService(activeService === svc ? null : svc)}
-                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition-colors ${
-                      activeService === svc
-                        ? "bg-secondary text-on-secondary"
-                        : "bg-surface-container-high text-on-surface-variant hover:bg-surface-variant"
+                    className={`px-3 py-1.5 rounded-full border text-[0.8125rem] transition-colors ${
+                      activeService === svc ? "bg-on-surface text-surface border-on-surface" : "bg-surface-container-lowest text-on-surface-variant border-outline-variant hover:border-on-surface/40 hover:text-on-surface"
                     }`}
                   >
-                    {svc.toUpperCase()}
+                    {tf(`amenity.${svc}`)}
                   </button>
                 ))}
               </div>

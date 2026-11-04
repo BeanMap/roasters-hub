@@ -112,22 +112,22 @@ export default async function RunReviewPage({ params }: { params: Promise<{ runI
   return (
     <div>
       {/* Run bar */}
-      <div className="sticky top-11 z-10 flex items-center gap-4 border-b border-stone-200 bg-white px-4 py-3 flex-wrap">
+      <div className="sticky top-11 z-10 flex items-center gap-4 border-b border-outline-variant bg-surface-container-lowest px-4 py-3 flex-wrap">
         <Link href="/admin/enrichment" className="text-xs text-amber-700">{t("backToRuns")}</Link>
         <div>
           <div className="flex items-center gap-2">
             <span className="text-base font-bold">{entityType} — {String((run.query as Record<string, unknown>)?.mode ?? "")}</span>
             <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700">✓ {run.status}</span>
           </div>
-          <p className="text-xs text-stone-400">
+          <p className="text-xs text-on-surface-variant">
             {run.sources.join(" · ")}
             {keywords.length > 0 && ` · "${keywords.slice(0, 2).join(", ")}"`}
           </p>
         </div>
         <div className="flex gap-4 text-center">
-          <div><div className="text-lg font-bold">{entities.length}</div><div className="text-[10px] text-stone-400">{t("entitiesLabel")}</div></div>
-          <div><div className="text-lg font-bold text-amber-600">{entities.reduce((s, e) => s + e.pendingCount, 0)}</div><div className="text-[10px] text-stone-400">{t("pendingLabel")}</div></div>
-          <div><div className="text-lg font-bold text-green-600">{entities.reduce((s, e) => s + e.appliedCount, 0)}</div><div className="text-[10px] text-stone-400">{t("appliedLabel")}</div></div>
+          <div><div className="text-lg font-bold">{entities.length}</div><div className="text-[10px] text-on-surface-variant">{t("entitiesLabel")}</div></div>
+          <div><div className="text-lg font-bold text-amber-600">{entities.reduce((s, e) => s + e.pendingCount, 0)}</div><div className="text-[10px] text-on-surface-variant">{t("pendingLabel")}</div></div>
+          <div><div className="text-lg font-bold text-green-600">{entities.reduce((s, e) => s + e.appliedCount, 0)}</div><div className="text-[10px] text-on-surface-variant">{t("appliedLabel")}</div></div>
         </div>
       </div>
 

@@ -95,7 +95,7 @@ export function AdminPendingClient({ roasters: initial }: { roasters: Serialized
   return (
     <div className="h-screen flex flex-col bg-background">
       {/* Admin Header */}
-      <header className="bg-white border-b border-surface-container-high px-6 py-4">
+      <header className="bg-surface-container-lowest border-b border-surface-container-high px-6 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-4">
             <span className="text-2xl font-bold font-headline tracking-tighter">Bean Map</span>
@@ -127,7 +127,7 @@ export function AdminPendingClient({ roasters: initial }: { roasters: Serialized
       {/* Main 2-panel layout */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Panel — Queue */}
-        <div className="w-[400px] border-r border-surface-container-high flex flex-col bg-white">
+        <div className="w-[400px] border-r border-surface-container-high flex flex-col bg-surface-container-lowest">
           <div className="p-4 border-b border-surface-container-high">
             <h2 className="font-headline text-xl font-bold mb-3">{t("pendingVerification")}</h2>
             <div className="flex gap-2">
@@ -266,7 +266,7 @@ export function AdminPendingClient({ roasters: initial }: { roasters: Serialized
       {/* Reject Modal */}
       {showRejectModal && selected && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
+          <div className="bg-surface-container-lowest rounded-2xl p-8 max-w-md w-full mx-4">
             <h3 className="font-headline text-xl font-bold mb-4">{t("reasonForRejection")}</h3>
             <textarea
               className="w-full bg-surface-container-low border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-primary text-sm resize-none mb-6"

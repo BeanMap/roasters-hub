@@ -1,3 +1,4 @@
+import { cityUrlSlug } from "@/lib/catalog";
 import { notFound, redirect } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
@@ -215,7 +216,7 @@ export default async function CafeProfilePage({
           <span>›</span>
           <Link
             className="hover:text-primary transition-colors"
-            href={`/cafes/country/${cafe.countryCode}/city/${cafe.city.toLowerCase().replace(/\s+/g, "-")}`}
+            href={`/cafes/country/${cafe.countryCode}/city/${cityUrlSlug(cafe.city)}`}
           >
             {cafe.city}
           </Link>

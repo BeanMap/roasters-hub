@@ -170,7 +170,7 @@ export function CoffeeSection({ roasterId, initial }: Props) {
           <button
             type="button"
             onClick={addBrewingMethod}
-            className="shrink-0 rounded-lg border border-[var(--color-outline-variant)] bg-white px-3 py-2 text-sm text-[var(--color-on-surface)] hover:bg-[var(--color-surface-container-low)] transition-colors"
+            className="shrink-0 rounded-lg border border-[var(--color-outline-variant)] bg-surface-container-lowest px-3 py-2 text-sm text-[var(--color-on-surface)] hover:bg-[var(--color-surface-container-low)] transition-colors"
           >
             Add
           </button>

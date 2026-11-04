@@ -38,7 +38,7 @@ export function AdminPendingImagesClient({
 
   if (images.length === 0) {
     return (
-      <main className="max-w-5xl mx-auto px-6 py-20 text-center text-gray-400">
+      <main className="max-w-5xl mx-auto px-6 py-20 text-center text-on-surface-variant">
         <p className="text-lg">All clear!</p>
         <p className="text-sm mt-1">No images waiting for review.</p>
       </main>
@@ -55,7 +55,7 @@ export function AdminPendingImagesClient({
         {images.map((img) => (
           <div
             key={img.id}
-            className="flex items-center gap-4 rounded-lg border border-gray-200 bg-white p-4"
+            className="flex items-center gap-4 rounded-lg border border-outline-variant bg-surface-container-lowest p-4"
           >
             <div className="relative h-20 w-28 flex-shrink-0 overflow-hidden rounded-md">
               <Image
@@ -68,16 +68,16 @@ export function AdminPendingImagesClient({
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-medium uppercase px-2 py-0.5 rounded bg-gray-100">
+                <span className="text-xs font-medium uppercase px-2 py-0.5 rounded bg-surface-container-low">
                   {img.entityType}
                 </span>
                 {img.entityName && (
-                  <span className="text-sm font-medium text-gray-900 truncate">
+                  <span className="text-sm font-medium text-on-surface truncate">
                     {img.entityName}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-on-surface-variant mt-1">
                 by {img.uploadedBy} ·{" "}
                 {new Date(img.createdAt).toLocaleDateString()}
               </p>

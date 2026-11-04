@@ -51,3 +51,15 @@ describe("buildLocations", () => {
     expect(foldText("  ŁÓDŹ ")).toBe("lodz");
   });
 });
+
+describe("city slugs", () => {
+  it("builds ASCII slugs and resolves accents, case and legacy English names", async () => {
+    const { cityUrlSlug, resolveCitySlug } = await import("@/lib/catalog");
+    expect(cityUrlSlug("Poznań")).toBe("poznan");
+    expect(cityUrlSlug("Frankfurt am Main")).toBe("frankfurt-am-main");
+    expect(resolveCitySlug("poznan", ["Poznań", "Warszawa"])).toEqual({ variants: ["Poznań"] });
+    expect(resolveCitySlug("pozna%C5%84", ["Poznań"])).toEqual({ variants: ["Poznań"] });
+    expect(resolveCitySlug("warsaw", ["Warszawa"])).toEqual({ variants: [], redirectTo: "warszawa" });
+    expect(resolveCitySlug("atlantis", ["Warszawa"])).toBeNull();
+  });
+});
