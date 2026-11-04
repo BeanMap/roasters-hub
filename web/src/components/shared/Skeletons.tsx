@@ -10,7 +10,7 @@ function Bar({ className = "" }: { className?: string }) {
 export function CardSkeleton() {
   return (
     <div aria-hidden>
-      <Bar className="aspect-[4/5] w-full rounded-xl" />
+      <Bar className="aspect-[4/3] w-full rounded-2xl" />
       <Bar className="mt-4 h-5 w-3/4" />
       <Bar className="mt-2 h-3 w-1/2" />
       <div className="mt-3 flex gap-2">

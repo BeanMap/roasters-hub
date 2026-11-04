@@ -4,8 +4,12 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
 import { CafeCard } from "@/components/cafes/CafeCard";
-import { CafeFilters } from "@/components/cafes/CafeFilters";
-import { SortSelect } from "@/components/shared/SortSelect";
+import { CatalogFilters, type Facet } from "@/components/shared/CatalogFilters";
+import { CatalogToolbar } from "@/components/shared/CatalogToolbar";
+import type { ActiveFilter } from "@/components/shared/ActiveFilters";
+import { AmenityIcon } from "@/components/cafes/AmenityIcon";
+import { CAFE_SERVICES } from "@/constants/cafe-services";
+import { CAFE_STYLE_TO_SERVING, commonOrderBy, commonWhere, listParam, parseCatalogParams, toCities } from "@/lib/catalog";
 import { ItemListJsonLd } from "@/components/shared/JsonLd";
 import { db } from "@/lib/db";
 import { buildAlternates, buildOpenGraph, buildCanonical, seoKeywords } from "@/lib/seo";
@@ -51,25 +55,20 @@ export default async function CafesPage({
   const tCommon = await getTranslations({ locale, namespace: "common" });
 
   const sp = await searchParams;
-  const page = Number(sp.page) || 1;
-  const sort = typeof sp.sort === "string" ? sp.sort : "nameAZ";
-  const country = typeof sp.country === "string" ? sp.country : undefined;
-  const q = typeof sp.q === "string" ? sp.q : undefined;
-  const amenities = typeof sp.amenities === "string"
-    ? sp.amenities.split(",").filter(Boolean)
-    : [];
+  const { page, q, country, city, styles, sort } = parseCatalogParams(sp);
+  const amenities = listParam(sp, "amenity", "amenities");
+  const serving = styles.map((v) => CAFE_STYLE_TO_SERVING[v]).filter(Boolean);
 
   const where: Prisma.CafeWhereInput = {
     status: "VERIFIED",
-    ...(country && { countryCode: country }),
-    ...(q && { name: { contains: q, mode: "insensitive" as const } }),
+    ...commonWhere({ q, country, city }),
+    ...(serving.length > 0 && { serving: { hasSome: serving } }),
     ...(amenities.length > 0 && { services: { hasSome: amenities } }),
   };
 
-  const orderBy: Prisma.CafeOrderByWithRelationInput =
-    sort === "city" ? { city: "asc" } : sort === "rating" ? { reviews: { _count: "desc" } } : { name: "asc" };
+  const orderBy = commonOrderBy(sort);
 
-  const [total, cafes, countryRows] = await Promise.all([
+  const [total, cafes, countryRows, cityRows] = await Promise.all([
     db.cafe.count({ where }),
     db.cafe.findMany({
       where,
@@ -105,6 +104,11 @@ export default async function CafesPage({
       _count: { _all: true },
       orderBy: { country: "asc" },
     }),
+    db.cafe.groupBy({
+      by: ["city", "countryCode"],
+      where: { status: "VERIFIED" },
+      _count: { _all: true },
+    }),
   ]);
 
   const countries = countryRows.map((r) => ({
@@ -112,6 +116,37 @@ export default async function CafesPage({
     name: r.country,
     count: r._count._all,
   }));
+
+  const cities = toCities(cityRows);
+
+  const facets: Facet[] = [
+    {
+      key: "style",
+      label: tFilters("coffee"),
+      options: Object.keys(CAFE_STYLE_TO_SERVING).map((v) => ({ value: v, label: tFilters(`style.${v}` as "style.Espresso") })),
+    },
+    {
+      key: "amenity",
+      label: tFilters("amenities"),
+      options: CAFE_SERVICES.map((svc) => ({
+        value: svc.value,
+        label: tFilters(`amenity.${svc.value}` as "amenity.wifi"),
+        icon: <AmenityIcon service={svc.value} className="w-3.5 h-3.5" />,
+      })),
+    },
+  ];
+  const active: ActiveFilter[] = [
+    ...(q ? [{ key: "q", value: q, label: `“${q}”` }] : []),
+    ...(country ? [{ key: "country", value: country, label: countries.find((c) => c.code === country)?.name ?? country }] : []),
+    ...(city ? [{ key: "city", value: city, label: city }] : []),
+    ...facets.flatMap((f) =>
+      listParam(sp, f.key, f.key === "amenity" ? "amenities" : undefined).map((v) => ({
+        key: f.key,
+        value: v,
+        label: f.options.find((o) => o.value === v)?.label ?? v,
+      })),
+    ),
+  ];
 
   const cafeIds = cafes.map((c) => c.id);
   const ratingAggs = cafeIds.length > 0
@@ -156,30 +191,19 @@ export default async function CafesPage({
           </p>
         </header>
 
-        <div className="flex flex-col lg:flex-row gap-16">
-          <Suspense fallback={<div className="w-[300px]" />}>
-            <CafeFilters countries={countries} />
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-16">
+          <Suspense fallback={<div className="lg:w-[280px]" />}>
+            <CatalogFilters
+              basePath="/cafes"
+              searchPlaceholder={tFilters("cafePlaceholder")}
+              countries={countries}
+              cities={cities}
+              facets={facets}
+            />
           </Suspense>
 
           <section className="flex-1">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-surface-container-low">
-              <span className="label-mono text-on-surface-variant">
-                {tFilters("showing", { shown: cafes.length, total })}
-              </span>
-              <div className="flex items-center gap-4">
-                <span className="label-mono text-outline">{tCommon("sortBy")}</span>
-                <Suspense fallback={<select className="bg-transparent border-none text-sm font-medium text-primary"><option>{t("sortNameAZ")}</option></select>}>
-                  <SortSelect
-                    basePath="/cafes"
-                    options={[
-                      { label: t("sortNameAZ"), value: "nameAZ" },
-                      { label: t("sortCity"), value: "city" },
-                      { label: t("sortRating"), value: "rating" },
-                    ]}
-                  />
-                </Suspense>
-              </div>
-            </div>
+            <CatalogToolbar basePath="/cafes" shown={cafes.length} total={total} active={active} />
 
             {cafesWithRating.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12">

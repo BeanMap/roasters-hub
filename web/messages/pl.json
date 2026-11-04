@@ -537,9 +537,9 @@
     "deleting": "Usuwanie..."
   },
   "filters": {
-    "searchName": "Szukaj po nazwie",
-    "roasteryPlaceholder": "Nazwa palarni…",
-    "cafePlaceholder": "Nazwa kawiarni…",
+    "searchName": "Szukaj",
+    "roasteryPlaceholder": "Palarnia lub miasto…",
+    "cafePlaceholder": "Kawiarnia lub miasto…",
     "title": "Filtry",
     "clearAll": "Wyczyść",
     "country": "Kraj",
@@ -551,6 +551,43 @@
     "showing": "Wyświetlono {shown} z {total}",
     "verified": "Zweryfikowane",
     "featured": "Polecane",
-    "roastersCount": "{count, plural, one {# palarnia} few {# palarnie} many {# palarni} other {# palarni}}"
+    "roastersCount": "{count, plural, one {# palarnia} few {# palarnie} many {# palarni} other {# palarni}}",
+    "location": "Lokalizacja",
+    "city": "Miasto",
+    "allCities": "Wszystkie miasta",
+    "coffee": "Kawa",
+    "activeFilters": "Aktywne filtry",
+    "removeFilter": "Usuń filtr",
+    "sortRecommended": "Polecane",
+    "sortNameAZ": "Nazwa A–Z",
+    "sortNewest": "Najnowsze",
+    "sortMostReviewed": "Najwięcej opinii",
+    "noResults": "Brak wyników dla tych filtrów.",
+    "search": "Szukaj",
+    "amenity": {
+      "wifi": "Wi-Fi",
+      "workspace": "Miejsce do pracy",
+      "outdoor_seating": "Ogródek",
+      "dog_friendly": "Przyjazne psom",
+      "vegan": "Opcje wegańskie",
+      "vegetarian": "Wegetariańskie",
+      "food": "Jedzenie",
+      "specialty_only": "Tylko specialty",
+      "alternative_brew": "Metody alternatywne",
+      "takeaway": "Na wynos",
+      "in_store": "Na miejscu",
+      "events": "Wydarzenia",
+      "cuppings": "Cuppingi"
+    },
+    "style": {
+      "Light": "Jasne palenie",
+      "Medium": "Średnie palenie",
+      "Dark": "Ciemne palenie",
+      "Espresso": "Espresso",
+      "Filter": "Przelew",
+      "ColdBrew": "Cold brew",
+      "Decaf": "Bezkofeinowa",
+      "Nitro": "Nitro"
+    }
   }
 }

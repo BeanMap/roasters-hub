@@ -89,7 +89,7 @@ export function RoasterCard({ roaster, variant = "default", className }: Roaster
       className={cn("group block rounded-2xl focus-visible:outline-offset-4", className)}
     >
       <article className="h-full flex flex-col">
-        <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#2a1f19] transition-shadow duration-300 group-hover:shadow-[var(--shadow-card-hover)]">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#2a1f19] transition-shadow duration-300 group-hover:shadow-[var(--shadow-card-hover)]">
           {fallbackUrl ? (
             <ImageWithFallback
               src={fallbackUrl}

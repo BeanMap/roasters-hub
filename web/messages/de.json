@@ -537,9 +537,9 @@
     "deleting": "Wird gelöscht..."
   },
   "filters": {
-    "searchName": "Nach Namen suchen",
-    "roasteryPlaceholder": "Name der Rösterei…",
-    "cafePlaceholder": "Name des Cafés…",
+    "searchName": "Suche",
+    "roasteryPlaceholder": "Rösterei oder Stadt…",
+    "cafePlaceholder": "Café oder Stadt…",
     "title": "Filter",
     "clearAll": "Alle löschen",
     "country": "Land",
@@ -551,6 +551,43 @@
     "showing": "{shown} von {total} Ergebnissen",
     "verified": "Verifiziert",
     "featured": "Empfohlen",
-    "roastersCount": "{count, plural, one {# Rösterei} other {# Röstereien}}"
+    "roastersCount": "{count, plural, one {# Rösterei} other {# Röstereien}}",
+    "location": "Ort",
+    "city": "Stadt",
+    "allCities": "Alle Städte",
+    "coffee": "Kaffee",
+    "activeFilters": "Aktive Filter",
+    "removeFilter": "Filter entfernen",
+    "sortRecommended": "Empfohlen",
+    "sortNameAZ": "Name A–Z",
+    "sortNewest": "Neueste",
+    "sortMostReviewed": "Meiste Bewertungen",
+    "noResults": "Keine Treffer für diese Filter.",
+    "search": "Suche",
+    "amenity": {
+      "wifi": "WLAN",
+      "workspace": "Arbeitsplatz",
+      "outdoor_seating": "Außenbereich",
+      "dog_friendly": "Hundefreundlich",
+      "vegan": "Vegane Optionen",
+      "vegetarian": "Vegetarisch",
+      "food": "Speisen",
+      "specialty_only": "Nur Specialty",
+      "alternative_brew": "Alternative Zubereitung",
+      "takeaway": "Zum Mitnehmen",
+      "in_store": "Vor Ort",
+      "events": "Events",
+      "cuppings": "Cuppings"
+    },
+    "style": {
+      "Light": "Helle Röstung",
+      "Medium": "Mittlere Röstung",
+      "Dark": "Dunkle Röstung",
+      "Espresso": "Espresso",
+      "Filter": "Filter",
+      "ColdBrew": "Cold Brew",
+      "Decaf": "Entkoffeiniert",
+      "Nitro": "Nitro"
+    }
   }
 }

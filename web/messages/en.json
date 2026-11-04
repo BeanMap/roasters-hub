@@ -537,9 +537,9 @@
     "deleting": "Deleting..."
   },
   "filters": {
-    "searchName": "Search name",
-    "roasteryPlaceholder": "Roastery name…",
-    "cafePlaceholder": "Café name…",
+    "searchName": "Search",
+    "roasteryPlaceholder": "Roastery or city…",
+    "cafePlaceholder": "Café or city…",
     "title": "Filters",
     "clearAll": "Clear all",
     "country": "Country",
@@ -551,6 +551,43 @@
     "showing": "Showing {shown} of {total} results",
     "verified": "Verified",
     "featured": "Featured",
-    "roastersCount": "{count, plural, one {# roaster} other {# roasters}}"
+    "roastersCount": "{count, plural, one {# roaster} other {# roasters}}",
+    "location": "Location",
+    "city": "City",
+    "allCities": "All cities",
+    "coffee": "Coffee",
+    "activeFilters": "Active filters",
+    "removeFilter": "Remove filter",
+    "sortRecommended": "Recommended",
+    "sortNameAZ": "Name A–Z",
+    "sortNewest": "Newest",
+    "sortMostReviewed": "Most reviewed",
+    "noResults": "Nothing matches these filters.",
+    "search": "Search",
+    "amenity": {
+      "wifi": "Wi-Fi",
+      "workspace": "Workspace",
+      "outdoor_seating": "Outdoor seating",
+      "dog_friendly": "Dog friendly",
+      "vegan": "Vegan options",
+      "vegetarian": "Vegetarian",
+      "food": "Food menu",
+      "specialty_only": "Specialty only",
+      "alternative_brew": "Alt brew methods",
+      "takeaway": "Takeaway",
+      "in_store": "Dine in",
+      "events": "Events",
+      "cuppings": "Cuppings"
+    },
+    "style": {
+      "Light": "Light roast",
+      "Medium": "Medium roast",
+      "Dark": "Dark roast",
+      "Espresso": "Espresso",
+      "Filter": "Filter",
+      "ColdBrew": "Cold brew",
+      "Decaf": "Decaf",
+      "Nitro": "Nitro"
+    }
   }
 }

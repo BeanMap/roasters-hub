@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useTransition } from "react";
 
 interface SortOption {
@@ -24,13 +25,14 @@ export function SortSelect({ options, basePath }: { options: SortOption[]; baseP
     }
     params.delete("page");
     startTransition(() => {
-      router.push(`${basePath}?${params.toString()}`);
+      router.replace(params.toString() ? `${basePath}?${params.toString()}` : basePath, { scroll: false });
     });
   }
 
   return (
     <select
-      className={`bg-transparent border-none text-sm font-medium focus:ring-0 cursor-pointer text-primary ${isPending ? "opacity-60" : ""}`}
+      aria-label="Sort"
+      className={`rounded-full border border-outline-variant bg-surface-container-lowest py-1.5 pl-3 pr-8 text-sm font-medium text-on-surface focus:outline-none focus:border-primary cursor-pointer ${isPending ? "opacity-60" : ""}`}
       value={currentSort}
       onChange={(e) => handleChange(e.target.value)}
     >
