@@ -7,6 +7,18 @@ import { ItemListJsonLd } from "@/components/shared/JsonLd";
 import { db } from "@/lib/db";
 import { buildAlternates, buildOpenGraph, buildCanonical, seoKeywords } from "@/lib/seo";
 import type { Metadata } from "next";
+import { permanentRedirect } from "next/navigation";
+import { cityUrlSlug, resolveCitySlug } from "@/lib/catalog";
+
+/** Stored spellings for the city slug (accent-insensitive), or a legacy redirect. */
+async function findCity(country: string, citySlug: string) {
+  const rows = await db.cafe.findMany({
+    where: { status: "VERIFIED", countryCode: { equals: country, mode: "insensitive" } },
+    select: { city: true },
+    distinct: ["city"],
+  });
+  return resolveCitySlug(citySlug, rows.map((r) => r.city));
+}
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -20,7 +32,7 @@ export async function generateStaticParams() {
     });
     return rows.map((r) => ({
       country: r.countryCode,
-      city: r.city.toLowerCase().replace(/\s+/g, "-"),
+      city: cityUrlSlug(r.city),
     }));
   } catch {
     return [];
@@ -34,11 +46,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { country, city, locale } = await params;
   const t = await getTranslations({ locale, namespace: "profiles" });
+  const resolved = await findCity(country, city);
   const row = await db.cafe.findFirst({
     where: {
-      countryCode: country,
+      countryCode: { equals: country, mode: "insensitive" },
       status: "VERIFIED",
-      city: { equals: city.replace(/-/g, " "), mode: "insensitive" },
+      city: { in: resolved?.variants ?? [] },
     },
     select: { city: true, country: true },
   });
@@ -69,11 +82,16 @@ export default async function CafeCityPage({
   const { country, city, locale } = await params;
   const t = await getTranslations({ locale, namespace: "profiles" });
 
+  const resolved = await findCity(country, city);
+  if (resolved?.redirectTo) {
+    permanentRedirect(`${locale === "en" ? "" : `/${locale}`}/cafes/country/${country}/city/${resolved.redirectTo}`);
+  }
+
   const cafes = await db.cafe.findMany({
     where: {
       status: "VERIFIED",
-      countryCode: country,
-      city: { equals: city.replace(/-/g, " "), mode: "insensitive" },
+      countryCode: { equals: country, mode: "insensitive" },
+      city: { in: resolved?.variants ?? [] },
     },
     orderBy: { name: "asc" },
     select: {

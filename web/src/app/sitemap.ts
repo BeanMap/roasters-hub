@@ -1,3 +1,4 @@
+import { cityUrlSlug } from "@/lib/catalog";
 import type { MetadataRoute } from "next";
 import { db } from "@/lib/db";
 
@@ -108,7 +109,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   for (const locale of LOCALES) {
     for (const row of cafeCountries) {
-      const citySlug = row.city.replace(/\s+/g, "-");
+      const citySlug = cityUrlSlug(row.city);
       entries.push({
         url: localeUrl(
           `/cafes/country/${row.countryCode}/city/${citySlug}`,

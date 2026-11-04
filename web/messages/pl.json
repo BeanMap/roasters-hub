@@ -302,7 +302,11 @@
     "rejectCafe": "Odrzuć kawiarnię",
     "rejectReasonHint": "Podaj powód odmowy — zostanie wysłany do właściciela.",
     "reasonPlaceholder": "Powód odmowy...",
-    "rejecting": "Odrzucanie..."
+    "rejecting": "Odrzucanie...",
+    "navImages": "Zdjęcia",
+    "navSettings": "Ustawienia",
+    "navActivity": "Aktywność",
+    "navSite": "Zobacz stronę"
   },
   "profiles": {
     "home": "Strona główna",
@@ -372,7 +376,12 @@
     "closeList": "Zamknij listę",
     "all": "Wszystkie →",
     "noRoastersFilter": "Brak palarni pasujących do filtra.",
-    "noCafesFilter": "Brak kawiarni pasujących do filtra."
+    "noCafesFilter": "Brak kawiarni pasujących do filtra.",
+    "viewProfile": "Zobacz profil",
+    "viewCafe": "Zobacz kawiarnię",
+    "verified": "Zweryfikowane",
+    "loading": "Ładowanie mapy…",
+    "filterAll": "Wszystkie"
   },
   "suggest": {
     "thankYou": "Dziękujemy!",

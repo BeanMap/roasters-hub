@@ -51,7 +51,7 @@ export function AdminSection({ cafeId, initial }: Props) {
       <Field label="Status (read-only — change via toolbar buttons)">
         <div>
           <span
-            className={`inline-block rounded-full px-3 py-1 text-sm font-bold ${STATUS_COLORS[initial.status] ?? "bg-gray-100 text-gray-800"}`}
+            className={`inline-block rounded-full px-3 py-1 text-sm font-bold ${STATUS_COLORS[initial.status] ?? "bg-surface-container-low text-on-surface"}`}
           >
             {initial.status}
           </span>

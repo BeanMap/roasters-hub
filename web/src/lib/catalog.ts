@@ -163,3 +163,33 @@ export function cityVariantsFor(locations: LocationOption[], city: string | unde
   const key = foldText(city);
   return locations.find((l) => l.kind === "city" && foldText(l.value) === key)?.variants;
 }
+
+/** ASCII URL slug for a city: "Poznań" → "poznan", "Frankfurt am Main" → "frankfurt-am-main". */
+export function cityUrlSlug(city: string): string {
+  return foldText(city).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+/** Old English slugs that existed before cities were renamed to local names. */
+const LEGACY_CITY_SLUGS: Record<string, string> = {
+  warsaw: "warszawa",
+  munich: "munchen",
+  cracow: "krakow",
+  cologne: "koln",
+  nuremberg: "nurnberg",
+};
+
+/**
+ * Resolve a city URL slug against the stored city names of one country.
+ * Returns the matching spellings, or the canonical slug to redirect to.
+ */
+export function resolveCitySlug(
+  slug: string,
+  storedCities: string[],
+): { variants: string[]; redirectTo?: undefined } | { variants: []; redirectTo: string } | null {
+  const wanted = cityUrlSlug(decodeURIComponent(slug));
+  const variants = [...new Set(storedCities.filter((c) => cityUrlSlug(c) === wanted))];
+  if (variants.length > 0) return { variants };
+  const legacy = LEGACY_CITY_SLUGS[wanted];
+  if (legacy && storedCities.some((c) => cityUrlSlug(c) === legacy)) return { variants: [], redirectTo: legacy };
+  return null;
+}

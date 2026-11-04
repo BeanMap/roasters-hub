@@ -162,7 +162,7 @@ export function AdminReviewsClient({
           {filtered.map((review) => (
             <div
               key={review.id}
-              className="bg-white border border-outline-variant/10 rounded-xl p-6"
+              className="bg-surface-container-lowest border border-outline-variant/10 rounded-xl p-6"
             >
               <div className="flex items-start justify-between mb-3">
                 <div>

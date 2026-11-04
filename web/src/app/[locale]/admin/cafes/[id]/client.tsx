@@ -113,7 +113,7 @@ export function AdminCafeDetailClient({ cafe }: { cafe: Cafe }) {
       <div className="sticky top-0 z-10 -mx-6 mb-8 flex flex-wrap items-center gap-3 border-b border-white/10 bg-black/80 px-6 py-3 backdrop-blur">
         <div className="flex-1 min-w-0">
           <h1 className="text-base font-bold text-gray-100 truncate">{cafe.name}</h1>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-on-surface-variant">
             {cafe.city}, {cafe.country}
           </p>
         </div>
@@ -255,7 +255,7 @@ export function AdminCafeDetailClient({ cafe }: { cafe: Cafe }) {
       {/* Reject Modal */}
       {showRejectModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-[var(--color-outline-variant)]">
+          <div className="w-full max-w-md rounded-2xl bg-surface-container-lowest p-6 shadow-2xl ring-1 ring-[var(--color-outline-variant)]">
             <h3 className="mb-1 text-lg font-bold text-[var(--color-on-surface)]">{t("rejectCafe")}</h3>
             <p className="mb-4 text-sm text-[var(--color-on-surface-variant)]">
               {t("rejectReasonHint")}
@@ -265,7 +265,7 @@ export function AdminCafeDetailClient({ cafe }: { cafe: Cafe }) {
               onChange={(e) => setRejectReason(e.target.value)}
               rows={3}
               placeholder={t("reasonPlaceholder")}
-              className="mb-4 w-full rounded-lg border border-[var(--color-outline-variant)] bg-white px-3 py-2 text-sm text-[var(--color-on-surface)] placeholder:text-[var(--color-outline)] focus:outline-none focus:ring-1 focus:ring-red-500"
+              className="mb-4 w-full rounded-lg border border-[var(--color-outline-variant)] bg-surface-container-lowest px-3 py-2 text-sm text-[var(--color-on-surface)] placeholder:text-[var(--color-outline)] focus:outline-none focus:ring-1 focus:ring-red-500"
             />
             <div className="flex justify-end gap-3">
               <button

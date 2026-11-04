@@ -1,3 +1,4 @@
+import { cityUrlSlug } from "@/lib/catalog";
 import { notFound, redirect } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
@@ -33,7 +34,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
   const t = await getTranslations({ locale, namespace: "profiles" });
   const title = t("cafeMetaTitle", { name: cafe.name, city: cafe.city, country: cafe.country });
-  const description = cafe.description ?? t("cafeMetaDescription", { name: cafe.name, city: cafe.city });
+  const description = cafe.description ?? t("cafeMetaDescription", { name: cafe.name, city: cafe.city, country: cafe.country ?? "" });
 
   const ogImages = cafe.coverImageUrl
     ? [buildOgImage(cafe.coverImageUrl!, `${cafe.name} cafe`)]
@@ -215,7 +216,7 @@ export default async function CafeProfilePage({
           <span>›</span>
           <Link
             className="hover:text-primary transition-colors"
-            href={`/cafes/country/${cafe.countryCode}/city/${cafe.city.toLowerCase().replace(/\s+/g, "-")}`}
+            href={`/cafes/country/${cafe.countryCode}/city/${cityUrlSlug(cafe.city)}`}
           >
             {cafe.city}
           </Link>

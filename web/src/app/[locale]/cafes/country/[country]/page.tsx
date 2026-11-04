@@ -8,6 +8,7 @@ import { ItemListJsonLd } from "@/components/shared/JsonLd";
 import { db } from "@/lib/db";
 import { buildAlternates, buildOpenGraph, buildCanonical, seoKeywords } from "@/lib/seo";
 import type { Metadata } from "next";
+import { cityUrlSlug } from "@/lib/catalog";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -144,7 +145,7 @@ export default async function CafeCountryPage({
               {cityRows.map((row) => (
                 <Link
                   key={row.city}
-                  href={`/cafes/country/${country}/city/${row.city.toLowerCase().replace(/\s+/g, "-")}`}
+                  href={`/cafes/country/${country}/city/${cityUrlSlug(row.city)}`}
                   className="px-4 py-2 rounded-full bg-surface-container text-sm font-medium hover:bg-surface-container-high transition-colors"
                 >
                   {row.city}{" "}

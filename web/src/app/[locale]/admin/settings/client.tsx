@@ -77,7 +77,7 @@ export function AdminSettingsClient({
 
         <label className="block">
           <span className="text-sm font-medium">Max images per entity</span>
-          <span className="text-xs text-gray-500 ml-2">
+          <span className="text-xs text-on-surface-variant ml-2">
             (total approved images per roaster/cafe page)
           </span>
           <input
@@ -88,13 +88,13 @@ export function AdminSettingsClient({
             onChange={(e) =>
               setValues({ ...values, imageMaxTotal: Number(e.target.value) })
             }
-            className="mt-1 block w-32 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            className="mt-1 block w-32 rounded-lg border border-outline-variant px-3 py-2 text-sm"
           />
         </label>
 
         <label className="block">
           <span className="text-sm font-medium">Max images per user</span>
-          <span className="text-xs text-gray-500 ml-2">
+          <span className="text-xs text-on-surface-variant ml-2">
             (per entity, for regular visitors)
           </span>
           <input
@@ -105,13 +105,13 @@ export function AdminSettingsClient({
             onChange={(e) =>
               setValues({ ...values, imageMaxPerUser: Number(e.target.value) })
             }
-            className="mt-1 block w-32 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            className="mt-1 block w-32 rounded-lg border border-outline-variant px-3 py-2 text-sm"
           />
         </label>
 
         <label className="block">
           <span className="text-sm font-medium">Max images per owner</span>
-          <span className="text-xs text-gray-500 ml-2">
+          <span className="text-xs text-on-surface-variant ml-2">
             (per entity, for the owner of the roaster/cafe)
           </span>
           <input
@@ -125,13 +125,13 @@ export function AdminSettingsClient({
                 imageMaxPerOwner: Number(e.target.value),
               })
             }
-            className="mt-1 block w-32 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            className="mt-1 block w-32 rounded-lg border border-outline-variant px-3 py-2 text-sm"
           />
         </label>
 
         <label className="block">
           <span className="text-sm font-medium">Default pool max</span>
-          <span className="text-xs text-gray-500 ml-2">
+          <span className="text-xs text-on-surface-variant ml-2">
             (max default images per entity type)
           </span>
           <input
@@ -142,20 +142,20 @@ export function AdminSettingsClient({
             onChange={(e) =>
               setValues({ ...values, defaultPoolMax: Number(e.target.value) })
             }
-            className="mt-1 block w-32 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            className="mt-1 block w-32 rounded-lg border border-outline-variant px-3 py-2 text-sm"
           />
         </label>
 
         <button
           onClick={handleSave}
           disabled={saving}
-          className="bg-amber-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-amber-700 disabled:opacity-50"
+          className="bg-primary text-white px-6 py-2.5 rounded-lg font-medium hover:bg-accent-hover disabled:opacity-50"
         >
           {saving ? "Saving..." : "Save Settings"}
         </button>
       </div>
 
-      <hr className="my-10 border-t border-gray-200" />
+      <hr className="my-10 border-t border-outline-variant" />
 
       <AdminImagesClient images={defaultImages} />
     </main>

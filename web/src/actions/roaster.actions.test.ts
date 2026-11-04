@@ -16,9 +16,6 @@ vi.mock("@/lib/slug", () => ({
   generateUniqueSlug: vi.fn(),
 }));
 
-vi.mock("@/lib/country-codes", () => ({
-  resolveCountryCode: vi.fn(),
-}));
 
 vi.mock("@/lib/email", () => ({
   sendNewRegistrationNotification: vi.fn(),
@@ -32,14 +29,12 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { generateUniqueSlug } from "@/lib/slug";
-import { resolveCountryCode } from "@/lib/country-codes";
 import { sendNewRegistrationNotification } from "@/lib/email";
 import { createRoasterRegistration } from "@/actions/roaster.actions";
 
 const mockRevalidatePath = vi.mocked(revalidatePath);
 const mockCreate = db.roaster.create as unknown as ReturnType<typeof vi.fn>;
 const mockGenerateSlug = vi.mocked(generateUniqueSlug);
-const mockResolveCountryCode = vi.mocked(resolveCountryCode);
 const mockSendNotification = vi.mocked(sendNewRegistrationNotification);
 const mockAuth = vi.mocked(auth);
 
@@ -72,7 +67,6 @@ describe("createRoasterRegistration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGenerateSlug.mockResolvedValue("rocket-roasters-warsaw");
-    mockResolveCountryCode.mockReturnValue("PL");
     mockCreate.mockResolvedValue({
       slug: "rocket-roasters-warsaw",
     });
@@ -167,7 +161,7 @@ describe("createRoasterRegistration", () => {
       data: expect.objectContaining({
         name: "Rocket Roasters",
         slug: "rocket-roasters-warsaw",
-        city: "Warsaw",
+        city: "Warszawa",
         country: "Poland",
         countryCode: "PL",
       }),

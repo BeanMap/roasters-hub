@@ -1,5 +1,7 @@
 'use server'
 
+import { normalizeLocation } from '@/lib/country-codes'
+
 import { revalidatePath } from 'next/cache'
 import { db } from '@/lib/db'
 import { requireAdmin } from '@/lib/auth'
@@ -235,8 +237,8 @@ export async function applyEnrichmentRun(runId: string): Promise<ActionResult<{ 
         const name = typeof fieldMap.name === 'string' ? fieldMap.name : entityProposals[0].entityName
         const country = typeof fieldMap.country === 'string' ? fieldMap.country : 'PL'
         const city = typeof fieldMap.city === 'string' ? fieldMap.city : ''
-        // countryCode: use first 2 chars of country or derive from known mapping
-        const countryCode = country.length === 2 ? country.toUpperCase() : country.slice(0, 2).toUpperCase()
+        // Resolve code + canonical names (the old "first two letters" guess turned Germany into GE).
+        const location = normalizeLocation({ country, city })
 
         await db.$transaction(async (tx) => {
           if (entityType === 'ROASTER') {
@@ -246,9 +248,9 @@ export async function applyEnrichmentRun(runId: string): Promise<ActionResult<{ 
               data: {
                 name,
                 slug,
-                country,
-                countryCode,
-                city,
+                country: location.country,
+                countryCode: location.countryCode,
+                city: location.city,
                 description: typeof fieldMap.description === 'string' ? fieldMap.description : null,
                 website: typeof fieldMap.website === 'string' ? fieldMap.website : null,
                 email: typeof fieldMap.email === 'string' ? fieldMap.email : null,
@@ -266,9 +268,9 @@ export async function applyEnrichmentRun(runId: string): Promise<ActionResult<{ 
               data: {
                 name,
                 slug,
-                country,
-                countryCode,
-                city,
+                country: location.country,
+                countryCode: location.countryCode,
+                city: location.city,
                 description: typeof fieldMap.description === 'string' ? fieldMap.description : null,
                 website: typeof fieldMap.website === 'string' ? fieldMap.website : null,
                 phone: typeof fieldMap.phone === 'string' ? fieldMap.phone : null,

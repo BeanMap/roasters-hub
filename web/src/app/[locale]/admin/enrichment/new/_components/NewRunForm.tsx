@@ -180,10 +180,10 @@ export function NewRunForm() {
 
       {/* Keywords / Tags */}
       <div className="space-y-2">
-        <label className="block text-xs font-bold uppercase tracking-widest text-stone-500">
+        <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant">
           {t("keywords")}
         </label>
-        <div className="flex flex-wrap gap-2 rounded-lg border border-stone-200 bg-stone-50 p-2 min-h-[42px]">
+        <div className="flex flex-wrap gap-2 rounded-lg border border-outline-variant bg-surface-container-low p-2 min-h-[42px]">
           {keywords.map((kw) => (
             <span
               key={kw}
@@ -208,10 +208,10 @@ export function NewRunForm() {
               if (e.key === ",") { e.preventDefault(); addKeyword(keywordInput); }
             }}
             placeholder={t("search")}
-            className="min-w-[100px] flex-1 bg-transparent text-sm outline-none placeholder:text-stone-300"
+            className="min-w-[100px] flex-1 bg-transparent text-sm outline-none placeholder:text-on-surface-variant"
           />
         </div>
-        <p className="text-xs text-stone-400">
+        <p className="text-xs text-on-surface-variant">
           {t("keywords")}
         </p>
       </div>

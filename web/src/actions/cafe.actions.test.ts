@@ -8,7 +8,6 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 vi.mock("@/lib/slug", () => ({ generateUniqueCafeSlug: vi.fn() }));
-vi.mock("@/lib/country-codes", () => ({ resolveCountryCode: vi.fn() }));
 vi.mock("@/lib/email", () => ({ sendNewRegistrationNotification: vi.fn() }));
 vi.mock("@/lib/auth", () => ({
   requireAdmin: vi.fn(),
@@ -22,7 +21,6 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { generateUniqueCafeSlug } from "@/lib/slug";
-import { resolveCountryCode } from "@/lib/country-codes";
 import { requireAdmin } from "@/lib/auth";
 import { createCafe, verifyCafe, rejectCafe } from "@/actions/cafe.actions";
 
@@ -30,7 +28,6 @@ const mockCreate = db.cafe.create as unknown as ReturnType<typeof vi.fn>;
 const mockUpdate = db.cafe.update as unknown as ReturnType<typeof vi.fn>;
 const mockUserUpdate = db.userProfile.update as unknown as ReturnType<typeof vi.fn>;
 const mockSlug = vi.mocked(generateUniqueCafeSlug);
-const mockCountryCode = vi.mocked(resolveCountryCode);
 const mockRequireAdmin = vi.mocked(requireAdmin);
 const mockRevalidatePath = vi.mocked(revalidatePath);
 const mockAuth = vi.mocked(auth);
@@ -59,7 +56,6 @@ const validData = {
 beforeEach(() => {
   vi.clearAllMocks();
   mockSlug.mockResolvedValue("brew-lab");
-  mockCountryCode.mockReturnValue("PL");
 });
 
 describe("createCafe", () => {

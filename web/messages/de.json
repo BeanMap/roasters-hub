@@ -302,7 +302,11 @@
     "rejectCafe": "Café ablehnen",
     "rejectReasonHint": "Gib einen Ablehnungsgrund an — er wird an den Besitzer gesendet.",
     "reasonPlaceholder": "Ablehnungsgrund...",
-    "rejecting": "Wird abgelehnt..."
+    "rejecting": "Wird abgelehnt...",
+    "navImages": "Fotos",
+    "navSettings": "Einstellungen",
+    "navActivity": "Aktivität",
+    "navSite": "Seite ansehen"
   },
   "profiles": {
     "home": "Startseite",
@@ -372,7 +376,12 @@
     "closeList": "Liste schließen",
     "all": "Alle →",
     "noRoastersFilter": "Keine Röstereien entsprechen diesem Filter.",
-    "noCafesFilter": "Keine Cafés entsprechen diesem Filter."
+    "noCafesFilter": "Keine Cafés entsprechen diesem Filter.",
+    "viewProfile": "Profil ansehen",
+    "viewCafe": "Café ansehen",
+    "verified": "Verifiziert",
+    "loading": "Karte wird geladen…",
+    "filterAll": "Alle"
   },
   "suggest": {
     "thankYou": "Vielen Dank!",

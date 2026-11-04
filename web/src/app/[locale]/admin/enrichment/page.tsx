@@ -52,10 +52,10 @@ export default async function EnrichmentHistoryPage() {
                 <th className="px-5 py-3 font-bold">{t("date")}</th>
                 <th className="px-5 py-3 font-bold">{t("type")}</th>
                 <th className="px-5 py-3 font-bold">{t("mode")}</th>
-                <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-stone-500">
+                <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-on-surface-variant">
                   {t("keywords")}
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-stone-500">
+                <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-on-surface-variant">
                   {t("location")}
                 </th>
                 <th className="px-5 py-3 font-bold">{t("sources")}</th>
@@ -77,22 +77,22 @@ export default async function EnrichmentHistoryPage() {
                     <td className="px-5 py-3 font-bold">{String(query.entityType ?? "—")}</td>
                     <td className="px-5 py-3 text-on-surface-variant capitalize">{String(query.mode ?? "—")}</td>
                     {/* Keywords */}
-                    <td className="px-3 py-3 text-sm text-stone-600">
+                    <td className="px-3 py-3 text-sm text-on-surface-variant">
                       {Array.isArray((run.query as Record<string, unknown>)?.keywords) &&
                       ((run.query as Record<string, unknown>).keywords as string[]).length > 0
                         ? ((run.query as Record<string, unknown>).keywords as string[])
                             .slice(0, 3)
                             .join(", ")
-                        : <span className="text-stone-300">—</span>}
+                        : <span className="text-on-surface-variant">—</span>}
                     </td>
                     {/* Lokalizacja */}
-                    <td className="px-3 py-3 text-sm text-stone-600">
+                    <td className="px-3 py-3 text-sm text-on-surface-variant">
                       {[
                         (run.query as Record<string, unknown>)?.city,
                         (run.query as Record<string, unknown>)?.country,
                       ]
                         .filter(Boolean)
-                        .join(", ") || <span className="text-stone-300">—</span>}
+                        .join(", ") || <span className="text-on-surface-variant">—</span>}
                     </td>
                     <td className="px-5 py-3">
                       <div className="flex gap-1 flex-wrap">

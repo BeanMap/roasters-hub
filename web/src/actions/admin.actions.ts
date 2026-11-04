@@ -1,5 +1,6 @@
 "use server";
 
+import { normalizeLocationPatch } from "@/lib/country-codes";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
@@ -145,7 +146,7 @@ export async function adminUpdateRoaster(
       openingHours !== undefined ? { openingHours } : {};
     const roaster = await db.roaster.update({
       where: { id: roasterId },
-      data: { ...rest, ...openingHoursUpdate, ...ownerUpdate, updatedAt: new Date() } as Parameters<typeof db.roaster.update>[0]["data"],
+      data: { ...normalizeLocationPatch(rest), ...openingHoursUpdate, ...ownerUpdate, updatedAt: new Date() } as Parameters<typeof db.roaster.update>[0]["data"],
       select: { slug: true },
     });
     revalidatePath("/admin/roasters");
