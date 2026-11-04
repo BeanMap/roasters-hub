@@ -347,7 +347,12 @@
     "verifiedCafeCountWithCountry": "{count, plural, one {# verifiziertes Café} other {# verifizierte Cafés}} · {country}",
     "noFilterMatch": "Kein {entity} entspricht diesem Filter.",
     "specialtyCoffeeRoasters": "Specialty-Coffee-Röstereien",
-    "specialtyCoffeeCafes": "Specialty-Coffee-Cafés"
+    "specialtyCoffeeCafes": "Specialty-Coffee-Cafés",
+    "photos": "Fotos",
+    "signInToAddPhoto": "Melde dich an, um ein Foto hinzuzufügen",
+    "signInShort": "Anmelden",
+    "saveRoaster": "Rösterei speichern",
+    "savedRoaster": "Gespeichert"
   },
   "map": {
     "title": "Karte der Kaffeeröstereien & Cafés",
@@ -537,6 +542,8 @@
     "roastStyle": "Röstgrad",
     "amenities": "Ausstattung",
     "showing": "{shown} von {total} Ergebnissen",
-    "verified": "Verifiziert"
+    "verified": "Verifiziert",
+    "featured": "Empfohlen",
+    "roastersCount": "{count, plural, one {# Rösterei} other {# Röstereien}}"
   }
 }

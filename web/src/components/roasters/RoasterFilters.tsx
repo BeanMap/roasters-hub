@@ -100,7 +100,7 @@ export function RoasterFilters({ countries }: RoasterFiltersProps) {
       <div className={`space-y-10 ${open ? "block" : "hidden"} lg:block`}>
         {/* Search — inside panel on desktop */}
         <div className="hidden lg:block">
-          <label htmlFor="filter-search-desktop" className="text-xs font-semibold uppercase tracking-wider mb-3 block">{t("searchName")}</label>
+          <label htmlFor="filter-search-desktop" className="label-mono text-outline mb-3 block">{t("searchName")}</label>
           <input
             id="filter-search-desktop"
             className="w-full bg-surface-container-low border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-primary text-sm"
@@ -119,7 +119,7 @@ export function RoasterFilters({ countries }: RoasterFiltersProps) {
 
       {/* Country */}
       <div>
-        <label className="text-xs font-semibold uppercase tracking-wider mb-3 block">{t("country")}</label>
+        <label className="label-mono text-outline mb-3 block">{t("country")}</label>
         <select
           className="w-full bg-surface-container-low border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-primary text-sm"
           value={activeCountry || ""}
@@ -136,7 +136,7 @@ export function RoasterFilters({ countries }: RoasterFiltersProps) {
 
       {/* Origin Chips */}
       <div>
-        <label className="text-xs font-semibold uppercase tracking-wider mb-3 block">{t("originRegions")}</label>
+        <label className="label-mono text-outline mb-3 block">{t("originRegions")}</label>
         <div className="flex flex-wrap gap-2">
           {ORIGINS.slice(0, 6).map((origin) => (
             <button
@@ -156,7 +156,7 @@ export function RoasterFilters({ countries }: RoasterFiltersProps) {
 
       {/* Certifications */}
       <div>
-        <label className="text-xs font-semibold uppercase tracking-wider mb-3 block">{t("certifications")}</label>
+        <label className="label-mono text-outline mb-3 block">{t("certifications")}</label>
         <div className="space-y-3">
           {CERTIFICATIONS.slice(0, 5).map((cert) => (
             <label key={cert} className="flex items-center gap-3 cursor-pointer group">
@@ -176,7 +176,7 @@ export function RoasterFilters({ countries }: RoasterFiltersProps) {
 
       {/* Roast Style */}
       <div>
-        <label className="text-xs font-semibold uppercase tracking-wider mb-3 block">{t("roastStyle")}</label>
+        <label className="label-mono text-outline mb-3 block">{t("roastStyle")}</label>
         <div className="flex flex-col gap-2">
           {ROAST_STYLES.map((style) => (
             <label key={style} className="flex items-center gap-3 cursor-pointer">

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth, SignInButton } from "@clerk/nextjs";
+import { useTranslations } from "next-intl";
 import { AddPhotoModal } from "@/components/shared/AddPhotoModal";
 
 interface AddPhotoButtonProps {
@@ -22,6 +23,7 @@ interface ImageInfo { total: number; userTotal: number; maxTotal: number; maxPer
 
 export function AddPhotoButton({ entityType, entityId }: AddPhotoButtonProps) {
   const { isSignedIn } = useAuth();
+  const t = useTranslations("profiles");
   const [showModal, setShowModal] = useState(false);
   const [info, setInfo] = useState<ImageInfo | null>(null);
 
@@ -36,13 +38,11 @@ export function AddPhotoButton({ entityType, entityId }: AddPhotoButtonProps) {
 
   if (!isSignedIn) {
     return (
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
-        <p className="text-sm text-amber-800 mb-2">
-          Sign in to add a photo
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-outline-variant px-4 py-3">
+        <p className="text-sm text-on-surface-variant">{t("signInToAddPhoto")}</p>
         <SignInButton mode="modal">
-          <button className="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-700">
-            Sign In
+          <button className="rounded-full border border-on-surface/20 px-4 py-1.5 text-sm font-semibold text-on-surface hover:border-primary hover:text-primary transition-colors">
+            {t("signInShort")}
           </button>
         </SignInButton>
       </div>
@@ -55,7 +55,7 @@ export function AddPhotoButton({ entityType, entityId }: AddPhotoButtonProps) {
         <button
           onClick={() => setShowModal(true)}
           disabled={limitReached || totalReached}
-          className="inline-flex items-center gap-1.5 text-sm text-amber-600 hover:text-amber-700 font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-1.5 text-sm text-primary hover:text-on-surface-variant font-medium disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <svg
             className="w-4 h-4"

@@ -12,7 +12,7 @@ export function CertificationBadge({ certification, className }: CertificationBa
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 bg-surface-container-high text-on-surface-variant text-[10px] px-2 py-0.5 rounded-full font-medium uppercase tracking-[0.2em]",
+        "label-mono inline-flex items-center gap-1 border border-outline-variant text-on-surface-variant text-[10px] px-2 py-0.5 rounded-full",
         className
       )}
     >

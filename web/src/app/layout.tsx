@@ -1,29 +1,38 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { ClerkProvider } from "@clerk/nextjs";
-import { Fraunces, Source_Sans_3 } from "next/font/google";
+import { Bricolage_Grotesque, Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
 import { getLocale, getTranslations } from "next-intl/server";
 import { BetaBanner } from "@/components/shared/BetaBanner";
 import { WebSiteJsonLd } from "@/components/shared/JsonLd";
 import { getBaseUrl, defaultOgImage } from "@/lib/seo";
 import "./globals.css";
 
-const fraunces = Fraunces({
+// Display: characterful grotesque with optical sizes — confident, editorial.
+const display = Bricolage_Grotesque({
   variable: "--font-display",
-  subsets: ["latin"],
-  axes: ["SOFT", "WONK", "opsz"],
-  style: ["normal", "italic"],
+  subsets: ["latin", "latin-ext"],
+  axes: ["opsz", "wdth"],
   display: "swap",
 });
 
-const sourceSans = Source_Sans_3({
+// Body: crisp, warm humanist sans with full Polish/German diacritics.
+const sans = Instrument_Sans({
   variable: "--font-sans",
   subsets: ["latin", "latin-ext"],
   display: "swap",
 });
 
+// Labels: "coffee bag" metadata — origins, cities, counts, coordinates.
+const mono = IBM_Plex_Mono({
+  variable: "--font-mono",
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+});
+
 export const viewport: Viewport = {
-  themeColor: "#6f4e37",
+  themeColor: "#1f1611",
 };
 
 export const metadata: Metadata = {
@@ -100,7 +109,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${fraunces.variable} ${sourceSans.variable} h-full scroll-smooth`}
+      className={`${display.variable} ${sans.variable} ${mono.variable} h-full scroll-smooth`}
     >
       <body className="min-h-full flex flex-col antialiased" suppressHydrationWarning>
         <BetaBanner message={betaMessage} dismissLabel={betaDismiss} />

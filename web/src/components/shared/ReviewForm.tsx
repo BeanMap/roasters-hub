@@ -133,12 +133,12 @@ export function ReviewForm({ roasterId, cafeId }: ReviewFormProps) {
           />
         </div>
 
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
-          <p className="text-sm text-amber-800 mb-2">
+        <div className="bg-surface-container-low border border-outline-variant rounded-xl p-4 text-center">
+          <p className="text-sm text-on-surface-variant mb-2">
             Sign in to leave a review
           </p>
           <SignInButton mode="modal">
-            <button onClick={saveDraft} className="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-700">
+            <button onClick={saveDraft} className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent-hover">
               Sign In
             </button>
           </SignInButton>

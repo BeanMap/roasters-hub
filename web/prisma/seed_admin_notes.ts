@@ -3,7 +3,6 @@
  *
  * Usage: npx tsx --env-file=.env.local prisma/seed_admin_notes.ts
  */
-import { PrismaClient } from "@prisma/client";
 import { createScriptClient } from "./script-client";
 
 const prisma = createScriptClient();

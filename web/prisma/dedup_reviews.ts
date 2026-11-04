@@ -4,7 +4,6 @@
  *
  * Usage: npx tsx --env-file=.env.local prisma/dedup_reviews.ts
  */
-import { PrismaClient } from "@prisma/client";
 import { createScriptClient } from "./script-client";
 
 const prisma = createScriptClient();

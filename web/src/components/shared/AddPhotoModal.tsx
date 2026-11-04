@@ -84,7 +84,7 @@ export function AddPhotoModal({
             }}
             appearance={{
               button:
-                "bg-amber-600 text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-amber-700 ut-uploading:bg-amber-400",
+                "bg-primary text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-accent-hover ut-uploading:bg-amber-400",
               allowedContent: "text-gray-400 text-xs mt-2",
             }}
           />

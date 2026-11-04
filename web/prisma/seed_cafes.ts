@@ -1,4 +1,3 @@
-import { PrismaClient } from "@prisma/client";
 import { createScriptClient } from "./script-client";
 
 // Production seed workflow test - 2026-04-03

@@ -102,7 +102,7 @@ export function DashboardGallery({
               </div>
               <div className="absolute top-1.5 left-1.5 right-1.5 flex items-center justify-between gap-2">
                 {img.status === "PENDING" && (
-                  <span className="bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded font-medium">
+                  <span className="bg-primary text-white text-[10px] px-1.5 py-0.5 rounded font-medium">
                     {t("awaitingApproval")}
                   </span>
                 )}

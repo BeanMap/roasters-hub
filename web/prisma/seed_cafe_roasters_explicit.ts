@@ -4,7 +4,6 @@
  *
  * Usage: npx tsx --env-file=.env.local prisma/seed_cafe_roasters_explicit.ts
  */
-import { PrismaClient } from "@prisma/client";
 import { createScriptClient } from "./script-client";
 
 const prisma = createScriptClient();

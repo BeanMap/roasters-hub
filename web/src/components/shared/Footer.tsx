@@ -8,7 +8,12 @@ export function Footer() {
   const t = useTranslations("footer");
 
   return (
-    <footer className="bg-footer-bg w-full pt-12 pb-6 text-inverse-on-surface/75 text-sm font-light mt-auto">
+    <footer className="bg-footer-bg w-full pt-16 pb-6 text-inverse-on-surface/75 text-sm mt-auto overflow-hidden">
+      <div className="px-8 max-w-7xl mx-auto mb-14">
+        <p className="font-headline text-[clamp(3.5rem,13vw,11rem)] leading-[0.85] tracking-[-0.06em] text-[#f5efe6]" aria-hidden>
+          Bean Map<span className="text-[#e0662f]">.</span>
+        </p>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8 px-8 max-w-7xl mx-auto mb-8">
         <div className="md:col-span-1">
           <div className="mb-2">
@@ -20,11 +25,11 @@ export function Footer() {
               className="h-9 w-auto brightness-0 invert"
             />
           </div>
-          <p className="leading-relaxed text-[13px]">{t("tagline")}</p>
+          <p className="leading-relaxed text-[0.9375rem] max-w-[32ch]">{t("tagline")}</p>
         </div>
 
         <div>
-          <h4 className="text-inverse-on-surface font-bold mb-[14px] text-[10px] uppercase tracking-[0.2em]">
+          <h4 className="label-mono text-[#f2a77d] mb-4">
             {t("exploreTitle")}
           </h4>
           <ul className="space-y-4">
@@ -47,7 +52,7 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="text-inverse-on-surface font-bold mb-[14px] text-[10px] uppercase tracking-[0.2em]">
+          <h4 className="label-mono text-[#f2a77d] mb-4">
             {t("quickLinksTitle")}
           </h4>
           <ul className="space-y-4">
@@ -75,7 +80,7 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="text-inverse-on-surface font-bold mb-[14px] text-[10px] uppercase tracking-[0.2em]">
+          <h4 className="label-mono text-[#f2a77d] mb-4">
             {t("joinUsTitle")}
           </h4>
           <p className="mb-4">{t("roasterCTA")}</p>

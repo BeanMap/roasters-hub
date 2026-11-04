@@ -347,7 +347,12 @@
     "verifiedCafeCountWithCountry": "{count, plural, one {# zweryfikowana kawiarnia} other {# zweryfikowanych kawiarni}} · {country}",
     "noFilterMatch": "Brak {entity} pasujących do filtra.",
     "specialtyCoffeeRoasters": "Palarnie kawy specialty",
-    "specialtyCoffeeCafes": "Kawiarnie kawy specialty"
+    "specialtyCoffeeCafes": "Kawiarnie kawy specialty",
+    "photos": "Zdjęcia",
+    "signInToAddPhoto": "Zaloguj się, aby dodać zdjęcie",
+    "signInShort": "Zaloguj się",
+    "saveRoaster": "Zapisz palarnię",
+    "savedRoaster": "Zapisano"
   },
   "map": {
     "title": "Mapa palarni i kawiarni",
@@ -537,6 +542,8 @@
     "roastStyle": "Stopień palenia",
     "amenities": "Udogodnienia",
     "showing": "Wyświetlono {shown} z {total}",
-    "verified": "Zweryfikowane"
+    "verified": "Zweryfikowane",
+    "featured": "Polecane",
+    "roastersCount": "{count, plural, one {# palarnia} few {# palarnie} many {# palarni} other {# palarni}}"
   }
 }

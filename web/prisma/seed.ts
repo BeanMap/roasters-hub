@@ -1,4 +1,3 @@
-import { PrismaClient } from "@prisma/client";
 import { createScriptClient } from "./script-client";
 
 const prisma = createScriptClient();

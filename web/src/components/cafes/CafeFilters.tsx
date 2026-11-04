@@ -92,7 +92,7 @@ export function CafeFilters({ countries }: CafeFiltersProps) {
       <div className={`space-y-10 ${open ? "block" : "hidden"} lg:block`}>
         {/* Search — inside panel on desktop */}
         <div className="hidden lg:block">
-          <label htmlFor="filter-search-desktop" className="text-xs font-semibold uppercase tracking-wider mb-3 block">{t("searchName")}</label>
+          <label htmlFor="filter-search-desktop" className="label-mono text-outline mb-3 block">{t("searchName")}</label>
           <input
             id="filter-search-desktop"
             className="w-full bg-surface-container-low border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-primary text-sm"
@@ -110,7 +110,7 @@ export function CafeFilters({ countries }: CafeFiltersProps) {
         </div>
 
         <div>
-          <label htmlFor="filter-country" className="text-xs font-semibold uppercase tracking-wider mb-3 block">{t("country")}</label>
+          <label htmlFor="filter-country" className="label-mono text-outline mb-3 block">{t("country")}</label>
           <select
             id="filter-country"
             className="w-full bg-surface-container-low border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-primary text-sm"
@@ -127,7 +127,7 @@ export function CafeFilters({ countries }: CafeFiltersProps) {
         </div>
 
         <div>
-          <label className="text-xs font-semibold uppercase tracking-wider mb-3 block">{t("amenities")}</label>
+          <label className="label-mono text-outline mb-3 block">{t("amenities")}</label>
           <div className="flex flex-wrap gap-2">
             {CAFE_SERVICES.map((service) => {
               const isActive = activeAmenities.includes(service.value);

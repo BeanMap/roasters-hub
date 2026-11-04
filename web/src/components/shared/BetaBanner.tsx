@@ -25,12 +25,12 @@ export function BetaBanner({ message, dismissLabel }: Props) {
   if (!visible) return null;
 
   return (
-    <div className="w-full bg-amber-950 text-amber-100 text-xs py-2 px-4 flex items-center justify-center gap-3">
+    <div className="w-full bg-[#1f1611] text-[#f5efe6]/80 border-b border-[#f5efe6]/10 text-xs py-2 px-4 flex items-center justify-center gap-3">
       <span>⚗️ {message}</span>
       <button
         onClick={dismiss}
         aria-label={dismissLabel}
-        className="ml-2 text-amber-300 hover:text-white transition-colors shrink-0"
+        className="ml-2 text-[#f2a77d] hover:text-white transition-colors shrink-0"
       >
         ✕
       </button>

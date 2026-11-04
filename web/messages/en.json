@@ -347,7 +347,12 @@
     "verifiedCafeCountWithCountry": "{count, plural, one {# verified cafe} other {# verified cafes}} · {country}",
     "noFilterMatch": "No {entity} match this filter.",
     "specialtyCoffeeRoasters": "Specialty Coffee Roasters",
-    "specialtyCoffeeCafes": "Specialty Coffee Cafes"
+    "specialtyCoffeeCafes": "Specialty Coffee Cafes",
+    "photos": "Photos",
+    "signInToAddPhoto": "Sign in to add a photo",
+    "signInShort": "Sign in",
+    "saveRoaster": "Save roaster",
+    "savedRoaster": "Saved"
   },
   "map": {
     "title": "Coffee Roasters & Cafes Map",
@@ -537,6 +542,8 @@
     "roastStyle": "Roast style",
     "amenities": "Amenities",
     "showing": "Showing {shown} of {total} results",
-    "verified": "Verified"
+    "verified": "Verified",
+    "featured": "Featured",
+    "roastersCount": "{count, plural, one {# roaster} other {# roasters}}"
   }
 }
