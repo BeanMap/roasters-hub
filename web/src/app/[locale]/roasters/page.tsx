@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
@@ -9,7 +9,7 @@ import { SortSelect } from "@/components/shared/SortSelect";
 import { ItemListJsonLd } from "@/components/shared/JsonLd";
 import { db } from "@/lib/db";
 import { buildAlternates, buildOpenGraph, buildCanonical, seoKeywords } from "@/lib/seo";
-import { buildPageHref } from "@/lib/search-params";
+import { Pagination } from "@/components/shared/Pagination";
 import type { Metadata } from "next";
 import type { Prisma } from "@prisma/client";
 
@@ -47,6 +47,7 @@ export default async function CatalogPage({
   setRequestLocale(locale);
 
   const t = await getTranslations({ locale, namespace: "roasters" });
+  const tFilters = await getTranslations({ locale, namespace: "filters" });
   const tCommon = await getTranslations({ locale, namespace: "common" });
 
   const sp = await searchParams;
@@ -120,7 +121,7 @@ export default async function CatalogPage({
           </h1>
           <p className="text-on-surface-variant flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-secondary" />
-            {total} {t("pageDescription")}
+            {t("countLabel", { count: total })}
           </p>
         </header>
 
@@ -133,7 +134,7 @@ export default async function CatalogPage({
             {/* Sort bar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-surface-container-low">
               <span className="text-sm text-on-surface-variant">
-                Showing {roasters.length} of {total} results
+                {tFilters("showing", { shown: roasters.length, total })}
               </span>
               <div className="flex items-center gap-4">
                 <span className="text-xs uppercase tracking-widest font-semibold">{tCommon("sortBy")}</span>
@@ -165,35 +166,13 @@ export default async function CatalogPage({
             )}
 
             {/* Pagination */}
-            {totalPages > 1 && (
-              <nav className="mt-20 flex items-center justify-center gap-4">
-                {page > 1 && (
-                  <Link href={buildPageHref("/roasters", sp, page - 1)} className="flex items-center gap-1 px-4 py-2 text-sm text-on-surface-variant hover:text-primary transition-colors">
-                    &larr; {tCommon("previous")}
-                  </Link>
-                )}
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                    <Link
-                      key={p}
-                      href={buildPageHref("/roasters", sp, p)}
-                      className={
-                        p === page
-                          ? "w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold bg-primary text-on-primary"
-                          : "w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium hover:bg-surface-container transition-colors"
-                      }
-                    >
-                      {p}
-                    </Link>
-                  ))}
-                </div>
-                {page < totalPages && (
-                  <Link href={buildPageHref("/roasters", sp, page + 1)} className="flex items-center gap-1 px-4 py-2 text-sm text-on-surface-variant hover:text-primary transition-colors">
-                    {tCommon("next")} &rarr;
-                  </Link>
-                )}
-              </nav>
-            )}
+            <Pagination
+              basePath="/roasters"
+              searchParams={sp}
+              page={page}
+              totalPages={totalPages}
+              labels={{ previous: tCommon("previous"), next: tCommon("next"), page: tCommon("page") }}
+            />
           </section>
         </div>
 

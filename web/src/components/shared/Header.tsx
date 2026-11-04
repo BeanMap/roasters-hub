@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { Suspense, useState } from "react";
@@ -56,6 +56,7 @@ function HeaderSearch({ pathname }: { pathname: string }) {
             : "text-outline hover:bg-surface-container-high"
         }`}
         aria-label={t("searchRoastersLabel")}
+        title={t("searchRoastersLabel")}
         aria-pressed={entityType === "roasters"}
       >
         <CoffeeBean className="w-[17px] h-[17px]" />
@@ -69,6 +70,7 @@ function HeaderSearch({ pathname }: { pathname: string }) {
             : "text-outline hover:bg-surface-container-high"
         }`}
         aria-label={t("searchCafesLabel")}
+        title={t("searchCafesLabel")}
         aria-pressed={entityType === "cafes"}
       >
         <CoffeeCup className="w-[17px] h-[17px]" />

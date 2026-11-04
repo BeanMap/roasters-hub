@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { useCallback, useState } from "react";
+import { useTranslations } from "next-intl";
 import { CERTIFICATIONS, CERTIFICATION_LABELS, ROAST_STYLES, ORIGINS } from "@/types/certifications";
 
 interface RoasterFiltersProps {
@@ -10,6 +11,7 @@ interface RoasterFiltersProps {
 }
 
 export function RoasterFilters({ countries }: RoasterFiltersProps) {
+  const t = useTranslations("filters");
   const router = useRouter();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
@@ -66,7 +68,7 @@ export function RoasterFilters({ countries }: RoasterFiltersProps) {
         <input
           id="filter-search-mobile"
           className="w-full bg-surface-container-low border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-primary text-sm"
-          placeholder="Roastery name..."
+          placeholder={t("roasteryPlaceholder")}
           type="text"
           defaultValue={searchParams.get("q") || ""}
           onChange={(e) => updateFilter("q", e.target.value || null)}
@@ -80,7 +82,7 @@ export function RoasterFilters({ countries }: RoasterFiltersProps) {
         aria-expanded={open}
       >
         <span className="font-headline text-2xl flex items-center gap-2">
-          Filters
+          {t("title")}
           {hasActiveFilters && (
             <span className="w-2 h-2 rounded-full bg-primary" />
           )}
@@ -98,32 +100,32 @@ export function RoasterFilters({ countries }: RoasterFiltersProps) {
       <div className={`space-y-10 ${open ? "block" : "hidden"} lg:block`}>
         {/* Search — inside panel on desktop */}
         <div className="hidden lg:block">
-          <label htmlFor="filter-search-desktop" className="text-xs font-semibold uppercase tracking-wider mb-3 block">Search name</label>
+          <label htmlFor="filter-search-desktop" className="text-xs font-semibold uppercase tracking-wider mb-3 block">{t("searchName")}</label>
           <input
             id="filter-search-desktop"
             className="w-full bg-surface-container-low border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-primary text-sm"
-            placeholder="Roastery name..."
+            placeholder={t("roasteryPlaceholder")}
             type="text"
             defaultValue={searchParams.get("q") || ""}
             onChange={(e) => updateFilter("q", e.target.value || null)}
           />
         </div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="font-headline text-2xl hidden lg:block">Filters</h2>
+        <h2 className="font-headline text-2xl hidden lg:block">{t("title")}</h2>
         <button onClick={clearAll} className="text-sm text-primary hover:underline underline-offset-4">
-          Clear all
+          {t("clearAll")}
         </button>
       </div>
 
       {/* Country */}
       <div>
-        <label className="text-xs font-semibold uppercase tracking-wider mb-3 block">Country</label>
+        <label className="text-xs font-semibold uppercase tracking-wider mb-3 block">{t("country")}</label>
         <select
           className="w-full bg-surface-container-low border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-primary text-sm"
           value={activeCountry || ""}
           onChange={(e) => updateFilter("country", e.target.value || null)}
         >
-          <option value="">All countries</option>
+          <option value="">{t("allCountries")}</option>
           {countries.map((c) => (
             <option key={c.code} value={c.code}>
               {c.name} ({c.count})
@@ -134,7 +136,7 @@ export function RoasterFilters({ countries }: RoasterFiltersProps) {
 
       {/* Origin Chips */}
       <div>
-        <label className="text-xs font-semibold uppercase tracking-wider mb-3 block">Origin Regions</label>
+        <label className="text-xs font-semibold uppercase tracking-wider mb-3 block">{t("originRegions")}</label>
         <div className="flex flex-wrap gap-2">
           {ORIGINS.slice(0, 6).map((origin) => (
             <button
@@ -154,7 +156,7 @@ export function RoasterFilters({ countries }: RoasterFiltersProps) {
 
       {/* Certifications */}
       <div>
-        <label className="text-xs font-semibold uppercase tracking-wider mb-3 block">Certifications</label>
+        <label className="text-xs font-semibold uppercase tracking-wider mb-3 block">{t("certifications")}</label>
         <div className="space-y-3">
           {CERTIFICATIONS.slice(0, 5).map((cert) => (
             <label key={cert} className="flex items-center gap-3 cursor-pointer group">
@@ -174,7 +176,7 @@ export function RoasterFilters({ countries }: RoasterFiltersProps) {
 
       {/* Roast Style */}
       <div>
-        <label className="text-xs font-semibold uppercase tracking-wider mb-3 block">Roast Style</label>
+        <label className="text-xs font-semibold uppercase tracking-wider mb-3 block">{t("roastStyle")}</label>
         <div className="flex flex-col gap-2">
           {ROAST_STYLES.map((style) => (
             <label key={style} className="flex items-center gap-3 cursor-pointer">

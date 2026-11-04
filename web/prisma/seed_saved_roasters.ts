@@ -5,12 +5,9 @@
  * Usage: npx tsx --env-file=.env.local prisma/seed_saved_roasters.ts
  */
 import { PrismaClient } from "@prisma/client";
-import { PrismaNeon } from "@prisma/adapter-neon";
+import { createScriptClient } from "./script-client";
 
-const adapter = new PrismaNeon({
-  connectionString: process.env.DIRECT_URL ?? process.env.DATABASE_URL!,
-});
-const prisma = new PrismaClient({ adapter });
+const prisma = createScriptClient();
 
 const ADMIN_EMAIL = "marek.nadra@gmail.com";
 const OWNER_EMAIL = "kwadratpoz@gmail.com";

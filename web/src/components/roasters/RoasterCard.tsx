@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { VerifiedBadge } from "./VerifiedBadge";
 import { CertificationBadge } from "./CertificationBadge";
 import { ImageWithFallback } from "./ImageWithFallback";

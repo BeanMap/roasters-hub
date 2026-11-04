@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { Header } from "@/components/shared/Header";
@@ -161,27 +161,18 @@ export default async function HomePage({
 
         {/* Stats Bar */}
         <div className="border-t border-b border-surface-container-high bg-surface-container-lowest">
-          <div className="max-w-7xl mx-auto px-6 py-[22px] flex flex-col md:flex-row justify-center items-center gap-10 md:gap-14">
-            <div className="text-center">
-              <div className="font-headline text-[38px] font-bold text-primary leading-none tracking-[-0.03em]">{roasterCount}+</div>
-              <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-outline mt-[3px]">{t("statsRoastersLabel")}</div>
-            </div>
-            <div className="h-[38px] w-px bg-surface-container-high hidden md:block" />
-            <div className="text-center">
-              <div className="font-headline text-[38px] font-bold text-primary leading-none tracking-[-0.03em]">{cafeCount}</div>
-              <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-outline mt-[3px]">{t("statsCafesLabel")}</div>
-            </div>
-            <div className="h-[38px] w-px bg-surface-container-high hidden md:block" />
-            <div className="text-center">
-              <div className="font-headline text-[38px] font-bold text-primary leading-none tracking-[-0.03em]">{countryCount}</div>
-              <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-outline mt-[3px]">{t("statsCountriesLabel")}</div>
-            </div>
-            <div className="h-[38px] w-px bg-surface-container-high hidden md:block" />
-            <div className="text-center">
-              <div className="font-headline text-[38px] font-bold text-primary leading-none tracking-[-0.03em]">{roasterCount}</div>
-              <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-outline mt-[3px]">{t("statsVerifiedLabel")}</div>
-            </div>
-          </div>
+          <dl className="max-w-3xl mx-auto px-6 py-[22px] grid grid-cols-3 divide-x divide-surface-container-high text-center">
+            {[
+              { value: roasterCount, label: t("statsRoastersLabel") },
+              { value: cafeCount, label: t("statsCafesLabel") },
+              { value: countryCount, label: t("statsCountriesLabel") },
+            ].map((stat) => (
+              <div key={stat.label} className="flex flex-col-reverse">
+                <dt className="text-[11px] font-bold uppercase tracking-[0.12em] text-outline mt-[3px]">{stat.label}</dt>
+                <dd className="font-headline text-[30px] md:text-[38px] font-bold text-primary leading-none tracking-[-0.03em]">{stat.value}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
 
         {/* Featured Roasters */}

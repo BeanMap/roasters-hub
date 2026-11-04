@@ -92,7 +92,7 @@
     "mapDesc": "Unsere interaktive Karte hilft dir, verifizierte Specialty-Röstereien in jeder Stadt zu finden.",
     "exploreMap": "Karte erkunden",
     "newsletterTitle": "Frische Bohnen in deinem Posteingang",
-    "newsletterDesc": "Schließe dich über 10.000 Abonnenten an — wöchentlich kuratierte Röstereien und limitierte Editionen.",
+    "newsletterDesc": "Eine kurze, gelegentliche E-Mail über neue Röstereien und Cafés auf Bean Map. Kein Spam, jederzeit abbestellbar.",
     "statsRoastersLabel": "Röstereien",
     "statsCafesLabel": "Cafés",
     "statsCountriesLabel": "Länder",
@@ -137,7 +137,8 @@
     "addFirstPhoto": "Erstes Foto hinzufügen",
     "addAnotherPhoto": "Weiteres Foto hinzufügen",
     "photoUploadedSubmitted": "Foto hochgeladen und zur Überprüfung eingereicht.",
-    "maxImagesReached": "Sie haben die maximale Anzahl an Bildern erreicht."
+    "maxImagesReached": "Sie haben die maximale Anzahl an Bildern erreicht.",
+    "page": "Seite"
   },
   "legal": {
     "privacyTitle": "Datenschutzerklärung",
@@ -160,7 +161,8 @@
     "sortNameAZ": "Name A–Z",
     "sortNewest": "Neueste",
     "noResultsFilters": "Keine Röstereien für diese Filter gefunden",
-    "clearFilters": "Filter löschen"
+    "clearFilters": "Filter löschen",
+    "countLabel": "{count, plural, one {# verifizierte Rösterei} other {# verifizierte Röstereien}}"
   },
   "cafes": {
     "pageTitle": "Specialty Cafés",
@@ -173,7 +175,8 @@
     "sortCity": "Stadt",
     "sortRating": "Bewertung",
     "noResultsFilters": "Keine Cafés für diese Filter gefunden",
-    "clearFilters": "Filter löschen"
+    "clearFilters": "Filter löschen",
+    "countLabel": "{count, plural, one {# Specialty-Café} other {# Specialty-Cafés}}"
   },
   "admin": {
     "dashboard": "Admin-Dashboard",
@@ -520,5 +523,20 @@
     "cancel": "Abbrechen",
     "confirmDelete": "Ja, Konto löschen",
     "deleting": "Wird gelöscht..."
+  },
+  "filters": {
+    "searchName": "Nach Namen suchen",
+    "roasteryPlaceholder": "Name der Rösterei…",
+    "cafePlaceholder": "Name des Cafés…",
+    "title": "Filter",
+    "clearAll": "Alle löschen",
+    "country": "Land",
+    "allCountries": "Alle Länder",
+    "originRegions": "Herkunftsregionen",
+    "certifications": "Zertifizierungen",
+    "roastStyle": "Röstgrad",
+    "amenities": "Ausstattung",
+    "showing": "{shown} von {total} Ergebnissen",
+    "verified": "Verifiziert"
   }
 }

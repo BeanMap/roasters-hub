@@ -28,7 +28,8 @@ export default async function MapPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const roasters = await db.roaster.findMany({
+  const [roasters, cafes] = await Promise.all([
+    db.roaster.findMany({
     where: {
       status: "VERIFIED",
       lat: { not: null },
@@ -38,9 +39,8 @@ export default async function MapPage({
       images: { where: { isPrimary: true }, take: 1 },
       reviews: { select: { rating: true } },
     },
-  });
-
-  const cafes = await db.cafe.findMany({
+    }),
+    db.cafe.findMany({
     where: { status: "VERIFIED", lat: { not: null }, lng: { not: null } },
     select: {
       id: true,
@@ -55,7 +55,8 @@ export default async function MapPage({
       services: true,
       reviews: { select: { rating: true } },
     },
-  });
+    }),
+  ]);
 
   return <MapContent roasters={roasters} cafes={cafes} />;
 }

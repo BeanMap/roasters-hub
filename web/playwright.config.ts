@@ -20,6 +20,10 @@ export default defineConfig({
     screenshot: "only-on-failure",
     video: "retain-on-failure",
     actionTimeout: 10000,
+    // Optional: point at a preinstalled browser (e.g. sandboxed dev machines).
+    launchOptions: process.env.PW_CHROMIUM_PATH
+      ? { executablePath: process.env.PW_CHROMIUM_PATH, args: ["--no-proxy-server"] }
+      : undefined,
     navigationTimeout: 15000,
   },
 

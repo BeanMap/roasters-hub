@@ -80,7 +80,7 @@ jobs:
         run: cd web && npm install
 
       - name: Run migrations on preview branch
-        if: github.event.action != 'closed' && steps.migrations.outputs.has_migrations == 'true'
+        if: github.event.action != 'closed'
         run: cd web && npx prisma migrate deploy
         env:
           DATABASE_URL: ${{ steps.neon.outputs.db_url }}
@@ -140,6 +140,28 @@ jobs:
               \"type\": \"plain\",
               \"target\": [\"preview\"]
             }"
+
+      # The first Vercel build of a PR is skipped (web/scripts/vercel-ignore-build.sh)
+      # because the branch database did not exist yet. Now that it does,
+      # trigger the preview deployment so it never runs on the production DB.
+      - name: Trigger preview deployment
+        if: github.event.action != 'closed'
+        run: |
+          curl -sf -X POST "https://api.vercel.com/v13/deployments?forceNew=1" \
+            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "name": "beanmap",
+              "project": "${{ secrets.VERCEL_PROJECT_ID }}",
+              "target": "preview",
+              "gitSource": {
+                "type": "github",
+                "repoId": "${{ github.event.repository.id }}",
+                "ref": "${{ github.head_ref }}",
+                "sha": "${{ github.event.pull_request.head.sha }}"
+              }
+            }' | jq '{id, url, readyState}' \
+            || echo "::warning::Could not trigger the preview deployment automatically. Redeploy it from the Vercel dashboard."
 
       # --- DESTROY (on closed) ---
       - name: Delete Vercel env var

@@ -92,7 +92,7 @@
     "mapDesc": "Our interactive map allows you to find verified specialty roasters in any city.",
     "exploreMap": "Explore the Map",
     "newsletterTitle": "Fresh beans in your inbox",
-    "newsletterDesc": "Join 10,000+ subscribers for weekly curation of new roasters and limited releases.",
+    "newsletterDesc": "A short, occasional email about new roasters and cafés on Bean Map. No spam, unsubscribe anytime.",
     "statsRoastersLabel": "Roasters",
     "statsCafesLabel": "Cafes",
     "statsCountriesLabel": "Countries",
@@ -137,7 +137,8 @@
     "addFirstPhoto": "Add your first photo",
     "addAnotherPhoto": "Add another photo",
     "photoUploadedSubmitted": "Photo uploaded and submitted for review.",
-    "maxImagesReached": "You've reached the maximum number of images."
+    "maxImagesReached": "You've reached the maximum number of images.",
+    "page": "Page"
   },
   "legal": {
     "privacyTitle": "Privacy Policy",
@@ -160,7 +161,8 @@
     "sortNameAZ": "Name A–Z",
     "sortNewest": "Newest",
     "noResultsFilters": "No roasters found for these filters",
-    "clearFilters": "Clear filters"
+    "clearFilters": "Clear filters",
+    "countLabel": "{count, plural, one {# verified roaster} other {# verified roasters}}"
   },
   "cafes": {
     "pageTitle": "Specialty Cafés",
@@ -173,7 +175,8 @@
     "sortCity": "City",
     "sortRating": "Rating",
     "noResultsFilters": "No cafes found for these filters",
-    "clearFilters": "Clear filters"
+    "clearFilters": "Clear filters",
+    "countLabel": "{count, plural, one {# specialty café} other {# specialty cafés}}"
   },
   "admin": {
     "dashboard": "Admin dashboard",
@@ -520,5 +523,20 @@
     "cancel": "Cancel",
     "confirmDelete": "Yes, delete my account",
     "deleting": "Deleting..."
+  },
+  "filters": {
+    "searchName": "Search name",
+    "roasteryPlaceholder": "Roastery name…",
+    "cafePlaceholder": "Café name…",
+    "title": "Filters",
+    "clearAll": "Clear all",
+    "country": "Country",
+    "allCountries": "All countries",
+    "originRegions": "Origin regions",
+    "certifications": "Certifications",
+    "roastStyle": "Roast style",
+    "amenities": "Amenities",
+    "showing": "Showing {shown} of {total} results",
+    "verified": "Verified"
   }
 }

@@ -2,5 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':!docs/**' ':!ROADMAP.md' ':!PROJECT_STATUS.md' ':!CLAUDE.md' ':!AGENTS.md' ':!web/AGENTS.md' ':!.tmp/**' ':!.claude/**' ':!.agents/**'"
+  "buildCommand": "npm run vercel-build",
+  "ignoreCommand": "bash \"$( [ -d web/scripts ] && echo web/scripts || echo scripts )/vercel-ignore-build.sh\""
 }

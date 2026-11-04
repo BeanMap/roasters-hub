@@ -1,0 +1,16 @@
+# Local Postgres for development and E2E tests.
+#   npm run db:local:up
+#   DATABASE_URL=postgresql://postgres:postgres@localhost:5432/beanmap npm run db:local:reset
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: beanmap
+    ports:
+      - "5432:5432"
+    volumes:
+      - beanmap-pg:/var/lib/postgresql/data
+volumes:
+  beanmap-pg:

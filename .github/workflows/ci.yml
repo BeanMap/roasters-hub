@@ -120,3 +120,86 @@ jobs:
           else
             echo "No branch_id — nothing to delete."
           fi
+
+  # ─── Job 3: Fresh database from migrations + E2E smoke ─────────────────────
+  # Builds the schema from an EMPTY Postgres using only prisma/migrations,
+  # fails on drift against schema.prisma (catches `db push` shortcuts),
+  # seeds demo data, builds the app and runs the Playwright smoke suite.
+  e2e-fresh-db:
+    name: Fresh DB + E2E Smoke
+    runs-on: ubuntu-latest
+    needs: lint-typecheck-test
+    defaults:
+      run:
+        working-directory: web
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: beanmap
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/beanmap
+      # Live-format placeholder: avoids Clerk's dev-instance handshake redirect.
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_live_Y2xlcmsuZXhhbXBsZS5jb20k
+      CLERK_SECRET_KEY: sk_live_placeholder
+      E2E_BASE_URL: http://localhost:3000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - run: npm install
+
+      - name: Apply migrations to an empty database
+        run: npx prisma migrate deploy
+
+      - name: Check schema drift (migrations vs schema.prisma)
+        run: |
+          npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script > /tmp/drift.sql
+          # Only the intentionally kept legacy user_profiles columns may differ.
+          if grep -vE '^(--.*|\s*|ALTER TABLE "user_profiles" DROP COLUMN "cafeId",|DROP COLUMN "roasterId";)$' /tmp/drift.sql | grep -q .; then
+            echo "::error::schema.prisma differs from what the migrations create. Add a migration (prisma migrate dev) instead of db push."
+            cat /tmp/drift.sql
+            exit 1
+          fi
+          echo "No schema drift."
+
+      - name: Seed demo data
+        run: |
+          npx tsx prisma/seed.ts
+          npx tsx prisma/seed_cafes.ts
+          npx tsx prisma/seed_cafe_roasters_explicit.ts
+          npx tsx prisma/seed_user_profiles.ts
+          npx tsx prisma/seed_reviews.ts
+          npx tsx prisma/verify-production.ts
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start app and run E2E smoke
+        run: |
+          npx next start -p 3000 &
+          for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:3000 && break; sleep 1; done
+          npx playwright test e2e/specs/smoke --project=chromium --project="Mobile Chrome"
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: web/e2e-report
+          retention-days: 7

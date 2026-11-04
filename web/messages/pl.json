@@ -92,7 +92,7 @@
     "mapDesc": "Nasza interaktywna mapa pozwala znaleźć zweryfikowane palarnie specialty w każdym mieście.",
     "exploreMap": "Eksploruj mapę",
     "newsletterTitle": "Świeże ziarna w Twojej skrzynce",
-    "newsletterDesc": "Dołącz do ponad 10 000 subskrybentów — co tydzień kuratowane nowości od palarni i limitowane edycje.",
+    "newsletterDesc": "Krótki, okazjonalny mail o nowych palarniach i kawiarniach na Bean Map. Bez spamu, wypiszesz się w każdej chwili.",
     "statsRoastersLabel": "Palarnie",
     "statsCafesLabel": "Kawiarnie",
     "statsCountriesLabel": "Kraje",
@@ -137,7 +137,8 @@
     "addFirstPhoto": "Dodaj pierwsze zdjęcie",
     "addAnotherPhoto": "Dodaj kolejne zdjęcie",
     "photoUploadedSubmitted": "Zdjęcie przesłane i wysłane do sprawdzenia.",
-    "maxImagesReached": "Osiągnąłeś maksymalną liczbę zdjęć."
+    "maxImagesReached": "Osiągnąłeś maksymalną liczbę zdjęć.",
+    "page": "Strona"
   },
   "legal": {
     "privacyTitle": "Polityka Prywatności",
@@ -160,7 +161,8 @@
     "sortNameAZ": "Nazwa A–Z",
     "sortNewest": "Najnowsze",
     "noResultsFilters": "Nie znaleziono palarni dla tych filtrów",
-    "clearFilters": "Wyczyść filtry"
+    "clearFilters": "Wyczyść filtry",
+    "countLabel": "{count, plural, one {# zweryfikowana palarnia} few {# zweryfikowane palarnie} many {# zweryfikowanych palarni} other {# zweryfikowanej palarni}}"
   },
   "cafes": {
     "pageTitle": "Kawiarnie specialty",
@@ -173,7 +175,8 @@
     "sortCity": "Miasto",
     "sortRating": "Ocena",
     "noResultsFilters": "Nie znaleziono kawiarni dla tych filtrów",
-    "clearFilters": "Wyczyść filtry"
+    "clearFilters": "Wyczyść filtry",
+    "countLabel": "{count, plural, one {# kawiarnia specialty} few {# kawiarnie specialty} many {# kawiarni specialty} other {# kawiarni specialty}}"
   },
   "admin": {
     "dashboard": "Panel administracyjny",
@@ -520,5 +523,20 @@
     "cancel": "Anuluj",
     "confirmDelete": "Tak, usuń konto",
     "deleting": "Usuwanie..."
+  },
+  "filters": {
+    "searchName": "Szukaj po nazwie",
+    "roasteryPlaceholder": "Nazwa palarni…",
+    "cafePlaceholder": "Nazwa kawiarni…",
+    "title": "Filtry",
+    "clearAll": "Wyczyść",
+    "country": "Kraj",
+    "allCountries": "Wszystkie kraje",
+    "originRegions": "Regiony pochodzenia",
+    "certifications": "Certyfikaty",
+    "roastStyle": "Stopień palenia",
+    "amenities": "Udogodnienia",
+    "showing": "Wyświetlono {shown} z {total}",
+    "verified": "Zweryfikowane"
   }
 }
