@@ -7,7 +7,7 @@
 ---
 
 ## Last Updated
-2026-11-04 | @MN — Deploy/DB hardening (migracje w buildzie Vercela, brak auto-seedu prod, preview na własnej bazie, CI z bazą od zera + E2E) + iteracja UX.
+2026-11-07 | @MN — Infrastruktura bazy: preview na kopii produkcji (gałęzie Neon `preview/<branch>` z integracji Vercel ↔ Neon), adres produkcji czytany przez workflowy z Vercela, kontrola zgodności GitHub ↔ Vercel ↔ Neon (`.github/scripts/db-alignment.sh`), nocny zaszyfrowany backup + cotygodniowy test odtworzenia (`.github/workflows/db-backup.yml`), okładki palarni jako migracja SQL.
 
 ---
 

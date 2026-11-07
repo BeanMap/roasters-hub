@@ -1,224 +1,74 @@
-name: Preview Database
+name: Preview Deployment
+
+# Every pull request gets a Vercel preview running on a COPY OF PRODUCTION:
+#
+#   1. this workflow asks Vercel to build the PR's head commit
+#      (Vercel does not build branch pushes itself — vercel.json
+#      git.deploymentEnabled limits automatic builds to main, so only PRs
+#      get previews and Neon branches),
+#   2. before the build the Vercel ↔ Neon integration creates / reuses the
+#      Neon branch `preview/<git branch>` from production `main` and points
+#      DATABASE_URL of that deployment at it,
+#   3. web/scripts/vercel-build.mjs refuses the production endpoint, applies
+#      the PR's migrations to the branch and builds.
+#
+# When the PR is closed the Neon branch is deleted (Neon Free allows 10).
 
 on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
-    paths-ignore:
-      - "ROADMAP.md"
-      - "PROJECT_STATUS.md"
-      - "CLAUDE.md"
-      - "AGENTS.md"
-      - "web/AGENTS.md"
-      - "docs/**"
-      - ".tmp/**"
-      - ".claude/**"
-      - ".agents/**"
+
+concurrency:
+  group: preview-${{ github.head_ref }}
+  cancel-in-progress: false
 
 jobs:
-  manage-preview-db:
+  deploy:
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
-      # --- SETUP ---
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          sparse-checkout: web/scripts
 
-      - name: Compute names
-        id: names
-        run: |
-          BRANCH="${{ github.head_ref }}"
-          # Neon branch name: lowercase, hyphens, prefix
-          NEON_BRANCH="preview-$(echo "$BRANCH" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-zA-Z0-9]/-/g')"
-          # Vercel env var suffix: uppercase, underscores
-          ENV_SUFFIX="$(echo "$BRANCH" | sed 's/[^a-zA-Z0-9]/_/g' | tr '[:lower:]' '[:upper:]')"
-          echo "neon_branch=$NEON_BRANCH" >> $GITHUB_OUTPUT
-          echo "env_suffix=$ENV_SUFFIX" >> $GITHUB_OUTPUT
-
-      # --- CREATE (on open/sync/reopen) ---
-      - name: Get branch expiration date
-        if: github.event.action != 'closed'
-        id: expiration
-        run: |
-          echo "expires_at=$(date -u --date '+7 days' +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
-
-      - name: Create Neon branch
-        if: github.event.action != 'closed'
-        id: neon
-        uses: neondatabase/create-branch-action@v6
-        with:
-          project_id: ${{ secrets.NEON_PROJECT_ID }}
-          api_key: ${{ secrets.NEON_API_KEY }}
-          branch_name: ${{ steps.names.outputs.neon_branch }}
-          parent_branch: main
-          expires_at: ${{ steps.expiration.outputs.expires_at }}
-
-      - name: Check for new migrations
-        if: github.event.action != 'closed'
-        id: migrations
-        run: |
-          NEW_MIGRATIONS=$(git diff --name-only origin/main...HEAD | grep "^web/prisma/migrations/" || true)
-          if [ -n "$NEW_MIGRATIONS" ]; then
-            echo "has_migrations=true" >> $GITHUB_OUTPUT
-            echo "Found new migrations:"
-            echo "$NEW_MIGRATIONS"
-          else
-            echo "has_migrations=false" >> $GITHUB_OUTPUT
-            echo "No new migrations found"
-          fi
-
-      - name: Setup Node.js
-        if: github.event.action != 'closed'
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: "npm"
-          cache-dependency-path: web/package-lock.json
-
-      - name: Install dependencies
-        if: github.event.action != 'closed'
-        run: cd web && npm install
-
-      - name: Run migrations on preview branch
-        if: github.event.action != 'closed'
-        run: cd web && npx prisma migrate deploy
-        env:
-          DATABASE_URL: ${{ steps.neon.outputs.db_url }}
-          DIRECT_URL: ${{ steps.neon.outputs.db_url }}
-
-      - name: Run all seed scripts
-        if: github.event.action != 'closed'
-        run: |
-          cd web
-          npx tsx prisma/seed.ts
-          npx tsx prisma/seed_cafes.ts
-          npx tsx prisma/seed_cafe_roasters_explicit.ts
-          npx tsx prisma/seed_user_profiles.ts
-          npx tsx prisma/seed_reviews.ts
-          npx tsx prisma/seed_profile_events.ts
-          npx tsx prisma/seed_saved_roasters.ts
-          npx tsx prisma/seed_admin_notes.ts
-        env:
-          DATABASE_URL: ${{ steps.neon.outputs.db_url }}
-          DIRECT_URL: ${{ steps.neon.outputs.db_url }}
-
-      - name: Upsert Vercel env var
-        id: envvar
-        if: github.event.action != 'closed'
-        run: |
-          BRANCH="${{ github.head_ref }}"
-          ENV_VALUE="${{ steps.neon.outputs.db_url_pooled }}"
-          PROJECT_ID="${{ secrets.VERCEL_PROJECT_ID }}"
-          TOKEN="${{ secrets.VERCEL_TOKEN }}"
-
-          # Compute sanitized branch name for env var key
-          ENV_SUFFIX="$(echo "$BRANCH" | sed 's/[^a-zA-Z0-9]/_/g' | tr '[:lower:]' '[:upper:]')"
-          ENV_KEY="DATABASE_URL_${ENV_SUFFIX}"
-
-          # Find existing env var for this branch
-          EXISTING_ID=$(curl -s \
-            "https://api.vercel.com/v9/projects/${PROJECT_ID}/env?decrypt=false" \
-            -H "Authorization: Bearer ${TOKEN}" \
-            | jq -r --arg key "$ENV_KEY" '.envs[] | select(.key == $key) | .id // empty')
-
-          # Keep an existing variable: the Neon branch (and its URL) is reused on
-          # every push, and deleting/recreating it would make Vercel builds that
-          # start in between skip themselves (no DB) without a redeploy.
-          if [ -n "$EXISTING_ID" ]; then
-            echo "$ENV_KEY already set (id: $EXISTING_ID) — keeping it."
-            echo "created=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          # Create branch-specific DATABASE_URL — used by getDatabaseUrl() in preview builds
-          echo "Creating $ENV_KEY for branch: $BRANCH"
-          curl -s -X POST \
-            "https://api.vercel.com/v9/projects/${PROJECT_ID}/env" \
-            -H "Authorization: Bearer ${TOKEN}" \
-            -H "Content-Type: application/json" \
-            -d "{
-              \"key\": \"${ENV_KEY}\",
-              \"value\": \"${ENV_VALUE}\",
-              \"type\": \"plain\",
-              \"target\": [\"preview\"]
-            }"
-          echo "created=true" >> "$GITHUB_OUTPUT"
-
-      # Vercel does not build branch pushes by itself (vercel.json:
-      # git.deploymentEnabled), because such a build would start before the
-      # branch database exists and fail in web/scripts/vercel-build.mjs. The
-      # preview is built here instead, once the database and its URL are ready.
       - name: Trigger preview deployment
-        if: github.event.action != 'closed'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
-          # No "target" field: preview is the API default ("preview" is not a valid value).
-          BODY='{
-            "name": "beanmap",
-            "project": "${{ secrets.VERCEL_PROJECT_ID }}",
-            "gitSource": {
-              "type": "github",
-              "repoId": "${{ github.event.repository.id }}",
-              "ref": "${{ github.head_ref }}",
-              "sha": "${{ github.event.pull_request.head.sha }}"
-            }
-          }'
+          TEAM="$(node web/scripts/production-db.mjs team)"
+          PROJECT="$(node web/scripts/production-db.mjs vercelProject)"
+          # No "target" field: preview is the API default.
+          BODY="$(jq -n \
+            --arg project "$PROJECT" \
+            --arg repoId "${{ github.event.repository.id }}" \
+            --arg ref "${{ github.head_ref }}" \
+            --arg sha "${{ github.event.pull_request.head.sha }}" \
+            '{name: "beanmap", project: $project,
+              gitSource: {type: "github", repoId: $repoId, ref: $ref, sha: $sha}}')"
           HTTP_CODE=$(curl -s -o /tmp/deploy.json -w "%{http_code}" -X POST \
-            "https://api.vercel.com/v13/deployments?forceNew=1" \
-            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            "https://api.vercel.com/v13/deployments?forceNew=1&teamId=$TEAM" \
+            -H "Authorization: Bearer ${VERCEL_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "$BODY")
           if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
             jq '{id, url, readyState}' /tmp/deploy.json
           else
-            echo "::warning::Preview deployment not triggered (HTTP $HTTP_CODE). Redeploy it from the Vercel dashboard."
+            echo "::error::Preview deployment not triggered (HTTP $HTTP_CODE)."
             jq '.error // .' /tmp/deploy.json || cat /tmp/deploy.json
+            exit 1
           fi
 
-      # --- DESTROY (on closed) ---
-      - name: Delete Vercel env var
-        if: github.event.action == 'closed'
-        run: |
-          BRANCH="${{ github.head_ref }}"
-          PROJECT_ID="${{ secrets.VERCEL_PROJECT_ID }}"
-          TOKEN="${{ secrets.VERCEL_TOKEN }}"
+  cleanup:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            web/scripts
+            .github/scripts
 
-          ENV_SUFFIX="$(echo "$BRANCH" | sed 's/[^a-zA-Z0-9]/_/g' | tr '[:lower:]' '[:upper:]')"
-          ENV_KEY="DATABASE_URL_${ENV_SUFFIX}"
-
-          EXISTING_ID=$(curl -s \
-            "https://api.vercel.com/v9/projects/${PROJECT_ID}/env?decrypt=false" \
-            -H "Authorization: Bearer ${TOKEN}" \
-            | jq -r --arg key "$ENV_KEY" '.envs[] | select(.key == $key) | .id // empty')
-
-          if [ -n "$EXISTING_ID" ]; then
-            echo "Deleting $ENV_KEY for branch: $BRANCH (id: $EXISTING_ID)"
-            curl -s -X DELETE \
-              "https://api.vercel.com/v9/projects/${PROJECT_ID}/env/${EXISTING_ID}" \
-              -H "Authorization: Bearer ${TOKEN}"
-          else
-            echo "$ENV_KEY for $BRANCH not found, skipping"
-          fi
-
-      - name: Delete Neon branch
-        if: github.event.action == 'closed'
-        run: |
-          NEON_BRANCH="${{ steps.names.outputs.neon_branch }}"
-          PROJECT_ID="${{ secrets.NEON_PROJECT_ID }}"
-          API_KEY="${{ secrets.NEON_API_KEY }}"
-
-          RESPONSE=$(curl -s \
-            "https://console.neon.tech/api/v2/projects/${PROJECT_ID}/branches" \
-            -H "Authorization: Bearer ${API_KEY}" \
-            -H "Accept: application/json")
-
-          BRANCH_ID=$(echo "$RESPONSE" | jq -r --arg name "$NEON_BRANCH" '.branches[] | select(.name == $name) | .id // empty')
-
-          if [ -n "$BRANCH_ID" ]; then
-            echo "Deleting Neon branch: $NEON_BRANCH (id: $BRANCH_ID)"
-            curl -s -X DELETE \
-              "https://console.neon.tech/api/v2/projects/${PROJECT_ID}/branches/${BRANCH_ID}" \
-              -H "Authorization: Bearer ${API_KEY}"
-            echo "Done."
-          else
-            echo "Neon branch '$NEON_BRANCH' not found — nothing to delete."
-          fi
+      - name: Delete Neon preview branch
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+        run: bash .github/scripts/neon-delete-preview.sh "${{ github.head_ref }}"

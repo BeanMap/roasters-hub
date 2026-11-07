@@ -215,10 +215,10 @@ Scopes: `DB | AUTH | ACTION | UI | SEED | INFRA | DOCS | AGENT`
 Szczegółowa dokumentacja: [`docs/github-workflows.md`](docs/github-workflows.md)
 
 **Kluczowe zasady:**
-- Każdy PR dostaje **własną bazę danych** (Neon branch) + Vercel Preview
-- Produkcja: migracje i seed przez GitHub Actions (sekwencyjnie)
+- Każdy PR dostaje Vercel Preview na **kopii produkcji** (gałąź Neon `preview/<branch>` z integracji Vercel ↔ Neon)
+- Produkcja: migracje uruchamia build Vercela (`web/scripts/vercel-build.mjs`); poprawki danych = migracje SQL w PR
 - Vercel deployuje automatycznie na push do main
-- Wymagane secrets: `DATABASE_URL`, `DIRECT_URL`, `NEON_API_KEY`, `VERCEL_TOKEN`
+- Wymagane secrets: `VERCEL_TOKEN`, `NEON_API_KEY`, `BACKUP_PASSPHRASE` (adres bazy czytany z Vercela)
 
 **Monitorowanie:**
 ```bash

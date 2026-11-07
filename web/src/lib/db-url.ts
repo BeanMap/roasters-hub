@@ -1,24 +1,34 @@
 /**
- * Returns the appropriate database URL for the current environment.
+ * Database URL for the current environment.
  *
- * In Vercel Preview Deployments, reads VERCEL_GIT_COMMIT_REF to find
- * a branch-specific DATABASE_URL_<SANITIZED_BRANCH> env var (created by
- * .github/workflows/preview-db.yml). Falls back to DATABASE_URL for
- * production and local dev.
+ * Every environment uses DATABASE_URL. On Vercel the Neon integration sets
+ * it: production → Neon branch `main`; preview → a per-deployment Neon
+ * branch `preview/<git branch>` (copy of production). Locally / in CI it is
+ * your own Postgres.
  *
- * Branch sanitization: feat/mn-cafe-profiles → DATABASE_URL_FEAT_MN_CAFE_PROFILES
+ * Guard: a preview deployment must never reach the production database.
+ * The constant mirrors web/scripts/production-db.mjs (used by the build);
+ * src/lib/__tests__/db-url.test.ts keeps both equal.
  */
-export function branchDatabaseEnvKey(branchRef: string): string {
-  return `DATABASE_URL_${branchRef.replace(/[^a-zA-Z0-9]/g, "_").toUpperCase()}`;
+export const PRODUCTION_DB_ENDPOINT = "ep-purple-grass-al8w7icb";
+
+/** Neon endpoint id of a connection string ("ep-…", pooled or not), or null. */
+export function neonEndpointId(url: string | undefined): string | null {
+  if (!url) return null;
+  try {
+    const label = new URL(url).hostname.split(".")[0];
+    return label.startsWith("ep-") ? label.replace(/-pooler$/, "") : null;
+  } catch {
+    return null;
+  }
 }
 
 export function getDatabaseUrl(env: NodeJS.ProcessEnv = process.env): string {
-  const branchRef = env.VERCEL_GIT_COMMIT_REF;
-  if (branchRef && branchRef !== "main") {
-    const branchUrl = env[branchDatabaseEnvKey(branchRef)];
-    if (branchUrl) return branchUrl;
+  const url = env.DATABASE_URL!;
+  if (env.VERCEL_ENV === "preview" && neonEndpointId(url) === PRODUCTION_DB_ENDPOINT) {
+    throw new Error("Preview deployment must not use the production database");
   }
-  return env.DATABASE_URL!;
+  return url;
 }
 
 /** True for a plain Postgres on this machine (docker, CI service container). */
