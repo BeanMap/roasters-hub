@@ -23,7 +23,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  # Job id kept: "manage-preview-db" is a required check on main.
+  manage-preview-db:
     if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
