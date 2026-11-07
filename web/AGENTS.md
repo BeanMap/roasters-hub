@@ -45,7 +45,7 @@ Przed pisaniem kodu sprawdź istniejące wzorce w `src/`.
 ### Struktura jobów (DLACZEGO tak, nie inaczej)
 
 **Job 1 (lint-typecheck-test):** lint → tsc → unit tests. BEZ buildu.
-**Job 2 (integration):** create Neon branch → migrations → integration tests → **build** → delete Neon branch.
+**Job 2 (Integration Tests):** lokalny Postgres 16 → migracje od zera + drift → integration tests → seed demo → **build** → E2E smoke.
 
 Build jest w Job 2, bo `next build` wywołuje `generateStaticParams` na WSZYSTKICH stronach z `db.*` — ISR prerendering potrzebuje prawdziwego połączenia z bazą. Z placeholder URL build exploduje na 13+ stronach.
 
@@ -53,7 +53,7 @@ Build jest w Job 2, bo `next build` wywołuje `generateStaticParams` na WSZYSTKI
 
 **`npm ci` vs `npm install`:**
 - `npm ci` waliduje CAŁY lock file przed instalacją i pada na `@napi-rs/wasm-runtime` (opcjonalny WASM fallback dla rolldown/tailwindcss-oxide) — jego transitive deps `@emnapi/runtime` i `@emnapi/core` nie mają resolved entries w lock file bo nigdy nie były instalowane na tym OS.
-- Fix: używamy `npm install` (nie `npm ci`) w obu workflowach CI i preview-db.
+- Fix: używamy `npm install` (nie `npm ci`) we wszystkich workflowach.
 
 **Clerk publishable key:**
 - Clerk waliduje FORMAT klucza przy buildzie. `pk_test_placeholder` nie przejdzie.
@@ -122,32 +122,24 @@ Na początku kolejnej sesji czytaj: `.tmp/SESSION.md` → `PROJECT_STATUS.md` �
 
 ## Preview Database Isolation
 
-Każdy PR dostaje izolowany Neon branch — preview deploye nie dotykają produkcyjnych danych.
+Każdy PR dostaje preview na **kopii produkcyjnej bazy** — preview nigdy nie dotyka produkcji.
 
-**Mechanizm:**
-1. Workflow `preview-db.yml` tworzy Neon branch `preview-<branch-name>` przy otwarciu PR
-2. Ustawia w Vercel env var `DATABASE_URL_<SANITIZED_BRANCH>` (np. `DATABASE_URL_FEAT_MN_CAFE_PROFILES`)
-3. Aplikacja czyta `VERCEL_GIT_COMMIT_REF` → szuka branch-specific URL → fallback na `DATABASE_URL`
-4. Przy zamknięciu PR: usuwa Neon branch + Vercel env var
+**Mechanizm** (szczegóły: `docs/github-workflows.md` → „Preview (PR)”):
+1. `preview-db.yml` zleca Vercelowi build preview dla PR (Vercel sam buduje tylko `main`).
+2. Integracja Vercel ↔ Neon tworzy/używa gałęzi Neon `preview/<git branch>` z produkcyjnego `main`
+   i ustawia `DATABASE_URL` tego deploymentu na tę gałąź.
+3. `scripts/vercel-build.mjs` przerywa build, jeśli preview wskazuje endpoint produkcji
+   (`scripts/production-db.mjs`), potem `prisma migrate deploy` na gałęzi i `next build`.
+4. Runtime: `src/lib/db-url.ts` — ten sam strażnik.
+5. Zamknięcie PR / usunięcie gałęzi / nocny sweep → usunięcie `preview/*` (`neon-cleanup.yml`).
 
-**Konwencja nazewnictwa:**
-- Neon branch: `preview-feat-mn-cafe-profiles` (lowercase, hyphens)
-- Vercel env var: `DATABASE_URL_FEAT_MN_CAFE_PROFILES` (uppercase, underscores)
+**Poprawki danych produkcji** = migracja SQL w PR (sprawdzona na preview), nigdy ręcznie.
 
-**Wymagane GitHub Secrets:**
-
-| Secret | Opis | Gdzie znaleźć |
-|--------|------|---------------|
-| `NEON_PROJECT_ID` | ID projektu Neon | ✅ już istnieje |
-| `NEON_API_KEY` | Neon API Key | ✅ już istnieje |
-| `VERCEL_TOKEN` | Personal Access Token | Vercel → Account Settings → Tokens |
-| `VERCEL_PROJECT_ID` | ID projektu Vercel | Vercel → Project → Settings → General |
+**Wymagane GitHub Secrets:** `VERCEL_TOKEN`, `NEON_API_KEY` (organizacja Neon „Vercel: mareknadra's
+projects”), `BACKUP_PASSPHRASE`. Adres produkcyjnej bazy workflowy czytają z Vercela — nie trzymaj go
+w sekretach.
 
 **Uwaga:** Neon Free plan ma limit 10 branchy — nie trzymaj za dużo otwartych PRów naraz.
-
-**Ręczne czyszczenie** (jeśli workflow nie wykonał się przy zamknięciu PR):
-1. Neon Dashboard → Branches → usuń `preview-<branch-name>`
-2. Vercel → Project → Settings → Environment Variables → usuń `DATABASE_URL_<BRANCH>`
 
 ---
 

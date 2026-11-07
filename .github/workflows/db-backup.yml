@@ -1,0 +1,162 @@
+name: Database Backup
+
+# Nightly: pg_dump of PRODUCTION (read-only), encrypted, kept 30 days as a
+# workflow artifact. Weekly (Sunday): the backup is also restored into an
+# empty Postgres and row counts are compared table by table.
+#
+# This repository is PUBLIC — artifacts can be downloaded by any signed-in
+# GitHub user, so the dump is encrypted with BACKUP_PASSPHRASE (AES-256, gpg)
+# and the job refuses to upload anything if that secret is missing.
+# How to restore: docs/github-workflows.md → "Backup i odtwarzanie danych".
+
+on:
+  schedule:
+    - cron: "0 2 * * *"   # nightly backup
+    - cron: "30 2 * * 0"  # Sunday: backup + restore test
+  workflow_dispatch:
+    inputs:
+      restore_test:
+        description: "Also restore the backup into a scratch Postgres and compare row counts"
+        type: boolean
+        default: true
+  pull_request:
+    paths:
+      - ".github/workflows/db-backup.yml"
+      - ".github/scripts/prod-db-url.sh"
+
+concurrency:
+  group: db-backup-${{ github.event_name == 'pull_request' && github.head_ref || 'main' }}
+  cancel-in-progress: false
+
+env:
+  PG_IMAGE: postgres:17   # Neon production runs Postgres 17
+  COUNT_SQL: >-
+    SELECT table_name || '|' ||
+      (xpath('/row/c/text()', query_to_xml(format('SELECT count(*) AS c FROM %I.%I', table_schema, table_name), false, true, '')))[1]::text
+    FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
+    ORDER BY table_name;
+
+jobs:
+  # Backups are switched on by adding the BACKUP_PASSPHRASE secret. Until then
+  # the workflow only leaves a warning (no red runs) and never dumps anything
+  # unencrypted.
+  check:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.passphrase.outputs.enabled }}
+    steps:
+      - name: Encryption passphrase present?
+        id: passphrase
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          if [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "::warning::Backups are OFF: add the BACKUP_PASSPHRASE secret to enable them (docs/github-workflows.md → Backup)."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  backup:
+    needs: check
+    if: needs.check.outputs.enabled == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      artifact: ${{ steps.name.outputs.artifact }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            web/scripts
+            .github/scripts
+
+      - name: Production URL from Vercel
+        run: bash .github/scripts/prod-db-url.sh
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Name
+        id: name
+        run: echo "artifact=db-backup-$(date -u +%Y%m%dT%H%MZ)" >> "$GITHUB_OUTPUT"
+
+      - name: Row counts (before dump)
+        run: |
+          docker run --rm --network host -e DATABASE_URL "$PG_IMAGE" \
+            psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -At -c "$COUNT_SQL" > counts.txt
+          cat counts.txt
+
+      - name: pg_dump (custom format)
+        run: |
+          docker run --rm --network host -e DATABASE_URL -v "$PWD:/out" "$PG_IMAGE" \
+            pg_dump "$DATABASE_URL" --format=custom --no-owner --no-acl --file=/out/production.dump
+          ls -l production.dump
+
+      - name: Encrypt
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 \
+            --symmetric --cipher-algo AES256 --output production.dump.gpg production.dump <<<"$BACKUP_PASSPHRASE"
+          rm production.dump
+          sha256sum production.dump.gpg counts.txt | tee SHA256SUMS
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.name.outputs.artifact }}
+          path: |
+            production.dump.gpg
+            counts.txt
+            SHA256SUMS
+          retention-days: ${{ github.event_name == 'pull_request' && 3 || 30 }}
+          if-no-files-found: error
+
+  restore-test:
+    needs: backup
+    if: >-
+      github.event_name == 'pull_request' ||
+      github.event.schedule == '30 2 * * 0' ||
+      (github.event_name == 'workflow_dispatch' && inputs.restore_test)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: restore
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      RESTORE_URL: postgresql://postgres:postgres@localhost:5432/restore
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.backup.outputs.artifact }}
+
+      - name: Verify checksum and decrypt
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          sha256sum -c SHA256SUMS
+          gpg --batch --pinentry-mode loopback --passphrase-fd 0 \
+            --decrypt --output production.dump production.dump.gpg <<<"$BACKUP_PASSPHRASE"
+
+      - name: Restore into an empty Postgres
+        run: |
+          docker run --rm --network host -v "$PWD:/in" "$PG_IMAGE" \
+            pg_restore --dbname="$RESTORE_URL" --no-owner --no-acl --exit-on-error /in/production.dump
+
+      - name: Compare row counts with production
+        run: |
+          docker run --rm --network host "$PG_IMAGE" \
+            psql "$RESTORE_URL" -v ON_ERROR_STOP=1 -At -c "$COUNT_SQL" > restored.txt
+          if diff -u counts.txt restored.txt; then
+            echo "✔ Restore test passed: $(wc -l < restored.txt) tables, identical row counts."
+          else
+            echo "::error::Restored row counts differ from production (a write between count and dump can cause this — rerun once)."
+            exit 1
+          fi

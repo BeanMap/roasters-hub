@@ -3,31 +3,38 @@ name: Production Database
 # Migrations are applied by the Vercel production build itself
 # (web/scripts/vercel-build.mjs → `prisma migrate deploy` before `next build`),
 # so new code can never go live before its schema, and a failed migration
-# keeps the previous deployment online.
+# keeps the previous deployment online. Data fixes are SQL migrations in a
+# PR (tried first on the PR's preview = copy of production), never manual.
 #
-# This workflow therefore only:
-#   1. on push to main: verifies production data counts (read-only), and
-#   2. on manual dispatch: (re)seeds the BASE directory data (roasters, cafes,
-#      cafe↔roaster relations). These seeds are idempotent upserts.
+# This workflow:
+#   1. alignment: GitHub ↔ Vercel ↔ Neon agree on which database is
+#      production (web/scripts/production-db.mjs) — PRs touching DB plumbing,
+#      push to main, daily
+#   2. verify: production data counts (read-only) — push to main, daily
+#   3. manual dispatch: (re)seed the BASE directory data (idempotent upserts)
 #
-# Demo/fake data (reviews, analytics events, saved items, admin notes, test
-# users) is NEVER written to production. Previously every migration commit
-# re-ran all seeds on production, and seed_reviews.ts deleted every review.
+# The production URL is read live from Vercel (.github/scripts/prod-db-url.sh);
+# GitHub does not store it. This repository is public: never print URLs.
 
 on:
   push:
     branches: [main]
     paths:
       - "web/prisma/**"
+      - "web/scripts/**"
+      - ".github/scripts/**"
       - ".github/workflows/production-deploy.yml"
+  pull_request:
+    paths:
+      - "web/scripts/production-db.mjs"
+      - ".github/scripts/**"
+      - ".github/workflows/production-deploy.yml"
+  schedule:
+    - cron: "40 4 * * *"
   workflow_dispatch:
     inputs:
       seed_base_data:
         description: "Upsert base directory data (roasters, cafes, relations) into PRODUCTION"
-        type: boolean
-        default: false
-      backfill_cover_images:
-        description: "Fill MISSING cover images of seed roasters/cafes (never overwrites existing photos)"
         type: boolean
         default: false
       confirm:
@@ -36,19 +43,35 @@ on:
         default: ""
 
 concurrency:
-  group: production-database
+  group: production-database-${{ github.event_name == 'pull_request' && github.head_ref || 'main' }}
   cancel-in-progress: false
 
 jobs:
+  alignment:
+    name: Database alignment (GitHub ↔ Vercel ↔ Neon)
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Production URL from Vercel (endpoint must match production-db.mjs)
+        run: bash .github/scripts/prod-db-url.sh
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      - name: Neon API key and leftover GitHub secrets point at the same database
+        run: bash .github/scripts/db-alignment.sh
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          LEGACY_DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          LEGACY_DIRECT_URL: ${{ secrets.DIRECT_URL }}
+
   seed-base-data:
     name: Seed base data (manual)
+    needs: alignment
     if: github.event_name == 'workflow_dispatch' && inputs.seed_base_data && inputs.confirm == 'production'
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: web
-    env:
-      DATABASE_URL: ${{ secrets.DIRECT_URL || secrets.DATABASE_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -57,6 +80,10 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm install
+      - name: Production URL from Vercel
+        run: bash ../.github/scripts/prod-db-url.sh
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       - name: Check migrations are applied
         run: npx prisma migrate status
       - name: Upsert roasters
@@ -66,38 +93,14 @@ jobs:
       - name: Upsert cafe-roaster relations
         run: npx tsx prisma/seed_cafe_roasters_explicit.ts
 
-  backfill-cover-images:
-    name: Backfill missing cover images (manual)
-    if: github.event_name == 'workflow_dispatch' && inputs.backfill_cover_images && inputs.confirm == 'production'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
-    env:
-      DATABASE_URL: ${{ secrets.DIRECT_URL || secrets.DATABASE_URL }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: web/package-lock.json
-      - run: npm install
-      - name: Preview (dry run)
-        run: npx tsx prisma/backfill-cover-images.ts --dry-run
-      - name: Fill missing cover images
-        run: npx tsx prisma/backfill-cover-images.ts
-
   verify:
     name: Verify production data (read-only)
-    needs: [seed-base-data]
-    if: always() && (needs.seed-base-data.result == 'success' || needs.seed-base-data.result == 'skipped')
+    needs: [alignment, seed-base-data]
+    if: always() && github.event_name != 'pull_request' && needs.alignment.result == 'success' && (needs.seed-base-data.result == 'success' || needs.seed-base-data.result == 'skipped')
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: web
-    env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -106,9 +109,13 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm install
+      - name: Production URL from Vercel
+        run: bash ../.github/scripts/prod-db-url.sh
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       - name: Migration status
         run: npx prisma migrate status || echo "::warning::Pending migrations — they are applied by the next Vercel production build."
-        env:
-          DATABASE_URL: ${{ secrets.DIRECT_URL || secrets.DATABASE_URL }}
       - name: Data integrity
         run: npx tsx prisma/verify-production.ts
+        env:
+          EXPECT_PRODUCTION_ENDPOINT: "1"

@@ -1,92 +1,40 @@
-name: Cleanup Neon Branches
+name: Cleanup Neon Preview Branches
+
+# Preview Neon branches (`preview/<git branch>`) are created by the
+# Vercel ↔ Neon integration and deleted when their PR closes
+# (preview-db.yml). This catches the rest: a deleted git branch, and a
+# nightly sweep of every preview branch without an open PR.
 
 on:
   delete:
+  schedule:
+    - cron: "15 3 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
-  # Runs automatically when a GitHub branch is deleted
-  cleanup-on-delete:
-    if: github.event_name == 'delete' && github.event.ref_type == 'branch'
+  cleanup:
+    if: github.event_name != 'delete' || github.event.ref_type == 'branch'
     runs-on: ubuntu-latest
     steps:
-      - name: Compute names
-        id: names
-        run: |
-          BRANCH="${{ github.event.ref }}"
-          NEON_BRANCH="preview-$(echo "$BRANCH" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-zA-Z0-9]/-/g')"
-          ENV_SUFFIX="$(echo "$BRANCH" | sed 's/[^a-zA-Z0-9]/_/g' | tr '[:lower:]' '[:upper:]')"
-          echo "neon_branch=$NEON_BRANCH" >> $GITHUB_OUTPUT
-          echo "env_suffix=$ENV_SUFFIX" >> $GITHUB_OUTPUT
-          echo "Deleted GitHub branch: $BRANCH"
-          echo "Looking for Neon branch: $NEON_BRANCH"
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            web/scripts
+            .github/scripts
 
-      - name: Delete Neon branch
-        run: |
-          NEON_BRANCH="${{ steps.names.outputs.neon_branch }}"
+      - name: Delete preview branch of the deleted git branch
+        if: github.event_name == 'delete'
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+        run: bash .github/scripts/neon-delete-preview.sh "${{ github.event.ref }}"
 
-          RESPONSE=$(curl -s \
-            "https://console.neon.tech/api/v2/projects/${{ secrets.NEON_PROJECT_ID }}/branches" \
-            -H "Authorization: Bearer ${{ secrets.NEON_API_KEY }}" \
-            -H "Accept: application/json")
-
-          BRANCH_ID=$(echo "$RESPONSE" | jq -r --arg name "$NEON_BRANCH" '.branches[] | select(.name == $name) | .id // empty')
-
-          if [ -n "$BRANCH_ID" ]; then
-            echo "Deleting Neon branch: $NEON_BRANCH (id: $BRANCH_ID)"
-            curl -s -X DELETE \
-              "https://console.neon.tech/api/v2/projects/${{ secrets.NEON_PROJECT_ID }}/branches/${BRANCH_ID}" \
-              -H "Authorization: Bearer ${{ secrets.NEON_API_KEY }}"
-            echo "Done."
-          else
-            echo "Neon branch '$NEON_BRANCH' not found — nothing to delete."
-          fi
-
-      - name: Delete Vercel env var
-        run: |
-          ENV_KEY="DATABASE_URL_${{ steps.names.outputs.env_suffix }}"
-          PROJECT_ID="${{ secrets.VERCEL_PROJECT_ID }}"
-          TOKEN="${{ secrets.VERCEL_TOKEN }}"
-
-          EXISTING_ID=$(curl -s \
-            "https://api.vercel.com/v9/projects/${PROJECT_ID}/env?decrypt=false" \
-            -H "Authorization: Bearer ${TOKEN}" \
-            | jq -r --arg key "$ENV_KEY" '.envs[] | select(.key == $key) | .id // empty')
-
-          if [ -n "$EXISTING_ID" ]; then
-            echo "Deleting Vercel env var: $ENV_KEY (id: $EXISTING_ID)"
-            curl -s -X DELETE \
-              "https://api.vercel.com/v9/projects/${PROJECT_ID}/env/${EXISTING_ID}" \
-              -H "Authorization: Bearer ${TOKEN}"
-            echo "Done."
-          else
-            echo "Vercel env var '$ENV_KEY' not found — nothing to delete."
-          fi
-
-  # Manual trigger: lists and deletes ALL preview-* Neon branches
-  cleanup-all:
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    steps:
-      - name: List and delete all preview branches
-        run: |
-          echo "Fetching Neon branches..."
-          RESPONSE=$(curl -s \
-            "https://console.neon.tech/api/v2/projects/${{ secrets.NEON_PROJECT_ID }}/branches" \
-            -H "Authorization: Bearer ${{ secrets.NEON_API_KEY }}" \
-            -H "Accept: application/json")
-
-          echo "Preview branches found:"
-          echo "$RESPONSE" | jq -r '.branches[] | select(.name | startswith("preview-")) | "\(.name) | \(.id) | \(.created_at)"' || echo "(none)"
-
-          echo ""
-          echo "Deleting..."
-          echo "$RESPONSE" | jq -r '.branches[] | select(.name | startswith("preview-")) | .id' | while read -r BRANCH_ID; do
-            BRANCH_NAME=$(echo "$RESPONSE" | jq -r --arg id "$BRANCH_ID" '.branches[] | select(.id == $id) | .name')
-            echo "Deleting: $BRANCH_NAME ($BRANCH_ID)"
-            curl -s -X DELETE \
-              "https://console.neon.tech/api/v2/projects/${{ secrets.NEON_PROJECT_ID }}/branches/${BRANCH_ID}" \
-              -H "Authorization: Bearer ${{ secrets.NEON_API_KEY }}"
-          done
-
-          echo "Done!"
+      - name: Delete preview branches without an open PR
+        if: github.event_name != 'delete'
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/neon-delete-preview.sh --stale

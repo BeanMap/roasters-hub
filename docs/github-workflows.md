@@ -9,12 +9,12 @@
 
 1. [Architektura Pipeline](#architektura-pipeline)
 2. [Git Hooks & Branch Strategy](#git-hooks--branch-strategy)
-3. [Preview Database (PR)](#preview-database-pr)
-4. [CI z Ephemeral DB](#ci-z-ephemeral-db)
+3. [Preview (PR) — baza = kopia produkcji](#preview-pr--baza--kopia-produkcji)
+4. [CI (lokalny Postgres)](#ci-lokalny-postgres)
 5. [Production Deploy](#production-deploy)
 6. [Wymagane Secrets](#wymagane-secrets)
 7. [Komendy diagnostyczne](#komendy-diagnostyczne)
-8. [Rollback](#rollback)
+8. [Backup i odtwarzanie danych](#backup-i-odtwarzanie-danych)
 9. [Troubleshooting](#troubleshooting)
 
 ---
@@ -79,405 +79,229 @@ Pre-push hook (`tools/branch-guard.sh`) analizuje pliki zmienione w commitach pu
 
 ## Architektura Pipeline
 
+Zasada: **nic nie trafia na produkcję bez testu**, a dane produkcji zmieniają się tylko przez migracje w PR.
+
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              PULL REQUEST                                    │
-│                              (feat/* branch)                                 │
-└──────────────────────┬──────────────────────────────────────────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         PREVIEW DATABASE WORKFLOW                            │
-│                         (.github/workflows/preview-db.yml)                   │
-├─────────────────────────────────────────────────────────────────────────────┤
-│  1. Create Neon branch (preview-<branch-name>)                              │
-│  2. Run migrations (jeśli nowe)                                             │
-│  3. Run seed (ZAWSZE — każdy preview ma dane do testowania)                 │
-│  4. Set Vercel DATABASE_URL (scoped to branch)                              │
-│  5. Vercel Preview Deployment                                               │
-└──────────────────────┬──────────────────────────────────────────────────────┘
-                       │
-                       ▼
-              ┌─────────────────┐
-              │  Preview URL    │
-              │  (testuj tutaj) │
-              └─────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              MERGE TO MAIN                                   │
-└──────────────────────┬──────────────────────────────────────────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                      PRODUCTION DEPLOY WORKFLOW                              │
-│                      (.github/workflows/production-deploy.yml)               │
-├─────────────────────────────────────────────────────────────────────────────┤
-│  Job 1: CI (Lint, TypeScript, Tests)                                        │
-│       └─► Czy kod jest poprawny?                                            │
-│                                                                             │
-│  Job 2: Migrate & Seed Production DB                                        │
-│       └─► Używa DATABASE_URL z GitHub Secrets                               │
-│       └─► Migracje + Seed (tylko przy zmianie seed/migrations)              │
-│                                                                             │
-│  Job 3: Vercel Auto-Deploy (poza workflow)                                  │
-│       └─► Vercel automatycznie deployuje na push do main                    │
-└──────────────────────┬──────────────────────────────────────────────────────┘
-                       │
-                       ▼
-              ┌─────────────────┐
-              │ Production URL  │
-│ https://beanmap-web.vercel.app │
-              └─────────────────┘
+PR (feat/*)
+ ├─ ci.yml ─────────────── lint · tsc · unit · Integration Tests (lokalny Postgres 16:
+ │                          migracje od zera, drift, testy integracyjne, seed demo, build, E2E)
+ │                          → "Integration Tests" jest wymagany na main
+ ├─ preview-db.yml ─────── zleca Vercelowi build preview dla head commitu PR
+ │      └─ Vercel ↔ Neon ─ integracja tworzy/używa gałęzi Neon `preview/<branch>`
+ │                          z produkcyjnego `main` (= kopia PRODUKCJI) i podmienia
+ │                          DATABASE_URL tego deploymentu
+ │      └─ vercel-build ── strażnik: endpoint ≠ produkcja → migrate deploy → next build
+ └─ (zamknięcie PR) ────── usunięcie gałęzi Neon `preview/<branch>`
+merge → main
+ ├─ Vercel production ──── vercel-build: endpoint = produkcja → migrate deploy → next build
+ │                          (błąd migracji = build failed, stara wersja dalej działa)
+ └─ production-deploy.yml  alignment GitHub ↔ Vercel ↔ Neon + verify (read-only)
+co noc ─ db-backup.yml ─── zaszyfrowany pg_dump (30 dni), w niedzielę test odtworzenia
+co noc ─ neon-cleanup.yml  usuwa gałęzie preview/* bez otwartego PR
 ```
+
+Tożsamość produkcyjnej bazy jest zapisana w jednym miejscu: `web/scripts/production-db.mjs`
+(projekt Neon `steep-smoke-16472365` „neon-aero-prism”, endpoint `ep-purple-grass-al8w7icb`,
+organizacja Neon „Vercel: mareknadra's projects”, projekt Vercel `beanmap`). To nie są sekrety.
 
 ---
 
-## Preview Database (PR)
+## Preview (PR) — baza = kopia produkcji
 
-Każdy Pull Request automatycznie dostaje **własną, izolowaną bazę danych**.
+**Workflow:** `.github/workflows/preview-db.yml` („Preview Deployment”)
+**Trigger:** PR `opened`, `synchronize`, `reopened` (budowa), `closed` (sprzątanie)
 
-### Jak to działa
+1. Workflow wywołuje Vercel API (`VERCEL_TOKEN`) i zleca build preview dla head commitu PR.
+   Vercel sam nie buduje gałęzi (`vercel.json` → `git.deploymentEnabled`: tylko `main`) — dzięki temu
+   gałąź Neon powstaje tylko dla PR-ów (Neon Free: limit 10 gałęzi na projekt).
+2. Przed buildem integracja Vercel ↔ Neon (Vercel → Storage → `neon-aero-prism` → projekt `beanmap` →
+   „Create Database Branch For Deployment: Preview”, „Require Active Resource Before Deploy”) tworzy lub
+   ponownie używa gałęzi **`preview/<git branch>`** odgałęzionej od produkcyjnego `main` i ustawia
+   `DATABASE_URL`, `DATABASE_URL_UNPOOLED` itd. tego deploymentu na tę gałąź.
+3. `web/scripts/vercel-build.mjs`:
+   - **przerywa build**, jeśli `DATABASE_URL` wskazuje endpoint produkcji (np. integracja nie utworzyła gałęzi),
+   - uruchamia `prisma migrate deploy` na gałęzi preview — migracje PR-a są testowane na kopii produkcji,
+   - `next build`.
+4. W runtime `web/src/lib/db-url.ts` ma ten sam strażnik (preview + endpoint produkcji = wyjątek).
 
-**Trigger:** PR `opened`, `synchronize`, `reopened` (pomijany dla docs-only — patrz [CI Paths Ignore](#ci-paths-ignore))
+Gałąź Neon powstaje przy **pierwszym** deployu PR-a i jest używana przy kolejnych pushach (dane z chwili
+pierwszego deployu). Świeża kopia: Neon Console → Branches → `preview/<branch>` → *Reset from parent*,
+potem Redeploy w Vercelu.
 
-1. **Neon Branch Creation**
-   - Nazwa: `preview-<branch-name>`
-   - Parent: `main` (kopia produkcji)
-   - Automatyczne czyszczenie przy zamknięciu PR
+`DIRECT_URL` z Vercela jest ignorowany przez build (ręcznie ustawiona zmienna, trafia też do preview).
 
-2. **Migrations & Seed**
-   - Sprawdza `git diff` na `web/prisma/migrations/`
-   - Odpala `prisma migrate deploy` (tylko jeśli nowe migracje)
-   - Odpala `prisma/seed_cafes.ts` **ZAWSZE** (każdy preview ma dane)
+### Sprzątanie
 
-3. **Vercel Integration**
-   - Tworzy branch-scoped `DATABASE_URL`
-   - Vercel używa tej zmiennej dla preview deployments
-   - URL: `https://<branch>-<project>.vercel.app`
+- zamknięcie PR → `preview-db.yml` usuwa `preview/<branch>`,
+- usunięcie gałęzi git → `neon-cleanup.yml`,
+- co noc (03:15 UTC) i ręcznie → `neon-cleanup.yml` usuwa każdą gałąź `preview/*` bez otwartego PR.
 
-### Komendy diagnostyczne
-
-```bash
-# Status workflow dla PR
-cd /workspaces/roasters-hub
-gh run list --branch <nazwa-brancha> --limit 5
-
-# Logi błędów
-cd /workspaces/roasters-hub
-gh run view <run-id> --log-failed
-
-# Lista Neon branchy
-# (przez Neon Console: https://console.neon.tech)
-```
-
-### Cleanup (automatyczny)
-
-Przy zamknięciu PR:
-- Usuwa Neon branch `preview-<branch-name>`
-- Usuwa Vercel env var `DATABASE_URL` (scoped)
+Skrypt `.github/scripts/neon-delete-preview.sh` dotyka wyłącznie gałęzi `preview/*` i odmawia usunięcia
+gałęzi domyślnej.
 
 ---
 
-## CI z Ephemeral DB
+## CI (lokalny Postgres)
 
-Każdy PR przechodzi **CI z izolowaną bazą danych** — testy i build uruchamiają się na tymczasowym Neon branchu.
+**Workflow:** `.github/workflows/ci.yml` · **Trigger:** PR do `main` (pomijany dla docs-only)
 
-### Jak to działa
+**Job 1: Lint, Type Check & Unit Tests** — `npm run lint`, `npx tsc --noEmit`, `npm run test:coverage`
 
-**Workflow:** `.github/workflows/ci.yml`
-**Trigger:** PR do `main` (pomijany dla docs-only — patrz [CI Paths Ignore](#ci-paths-ignore))
-
-**Job 1: Lint, Type Check & Unit Tests**
-- `npm run lint` — ESLint
-- `npx tsc --noEmit` — TypeScript
-- `npm run test:coverage` — Vitest z coverage → Codecov
-
-**Job 2: Integration Tests** (wymaga Job 1; nazwa wymagana przez branch protection `main`)
+**Job 2: Integration Tests** (wymagany przez branch protection `main`)
 1. Lokalny Postgres 16 (service container) — bez Neon, nic do sprzątania
 2. `prisma migrate deploy` na pustej bazie + kontrola driftu schema ↔ migracje
 3. `npm run test:integration`
 4. Seed danych demo, `npm run build`
 5. Playwright smoke (chromium + Mobile Chrome) na `next start`
 
-> Preview na Vercelu NIE buduje się automatycznie z gałęzi (`vercel.json` → `git.deploymentEnabled`).
-> Buduje go workflow `preview-db.yml` po utworzeniu bazy gałęzi — dzięki temu nie ma
-> nieudanych buildów „bez bazy” i maili „Preview deployment failed”.
+### Paths ignore
 
-### CI Paths Ignore
-
-Oba workflowy (`ci.yml` i `preview-db.yml`) pomijają PR-y które zmieniają **tylko** pliki dokumentacji:
-
-```
-ROADMAP.md, PROJECT_STATUS.md, CLAUDE.md, AGENTS.md,
-docs/**, .tmp/**, .claude/**, .agents/**
-```
-
-**Dlaczego:** Docs-only changes nie kompilują kodu, nie zmieniają DB, nie wymagają testów. PR z samą aktualizacją ROADMAP.md można merge'ować natychmiast bez czekania na CI (~2 min oszczędności).
-
-**Uwaga:** Jeśli PR zmienia kod + dokumentację, CI uruchamia się normalnie (bo kod triggeruje workflow).
-
-### Dlaczego ephemeral?
-
-| Preview DB (preview-db.yml) | Ephemeral DB (ci.yml) |
-|------------------------------|-----------------------|
-| Trwa przez życie PR | Żyje tylko przez duration workflowu |
-| Służy do ręcznego testowania | Służy do automatycznych testów CI |
-| Nazwa: `preview-<branch>` | Nazwa: `ci-<run_id>-<attempt>` |
-
-### Outputs Neon action (v6)
-
-| Output | Opis |
-|--------|------|
-| `db_url` | Bezpośredni connection string |
-| `db_url_pooled` | Z connection pooling (zalecany dla runtime) |
-| `branch_id` | Unikalne ID brancha |
-| `password` | Hasło do bazy |
-
-**Uwaga:** W v6 nazwy outputów się zmieniły:
-- `db_url_with_pooler` → `db_url_pooled`
-- `username` → `role`
-- `parent_branch_id` → `parent_branch`
+`ci.yml` pomija PR-y zmieniające **tylko** `ROADMAP.md, PROJECT_STATUS.md, CLAUDE.md, AGENTS.md,
+web/AGENTS.md, docs/**, .tmp/**, .claude/**, .agents/**`. Vercel pomija takie buildy przez `ignoreCommand`
+(`web/scripts/vercel-ignore-build.sh`).
 
 ---
 
 ## Production Deploy
 
-Deploy na produkcję działa w **dwóch fazach**:
+1. **Vercel** buduje `main` automatycznie. `vercel-build.mjs` sprawdza, że `DATABASE_URL` wskazuje endpoint
+   z `production-db.mjs` (inaczej build failed), wykonuje `prisma migrate deploy`, potem `next build`.
+   Nieudana migracja = nieudany build = dalej działa poprzedni deployment.
+2. **`production-deploy.yml`** („Production Database”):
+   - `alignment` — PR-y zmieniające DB-plumbing, push do main, codziennie 04:40 UTC:
+     - adres produkcji czytany **na żywo z Vercela** (`.github/scripts/prod-db-url.sh`, `VERCEL_TOKEN`),
+       jego endpoint musi być równy przypiętemu w `production-db.mjs`,
+     - `NEON_API_KEY` musi widzieć projekt produkcyjny, a endpoint jego gałęzi domyślnej musi być ten sam,
+     - jeśli w GitHubie nadal istnieją sekrety `DATABASE_URL` / `DIRECT_URL`, muszą wskazywać ten sam
+       endpoint (`.github/scripts/db-alignment.sh`). Taki rozjazd (GitHub → stary projekt Neon) już raz
+       długo pozostał niezauważony.
+   - `verify` — liczności tabel (read-only); `verify-production.ts` dodatkowo odmawia pracy na bazie innej
+     niż produkcyjna.
+   - ręcznie (`workflow_dispatch`, `confirm=production`): upsert danych bazowych (palarnie, kawiarnie, relacje).
 
-### Faza 1: Database (GitHub Actions)
+### Poprawki danych
 
-**Trigger:** Push do `main` ze zmianami w:
-- `web/prisma/seed*.ts`
-- `web/prisma/migrations/**`
-- `.github/workflows/production-deploy.yml`
-
-**Jobs:**
-
-| Job | Cel | Czas |
-|-----|-----|------|
-| `ci` | Lint, TypeScript, Unit Tests | ~40s |
-| `migrate-and-seed` | Migracje + Seed na produkcji | ~30s-1min |
-
-**Uwaga:** Seed używa `createMany` (batch insert) zamiast sekwencyjnych `upsert` — 620 relacji cafe-roaster w ~2s zamiast ~5 min.
-
-### Faza 2: Vercel Deployment (Auto)
-
-Vercel automatycznie deployuje na push do `main` (pomijany dla docs-only — patrz [Vercel Ignored Build](#vercel-ignored-build)):
-- **Nie wymaga** workflow GitHub Actions
-- Deployment pojawia się w GitHub jako status check
-- Produkcja: `https://beanmap-web.vercel.app`
-
-### Vercel Ignored Build
-
-Plik `vercel.json` zawiera `ignoreCommand` który pomija build Vercel gdy push dotyczy **tylko** plików dokumentacji:
-
-```
-docs/**, ROADMAP.md, PROJECT_STATUS.md, CLAUDE.md, AGENTS.md,
-web/AGENTS.md, .tmp/**, .claude/**, .agents/**
-```
-
-**Dlaczego:** Docs-only changes nie zmieniają kodu aplikacji — nie ma potrzeby budowania Next.js. Push samego ROADMAP.md nie triggeruje ani CI GitHub Actions ani Vercel deploy (~1-2 min oszczędności).
-
-**Uwaga:** Jeśli push zmienia kod + dokumentację, Vercel deploy uruchamia się normalnie (bo kod triggeruje build).
-
-### Monitorowanie statusu
-
-```bash
-# Lista workflowów na main
-cd /workspaces/roasters-hub
-gh run list --branch main --limit 5
-
-# Szczegóły konkretnego runu
-gh run view <run-id>
-
-# Tylko błędy
-gh run view <run-id> --log-failed
-
-# Status deploymentu Vercel
-gh api repos/BeanMap/roasters-hub/deployments --jq '.[0] | {environment, state}'
-```
+Zawsze jako migracja SQL w PR (`web/prisma/migrations/<timestamp>_<opis>/migration.sql`), idempotentna,
+z komentarzem „dlaczego”. Preview PR-a wykona ją na kopii produkcji — sprawdzasz efekt w przeglądarce,
+dopiero merge uruchamia ją na produkcji. Przykład: `20261107000000_backfill_roaster_cover_images`.
+Nigdy ręcznych UPDATE-ów na produkcji.
 
 ---
 
 ## Wymagane Secrets
 
-### GitHub Repository Secrets
+`https://github.com/BeanMap/roasters-hub/settings/secrets/actions`
 
-Ustaw w: `https://github.com/BeanMap/roasters-hub/settings/secrets/actions`
+| Secret | Skąd | Użycie |
+|--------|------|--------|
+| `VERCEL_TOKEN` | Vercel → Account Settings → Tokens (zakres: team „mareknadra's projects”) | build preview, odczyt adresu produkcji z Vercela |
+| `NEON_API_KEY` | Neon Console → org „Vercel: mareknadra's projects” → Settings → API keys (najlepiej klucz ograniczony do projektu `neon-aero-prism`) | usuwanie gałęzi `preview/*`, alignment |
+| `BACKUP_PASSPHRASE` | wygeneruj (np. `openssl rand -base64 32`) i **zapisz w menedżerze haseł** — bez niego backupu nie odszyfrujesz | szyfrowanie backupów |
 
-| Secret | Skąd wziąć | Użycie |
-|--------|-----------|--------|
-| `DATABASE_URL` | Vercel Dashboard → Project → Settings → Environment Variables | Production DB connection (pooled) |
-| `DIRECT_URL` | Vercel Dashboard → Project → Settings → Environment Variables | Production DB connection (direct, dla migracji) |
-| `NEON_API_KEY` | Neon Console → Project → API Keys | Tworzenie/usuwanie preview branches |
-| `NEON_PROJECT_ID` | Neon Console → Project Settings → General | ID projektu Neon |
-| `VERCEL_TOKEN` | Vercel → Settings → Tokens | Integracja z Vercel API |
-| `VERCEL_PROJECT_ID` | Vercel Dashboard → Project → Settings → General | ID projektu Vercel |
+**Nie są już potrzebne:** `DATABASE_URL`, `DIRECT_URL` (adres czytany z Vercela), `NEON_PROJECT_ID`,
+`VERCEL_PROJECT_ID` (stałe w `web/scripts/production-db.mjs`). Jeśli `DATABASE_URL`/`DIRECT_URL` jeszcze
+istnieją, alignment sprawdza, że wskazują produkcję — najlepiej je usunąć.
 
-### Skąd wziąć DATABASE_URL i DIRECT_URL
-
-1. Wejdź: https://vercel.com/dashboard
-2. Wybierz projekt `beanmap-web`
-3. Settings → Environment Variables
-4. Skopiuj wartość `DATABASE_URL` (sekcja Production)
-5. Dodaj do GitHub Secrets z tą samą nazwą
-6. To samo dla `DIRECT_URL`
-
-**Uwaga:** Te wartości są IDENTYCZNE jak w lokalnym `.env` (plik `web/.env`).
+Repo jest **publiczne**: logi i artefakty Actions widzi każdy zalogowany użytkownik GitHuba. Skrypty
+maskują adresy (`::add-mask::`) i wypisują tylko identyfikatory endpointów.
 
 ---
 
 ## Komendy diagnostyczne
 
-### Podstawowe (każdy agent powinien znać)
-
 ```bash
-# ─── Lista ostatnich runów ─────────────────────────────────────
-cd /workspaces/roasters-hub
-gh run list --limit 10
-
-# ─── Ostatni nieudany run ──────────────────────────────────────
-gh run list --status failure --limit 1
-
-# ─── Szczegóły konkretnego runu ────────────────────────────────
-# Najpierw weź ID z listy, potem:
-gh run view <id>
-
-# ─── Tylko błędy (najszybszy sposób) ───────────────────────────
-gh run view <id> --log-failed
-
-# ─── Pełne logi konkretnego joba ───────────────────────────────
-gh run view <id> --log | grep -A 30 "Error"
-
-# ─── Status deploymentu Vercel ─────────────────────────────────
-gh api repos/BeanMap/roasters-hub/deployments --jq '.[0:3] | .[] | {id, environment, created_at, sha}'
-
-# ─── Szczegóły konkretnego deploymentu ─────────────────────────
-gh api repos/BeanMap/roasters-hub/deployments/<id>/statuses --jq '.[0]'
+gh run list --limit 10                      # ostatnie runy
+gh run list --status failure --limit 1      # ostatni nieudany
+gh run view <id> --log-failed               # tylko błędy
+gh workflow run production-deploy.yml --ref main   # alignment + verify ręcznie
+gh workflow run db-backup.yml --ref main           # backup (+ test odtworzenia)
+gh workflow run neon-cleanup.yml --ref main        # sprzątanie gałęzi preview
 ```
 
-### Zaawansowane
-
-```bash
-# Trigger workflow ręcznie (wymaga uprawnień)
-gh workflow run production-deploy.yml --ref main
-
-# Lista wszystkich workflowów
-gh workflow list
-
-# Szczegóły workflowu
-gh workflow view production-deploy.yml
-```
+Gałęzie Neon: https://console.neon.tech/app/projects/steep-smoke-16472365/branches
 
 ---
 
-## Rollback
+## Backup i odtwarzanie danych
 
-### Scenariusz 1: Cofnięcie kodu (Git)
+> **Status (2026-11-08): backupy WYŁĄCZONE** — sekret `BACKUP_PASSPHRASE` nie jest ustawiony, więc
+> `db-backup.yml` kończy się ostrzeżeniem i nic nie zrzuca. Włączenie = dodanie tego sekretu
+> (patrz „Wymagane Secrets”). Do tego czasu jedynym zabezpieczeniem jest Neon point-in-time restore (6 h).
 
-```bash
-# Cofnij ostatni commit (zachowaj zmiany w working directory)
-git revert HEAD
+### Co jest backupowane
 
-# Push do main (automatycznie triggeruje workflow)
-git push origin main
-```
+| Mechanizm | Zakres | Gdzie |
+|-----------|--------|-------|
+| Neon point-in-time restore | ostatnie **6 godzin** (plan Free; płatne plany: do 7–30 dni) | Neon Console → Backup & Restore |
+| `db-backup.yml` | pełny `pg_dump` co noc 02:00 UTC, **30 dni** | artefakt `db-backup-<data>` w Actions (zaszyfrowany) |
+| Test odtworzenia | co niedzielę 02:30 UTC: odszyfrowanie, `pg_restore` do pustego Postgresa 17, porównanie liczby wierszy w każdej tabeli | job `restore-test` |
 
-### Scenariusz 2: Cofnięcie zmian w bazie (Neon)
+### Pomyłka sprzed < 6 h → Neon point-in-time restore
 
-Neon ma **7-dniową historię** (Time Travel):
-1. Wejdź: https://console.neon.tech
-2. Wybierz branch `main`
-3. Time Travel → wybierz punkt w czasie przed zmianami
-4. Create branch from this point / Reset to this point
+1. https://console.neon.tech/app/projects/steep-smoke-16472365 → **Backup & Restore**.
+2. Gałąź `main`, wybierz moment **przed** pomyłką.
+3. Najpierw utwórz gałąź z tego momentu i sprawdź na niej dane.
+4. Gdy dane są dobre: **Restore** gałęzi `main` do tego momentu. Neon zachowuje stan sprzed restore jako
+   osobną gałąź (można wrócić). Endpoint i connection string produkcji się nie zmieniają.
+5. Vercel: odśwież cache ISR redeployem produkcji, jeśli strony pokazują stare dane.
 
-### Scenariusz 3: Ręczny fix bazy
+### Starsza pomyłka → nocny backup
 
-```bash
-# Lokalnie z produkcyjną bazą
-cd /workspaces/roasters-hub/web
-export DATABASE_URL="<production-url>"
-npx prisma migrate deploy
-# lub napraw ręcznie przez Prisma Studio
-npx prisma studio
-```
+1. Actions → *Database Backup* → run z wybranej nocy → pobierz artefakt `db-backup-<data>`.
+2. Odszyfruj (hasło `BACKUP_PASSPHRASE` z menedżera haseł):
+   ```bash
+   sha256sum -c SHA256SUMS
+   gpg --decrypt --output production.dump production.dump.gpg
+   ```
+3. Odtwórz **do nowej gałęzi Neon**, nie bezpośrednio na produkcję: Neon Console → Branches → *Create branch*
+   (np. `restore-<data>`), skopiuj jej connection string (direct), potem
+   (pg_restore ≥ 17, np. przez `docker run --rm -v "$PWD:/in" postgres:17 pg_restore …`):
+   ```bash
+   pg_restore --dbname="<URL gałęzi restore>" --clean --if-exists --no-owner --no-acl production.dump
+   ```
+4. Zweryfikuj dane na tej gałęzi (`DATABASE_URL=<URL> npx tsx prisma/verify-production.ts`).
+5. Przywrócenie na produkcję to **decyzja człowieka**: pojedyncze rekordy przenieś migracją SQL w PR;
+   całość — w oknie serwisowym `pg_restore --clean` na gałąź `main`, po wcześniejszym utworzeniu gałęzi-kopii
+   `main` (punkt powrotu).
+
+### Cofnięcie deployu (kod)
+
+- **Vercel Instant Rollback:** Vercel → projekt `beanmap` → Deployments → poprzedni produkcyjny deployment →
+  ⋯ → **Instant Rollback** (sekundy, bez buildu). Na planie **Hobby** tylko do *bezpośrednio poprzedniego*
+  deploymentu produkcyjnego — dalej wstecz: `git revert` + PR (albo Vercel Pro). Rollback kodu **nie cofa migracji** — jeśli nowa migracja
+  zmieniła/usunęła kolumny, starszy kod może jej nie obsłużyć; wtedy napraw migracją „do przodu”.
+- Po rollbacku Vercel nie promuje automatycznie kolejnych buildów `main` — po naprawie: Deployments →
+  nowy deployment → *Promote to Production* (albo „Undo Rollback”).
+- Trwale: `git revert <sha>` na gałęzi `feat/mn-…` → PR → merge.
 
 ---
 
 ## Troubleshooting
 
-### Problem: `DATABASE_URL secret is not set`
+### Preview: „Preview build would use the PRODUCTION database”
 
-**Objaw:**
-```
-❌ Error: DATABASE_URL secret is not set
-```
+Integracja nie podmieniła `DATABASE_URL` dla deploymentu. Sprawdź Vercel → Storage → `neon-aero-prism` →
+Projects → `beanmap` → ⋯ → Update Project Connection: Preview zaznaczone w „Create Database Branch For
+Deployment”. Potem Redeploy preview. To zabezpieczenie działa zgodnie z planem — nie obchodź go.
 
-**Rozwiązanie:**
-1. Skopiuj wartość z Vercel Dashboard
-2. Dodaj do GitHub Secrets: https://github.com/BeanMap/roasters-hub/settings/secrets/actions
-3. Ustaw nazwę: `DATABASE_URL`
-4. Ustaw nazwę: `DIRECT_URL` (taka sama lub direct connection)
+### Production: „Production build points at ep-…, expected ep-…”
 
-### Problem: `Connection url is empty`
+Produkcja Vercela wskazuje inną bazę niż przypięta w `web/scripts/production-db.mjs`. Jeśli przeniesienie
+bazy było zamierzone — zmień stałe w PR. Jeśli nie — sprawdź integrację Neon w Vercelu, zanim cokolwiek
+zbudujesz.
 
-**Objaw:**
-```
-Error: Connection url is empty. See https://pris.ly/d/config-url
-```
+### Alignment: „NEON_API_KEY cannot access Neon project …”
 
-**Przyczyna:** Secret jest ustawiony, ale workflow go nie widzi.
+Sekret pochodzi z innego konta/organizacji Neon. Utwórz klucz w organizacji „Vercel: mareknadra's projects”
+i podmień sekret.
 
-**Rozwiązanie:**
-- Sprawdź czy secret jest w Repository Secrets (nie Environment Secrets)
-- Uruchom workflow ponownie
+### Preview: deployment wisi na „Neon” / brak gałęzi
 
-### Problem: `Error! You specified VERCEL_PROJECT_ID but forgot VERCEL_ORG_ID`
+Limit gałęzi Neon Free (10). Uruchom `neon-cleanup.yml` ręcznie albo usuń zbędne `preview/*` w konsoli.
 
-**Objaw:**
-```
-Error! You specified VERCEL_PROJECT_ID but forgot VERCEL_ORG_ID
-```
+### `Connection url is empty`
 
-**Rozwiązanie:**
-- Nie używaj `amondnet/vercel-action` do deployu produkcji
-- Vercel i tak deployuje automatycznie na push do main
-- Workflow `production-deploy.yml` skupia się na bazie danych, nie na deployu
-
-### Problem: Workflow trwa bardzo długo (>5 min)
-
-**Objaw:**
-- Migrate & Seed wisi przez 5+ minut
-
-**Przyczyna:**
-- Neon Free plan = wolniejsze połączenia
-- Duże migracje na istniejącej bazie
-- Cold start bazy po okresie bezczynności
-
-**Rozwiązanie:**
-- Czekaj, to normalne dla cold start (~1-2 min dodatkowego czasu)
-- Dla produkcji rozważ Neon Pro (szybsze połączenia)
-- Seed używa batch insert (`createMany`) — 620 relacji w ~2s
-
-### Problem: Preview DB nie działa
-
-**Objaw:**
-- Preview deployment pokazuje "Database error"
-- Brak danych w preview
-
-**Sprawdź:**
-```bash
-# Czy Neon branch istnieje?
-gh run view <run-id> --log | grep "Neon branch"
-
-# Czy Vercel ma DATABASE_URL?
-# (Sprawdź w Vercel Dashboard → Project → Settings → Environment Variables)
-```
-
-**Rozwiązanie:**
-- Zamknij i otwórz PR ponownie (triggeruje recreation)
-- Lub: `git commit --allow-empty -m "trigger redeploy" && git push`
+Krok `prod-db-url.sh` się nie wykonał albo `VERCEL_TOKEN` nie ma dostępu do projektu — zobacz jego log.
 
 ---
 
@@ -487,7 +311,7 @@ Przed rozpoczęciem pracy z CI/CD:
 
 - [ ] Czytałem `PROJECT_STATUS.md` i `ROADMAP.md`
 - [ ] Sprawdziłem `gh run list --limit 5`
-- [ ] Wszystkie wymagane secrets są ustawione (jeśli nie → zgłoś)
+- [ ] Wszystkie wymagane secrets są ustawione (`VERCEL_TOKEN`, `NEON_API_KEY`, `BACKUP_PASSPHRASE`; jeśli nie → zgłoś)
 - [ ] Pracuję na branchu feature (nigdy bezpośrednio na main) — enforced przez `pre-push` hook
 - [ ] Znam komendę `gh run view <id> --log-failed` na wypadek błędów
 - [ ] Mam skonfigurowane git hooks: `git config core.hooksPath .githooks`

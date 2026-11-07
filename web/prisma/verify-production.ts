@@ -8,6 +8,18 @@
  */
 
 import { createScriptClient } from "./script-client";
+import { PRODUCTION_DB_ENDPOINT, endpointId } from "../scripts/production-db.mjs";
+
+// In the production workflow: refuse to "verify" any database other than the
+// pinned production endpoint (GitHub and Vercel once pointed at different ones).
+if (process.env.EXPECT_PRODUCTION_ENDPOINT) {
+  const actual = endpointId(process.env.DIRECT_URL ?? process.env.DATABASE_URL);
+  if (actual !== PRODUCTION_DB_ENDPOINT) {
+    console.error(`❌ Connected to ${actual ?? "a non-Neon database"}, production is ${PRODUCTION_DB_ENDPOINT}.`);
+    process.exit(1);
+  }
+  console.log(`🔗 Database endpoint ${actual} = production (web/scripts/production-db.mjs)\n`);
+}
 
 const db = createScriptClient();
 
