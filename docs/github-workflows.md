@@ -263,7 +263,8 @@ Gałęzie Neon: https://console.neon.tech/app/projects/steep-smoke-16472365/bran
 ### Cofnięcie deployu (kod)
 
 - **Vercel Instant Rollback:** Vercel → projekt `beanmap` → Deployments → poprzedni produkcyjny deployment →
-  ⋯ → **Instant Rollback** (sekundy, bez buildu). Rollback kodu **nie cofa migracji** — jeśli nowa migracja
+  ⋯ → **Instant Rollback** (sekundy, bez buildu). Na planie **Hobby** tylko do *bezpośrednio poprzedniego*
+  deploymentu produkcyjnego — dalej wstecz: `git revert` + PR (albo Vercel Pro). Rollback kodu **nie cofa migracji** — jeśli nowa migracja
   zmieniła/usunęła kolumny, starszy kod może jej nie obsłużyć; wtedy napraw migracją „do przodu”.
 - Po rollbacku Vercel nie promuje automatycznie kolejnych buildów `main` — po naprawie: Deployments →
   nowy deployment → *Promote to Production* (albo „Undo Rollback”).
