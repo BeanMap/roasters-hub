@@ -193,12 +193,16 @@ Każdy PR przechodzi **CI z izolowaną bazą danych** — testy i build uruchami
 - `npx tsc --noEmit` — TypeScript
 - `npm run test:coverage` — Vitest z coverage → Codecov
 
-**Job 2: Integration Tests + Build** (wymaga Job 1)
-1. Tworzy **ephemeral Neon branch** (`ci-<run_id>-<attempt>`)
-2. Run `prisma migrate deploy`
-3. Run `npm run test:integration`
-4. Run `npm run build`
-5. **Usuwa ephemeral branch** (`if: always()`)
+**Job 2: Integration Tests** (wymaga Job 1; nazwa wymagana przez branch protection `main`)
+1. Lokalny Postgres 16 (service container) — bez Neon, nic do sprzątania
+2. `prisma migrate deploy` na pustej bazie + kontrola driftu schema ↔ migracje
+3. `npm run test:integration`
+4. Seed danych demo, `npm run build`
+5. Playwright smoke (chromium + Mobile Chrome) na `next start`
+
+> Preview na Vercelu NIE buduje się automatycznie z gałęzi (`vercel.json` → `git.deploymentEnabled`).
+> Buduje go workflow `preview-db.yml` po utworzeniu bazy gałęzi — dzięki temu nie ma
+> nieudanych buildów „bez bazy” i maili „Preview deployment failed”.
 
 ### CI Paths Ignore
 

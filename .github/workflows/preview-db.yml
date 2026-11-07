@@ -144,12 +144,12 @@ jobs:
             }"
           echo "created=true" >> "$GITHUB_OUTPUT"
 
-      # Only when the variable was just created: the first Vercel build of a PR
-      # stops in web/scripts/vercel-build.mjs because the branch database did not
-      # exist yet (previews never fall back to production). Now that it does,
-      # rebuild the preview for the same commit.
+      # Vercel does not build branch pushes by itself (vercel.json:
+      # git.deploymentEnabled), because such a build would start before the
+      # branch database exists and fail in web/scripts/vercel-build.mjs. The
+      # preview is built here instead, once the database and its URL are ready.
       - name: Trigger preview deployment
-        if: github.event.action != 'closed' && steps.envvar.outputs.created == 'true'
+        if: github.event.action != 'closed'
         run: |
           # No "target" field: preview is the API default ("preview" is not a valid value).
           BODY='{

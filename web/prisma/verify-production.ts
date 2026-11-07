@@ -46,6 +46,30 @@ async function main() {
     console.log(`  ${status} ${table}: ${count}${minLabel}`);
   }
 
+  // Cover images by host (read-only diagnostics; a card falls back to a
+  // placeholder when its image cannot be loaded or its host is not allowed).
+  for (const [label, rows] of [
+    ["roasters", await db.roaster.findMany({ where: { status: "VERIFIED" }, select: { coverImageUrl: true } })],
+    ["cafes", await db.cafe.findMany({ where: { status: "VERIFIED" }, select: { coverImageUrl: true } })],
+  ] as const) {
+    const hosts = new Map<string, number>();
+    const sample = new Map<string, string>();
+    for (const { coverImageUrl } of rows) {
+      let host = "(empty)";
+      if (coverImageUrl?.trim()) {
+        try {
+          host = new URL(coverImageUrl).hostname;
+        } catch {
+          host = `(invalid: ${coverImageUrl.slice(0, 40)})`;
+        }
+      }
+      hosts.set(host, (hosts.get(host) ?? 0) + 1);
+      if (coverImageUrl && !sample.has(host)) sample.set(host, coverImageUrl.slice(0, 120));
+    }
+    console.log(`\n🖼️  ${label} cover images by host:`);
+    for (const [host, n] of [...hosts].sort((a, b) => b[1] - a[1])) console.log(`  ${n}\t${host}\t${sample.get(host) ?? ""}`);
+  }
+
   const failures: string[] = [];
   for (const [table, min] of Object.entries(MIN_COUNTS)) {
     const actual = counts[table as keyof typeof counts];
