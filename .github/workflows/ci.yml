@@ -51,82 +51,14 @@ jobs:
           files: web/coverage/lcov.info
 
   # ─── Job 2: Integration tests + Build (Neon ephemeral branch) ──────────────
-  integration:
-    name: Integration Tests
-    runs-on: ubuntu-latest
-    needs: lint-typecheck-test
-    defaults:
-      run:
-        working-directory: web
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: web/package-lock.json
-
-      - name: Create ephemeral Neon branch
-        id: neon
-        uses: neondatabase/create-branch-action@v6
-        with:
-          project_id: ${{ secrets.NEON_PROJECT_ID }}
-          api_key: ${{ secrets.NEON_API_KEY }}
-          branch_name: ci-${{ github.run_id }}-${{ github.run_attempt }}
-          role: neondb_owner
-
-      - run: npm install
-
-      - name: Run DB migrations
-        run: npx prisma migrate deploy
-        env:
-          DATABASE_URL: ${{ steps.neon.outputs.db_url_pooled }}
-          DIRECT_URL: ${{ steps.neon.outputs.db_url }}
-
-      - name: Run integration tests
-        run: npm run test:integration
-        env:
-          DATABASE_URL: ${{ steps.neon.outputs.db_url_pooled }}
-          DIRECT_URL: ${{ steps.neon.outputs.db_url }}
-
-      - name: Build
-        run: npm run build
-        env:
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ZXhhbXBsZS5jbGVyay5hY2NvdW50cy5kZXYk
-          CLERK_SECRET_KEY: sk_test_placeholder
-          DATABASE_URL: ${{ steps.neon.outputs.db_url_pooled }}
-          DIRECT_URL: ${{ steps.neon.outputs.db_url }}
-          RESEND_API_KEY: re_placeholder
-
-      - name: Delete ephemeral Neon branch
-        if: always()
-        run: |
-          BRANCH_ID="${{ steps.neon.outputs.branch_id }}"
-          PROJECT_ID="${{ secrets.NEON_PROJECT_ID }}"
-          API_KEY="${{ secrets.NEON_API_KEY }}"
-
-          if [ -n "$BRANCH_ID" ] && [ "$BRANCH_ID" != "null" ]; then
-            echo "Deleting ephemeral Neon branch: $BRANCH_ID"
-            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
-              "https://console.neon.tech/api/v2/projects/${PROJECT_ID}/branches/${BRANCH_ID}" \
-              -H "Authorization: Bearer ${API_KEY}")
-            if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "204" ]; then
-              echo "Deleted (HTTP $HTTP_CODE)"
-            else
-              echo "Delete returned HTTP $HTTP_CODE — branch may be already removed"
-            fi
-          else
-            echo "No branch_id — nothing to delete."
-          fi
-
-  # ─── Job 3: Fresh database from migrations + E2E smoke ─────────────────────
+  # ─── Job 2: Fresh database from migrations + integration tests + E2E smoke ─────────────────────
   # Builds the schema from an EMPTY Postgres using only prisma/migrations,
   # fails on drift against schema.prisma (catches `db push` shortcuts),
   # seeds demo data, builds the app and runs the Playwright smoke suite.
   e2e-fresh-db:
-    name: Fresh DB + E2E Smoke
+    # Keeps the check name "Integration Tests" required by the main branch
+    # protection; it now runs integration + E2E tests on a local Postgres.
+    name: Integration Tests
     runs-on: ubuntu-24.04  # Playwright has no browser builds for ubuntu-26.04 (ubuntu-latest) yet
     needs: lint-typecheck-test
     defaults:
@@ -174,6 +106,9 @@ jobs:
             exit 1
           fi
           echo "No schema drift."
+
+      - name: Integration tests (empty database)
+        run: npm run test:integration
 
       - name: Seed demo data
         run: |
