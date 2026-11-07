@@ -3,7 +3,7 @@ import { createScriptClient } from "./script-client";
 // Production seed workflow test - 2026-04-03
 const prisma = createScriptClient();
 
-const SEED_CAFES = [
+export const SEED_CAFES = [
   {
     name: "Nine Fine Roastery & Bar",
     slug: "nine-fine-roastery-bar-munich",
@@ -2047,9 +2047,12 @@ async function main() {
   console.log(`\nDone! ${verified} verified, ${pending} pending`);
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(() => prisma.$disconnect());
+// Run only when executed directly, so other scripts can import SEED_CAFES.
+if (process.argv[1]?.endsWith("seed_cafes.ts") || process.argv[1]?.endsWith("seed_cafes")) {
+  main()
+    .catch((e) => {
+      console.error(e);
+      process.exit(1);
+    })
+    .finally(() => prisma.$disconnect());
+}

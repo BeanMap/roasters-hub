@@ -30,7 +30,9 @@
     "knowCafe": "Know a great café",
     "suggestAPlace": "Suggest a place",
     "signIn": "Sign in",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "roasters": "Roasters",
+    "cafes": "Cafés"
   },
   "footer": {
     "tagline": "Connecting the specialty coffee ecosystem through transparency, origin, and community.",

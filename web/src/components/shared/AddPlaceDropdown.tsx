@@ -31,7 +31,7 @@ export function AddPlaceDropdown() {
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1.5 text-sm font-semibold bg-surface-container text-on-surface px-3 py-2 rounded-lg hover:bg-surface-container-high transition-colors"
+        className="flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold bg-surface-container text-on-surface px-3 py-2 rounded-lg hover:bg-surface-container-high transition-colors"
       >
         + {t("addPlace")}
         <ChevronDown className="h-3.5 w-3.5" />

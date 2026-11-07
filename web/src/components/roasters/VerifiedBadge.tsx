@@ -11,7 +11,7 @@ export function VerifiedBadge({ size = "sm", className }: VerifiedBadgeProps) {
   return (
     <span
       className={cn(
-        "label-mono inline-flex items-center gap-1 bg-secondary text-on-secondary rounded-full",
+        "label-mono inline-flex items-center gap-1 whitespace-nowrap shrink-0 bg-secondary text-on-secondary rounded-full",
         size === "sm" && "text-[10px] px-2 py-1",
         size === "md" && "text-xs px-3 py-1",
         size === "lg" && "text-xs px-4 py-1.5",

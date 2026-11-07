@@ -17,6 +17,7 @@ import { LocalBusinessJsonLd, BreadcrumbJsonLd, ReviewJsonLd } from "@/component
 import { buildAlternates, buildOgImage, buildOpenGraph, seoKeywords } from "@/lib/seo";
 import { db } from "@/lib/db";
 import type { Metadata } from "next";
+import { CARD_IMAGE } from "@/lib/card-image";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -153,7 +154,7 @@ export default async function RoasterProfilePage({
       id: { not: roaster.id },
       status: "VERIFIED",
     },
-    include: { images: { where: { isPrimary: true }, take: 1 } },
+    include: { images: CARD_IMAGE },
     take: 3,
   });
 

@@ -9,6 +9,7 @@ import { OrganizationJsonLd } from "@/components/shared/JsonLd";
 import { buildAlternates, buildOpenGraph, seoKeywords } from "@/lib/seo";
 import { db } from "@/lib/db";
 import type { Metadata } from "next";
+import { CARD_IMAGE } from "@/lib/card-image";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -46,7 +47,7 @@ export default async function HomePage({
   const [featuredRoasters, roasterCount, countryCount, cafeCount] = await Promise.all([
     db.roaster.findMany({
       where: { status: "VERIFIED", featured: true },
-      include: { images: { where: { isPrimary: true }, take: 1 } },
+      include: { images: CARD_IMAGE },
       take: 4,
     }),
     db.roaster.count({ where: { status: "VERIFIED" } }),

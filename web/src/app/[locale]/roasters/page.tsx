@@ -16,6 +16,7 @@ import { buildAlternates, buildOpenGraph, buildCanonical, seoKeywords } from "@/
 import { Pagination } from "@/components/shared/Pagination";
 import type { Metadata } from "next";
 import type { Prisma } from "@prisma/client";
+import { CARD_IMAGE } from "@/lib/card-image";
 
 export const revalidate = 3600;
 
@@ -75,7 +76,7 @@ export default async function CatalogPage({
     db.roaster.count({ where }),
     db.roaster.findMany({
       where,
-      include: { images: { where: { isPrimary: true }, take: 1 } },
+      include: { images: CARD_IMAGE },
       orderBy: commonOrderBy(sort),
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,

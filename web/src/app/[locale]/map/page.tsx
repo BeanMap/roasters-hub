@@ -4,6 +4,7 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { db } from "@/lib/db";
 import { buildAlternates, buildOpenGraph, seoKeywords } from "@/lib/seo";
 import { MapContent } from "./MapContent";
+import { CARD_IMAGE } from "@/lib/card-image";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -37,7 +38,7 @@ export default async function MapPage({
       lng: { not: null },
     },
     include: {
-      images: { where: { isPrimary: true }, take: 1 },
+      images: CARD_IMAGE,
       reviews: { select: { rating: true } },
     },
     }),

@@ -5,6 +5,7 @@ import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
 import { RoasterCard } from "@/components/roasters/RoasterCard";
 import { db } from "@/lib/db";
+import { CARD_IMAGE } from "@/lib/card-image";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ export default async function SavedRoastersPage() {
     where: { userId },
     include: {
       roaster: {
-        include: { images: { where: { isPrimary: true }, take: 1 } },
+        include: { images: CARD_IMAGE },
       },
     },
     orderBy: { createdAt: "desc" },
