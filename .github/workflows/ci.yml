@@ -127,7 +127,7 @@ jobs:
   # seeds demo data, builds the app and runs the Playwright smoke suite.
   e2e-fresh-db:
     name: Fresh DB + E2E Smoke
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # Playwright has no browser builds for ubuntu-26.04 (ubuntu-latest) yet
     needs: lint-typecheck-test
     defaults:
       run:

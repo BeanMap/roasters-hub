@@ -1,7 +1,11 @@
 import Link from "next/link";
+import { AppShell } from "@/components/shared/AppShell";
+
+// Only reached for URLs outside the [locale] segment, which has no document of its own.
 
 export default function NotFound() {
   return (
+    <AppShell locale="en">
     <main className="flex-1 flex flex-col items-center justify-center px-6 py-24 text-center min-h-screen">
       <p className="text-7xl font-semibold text-surface-container-highest mb-4">404</p>
       <h1 className="text-2xl font-semibold text-on-surface mb-3">Page not found</h1>
@@ -23,5 +27,6 @@ export default function NotFound() {
         </Link>
       </div>
     </main>
+    </AppShell>
   );
 }

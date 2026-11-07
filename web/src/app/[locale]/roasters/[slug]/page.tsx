@@ -1,7 +1,7 @@
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
 import { VerifiedBadge } from "@/components/roasters/VerifiedBadge";
@@ -15,11 +15,25 @@ import { AddPhotoButton } from "@/components/shared/AddPhotoButton";
 import { SaveRoasterButton } from "@/components/roasters/SaveRoasterButton";
 import { LocalBusinessJsonLd, BreadcrumbJsonLd, ReviewJsonLd } from "@/components/shared/JsonLd";
 import { buildAlternates, buildOgImage, buildOpenGraph, seoKeywords } from "@/lib/seo";
-import { isRoasterSaved } from "@/actions/saved-roaster.actions";
 import { db } from "@/lib/db";
 import type { Metadata } from "next";
+import { CARD_IMAGE } from "@/lib/card-image";
 
 export const revalidate = 3600;
+export const dynamicParams = true;
+
+// Prerender verified profiles; anything else is rendered on first visit and then cached (ISR).
+export async function generateStaticParams() {
+  try {
+    const roasters = await db.roaster.findMany({
+      where: { status: "VERIFIED" },
+      select: { slug: true },
+    });
+    return roasters.map((r) => ({ slug: r.slug }));
+  } catch {
+    return [];
+  }
+}
 
 export async function generateMetadata({
   params,
@@ -27,6 +41,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string; locale: string }>;
 }): Promise<Metadata> {
   const { slug, locale } = await params;
+  setRequestLocale(locale);
   const roaster = await db.roaster.findUnique({ where: { slug } });
   if (!roaster) {
     const t = await getTranslations({ locale, namespace: "profiles" });
@@ -79,6 +94,7 @@ export default async function RoasterProfilePage({
   params: Promise<{ slug: string; locale: string }>;
 }) {
   const { slug, locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "profiles" });
 
   const roaster = await db.roaster.findUnique({
@@ -131,7 +147,6 @@ export default async function RoasterProfilePage({
         approvedReviews.length
       : null;
 
-  const saved = await isRoasterSaved(roaster.id);
 
   const relatedRoasters = await db.roaster.findMany({
     where: {
@@ -139,7 +154,7 @@ export default async function RoasterProfilePage({
       id: { not: roaster.id },
       status: "VERIFIED",
     },
-    include: { images: { where: { isPrimary: true }, take: 1 } },
+    include: { images: CARD_IMAGE },
     take: 3,
   });
 
@@ -399,7 +414,7 @@ export default async function RoasterProfilePage({
                     {t("shopOnline")}
                   </TrackedLink>
                 )}
-                <SaveRoasterButton roasterId={roaster.id} initialSaved={saved} />
+                <SaveRoasterButton roasterId={roaster.id} />
               </div>
 
               {roaster.instagram && (

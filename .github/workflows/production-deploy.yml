@@ -26,6 +26,10 @@ on:
         description: "Upsert base directory data (roasters, cafes, relations) into PRODUCTION"
         type: boolean
         default: false
+      backfill_cover_images:
+        description: "Fill MISSING cover images of seed roasters/cafes (never overwrites existing photos)"
+        type: boolean
+        default: false
       confirm:
         description: 'Type "production" to confirm'
         type: string
@@ -61,6 +65,28 @@ jobs:
         run: npx tsx prisma/seed_cafes.ts
       - name: Upsert cafe-roaster relations
         run: npx tsx prisma/seed_cafe_roasters_explicit.ts
+
+  backfill-cover-images:
+    name: Backfill missing cover images (manual)
+    if: github.event_name == 'workflow_dispatch' && inputs.backfill_cover_images && inputs.confirm == 'production'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    env:
+      DATABASE_URL: ${{ secrets.DIRECT_URL || secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm install
+      - name: Preview (dry run)
+        run: npx tsx prisma/backfill-cover-images.ts --dry-run
+      - name: Fill missing cover images
+        run: npx tsx prisma/backfill-cover-images.ts
 
   verify:
     name: Verify production data (read-only)

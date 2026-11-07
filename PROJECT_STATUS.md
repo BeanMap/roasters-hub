@@ -30,8 +30,9 @@
 ## What Is Deployed and Working
 
 - Homepage `/` — **ISR (1h)**, Prisma queries, fully styled
-- Catalog `/roasters` — **ISR (1h)**, filters, search, pagination — Prisma queries
-- Roaster profiles `/roasters/[slug]` — **ISR (1h)**, Prisma queries, related roasters
+- Catalog `/roasters` — **dynamic** (reads filters from URL), location list cached 1h (`web/src/lib/catalog-data.ts`), filters, search, pagination — Prisma queries
+- Roaster profiles `/roasters/[slug]` — **SSG + ISR (1h)**, Prisma queries, related roasters; saved state loaded client-side
+- Rendering: root layout reads no request headers (`web/src/components/shared/AppShell.tsx`), so `revalidate` actually applies; Vercel functions run in `fra1` (same region as Neon)
 - Interactive map `/map` — **ISR (1h)**, Leaflet, Prisma queries for markers
 - Registration form `/register` — 3-step wizard, **connected to Server Action** (creates PENDING roaster in DB)
 - Admin panel UI `/admin/pending` — verify/reject UI, **connected to Server Actions**

@@ -8,6 +8,7 @@ import { ItemListJsonLd } from "@/components/shared/JsonLd";
 import { db } from "@/lib/db";
 import { buildAlternates, buildOpenGraph, buildCanonical, seoKeywords } from "@/lib/seo";
 import type { Metadata } from "next";
+import { CARD_IMAGE } from "@/lib/card-image";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -65,7 +66,7 @@ export default async function CountryPage({
 
   const roasters = await db.roaster.findMany({
     where: { status: "VERIFIED", countryCode: country },
-    include: { images: { where: { isPrimary: true }, take: 1 } },
+    include: { images: CARD_IMAGE },
     orderBy: { name: "asc" },
   });
 

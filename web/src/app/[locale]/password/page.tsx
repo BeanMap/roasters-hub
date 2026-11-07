@@ -1,11 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 
+// useSearchParams needs a Suspense boundary so the page shell can be prerendered.
 export default function PasswordPage() {
+  return (
+    <Suspense>
+      <PasswordForm />
+    </Suspense>
+  );
+}
+
+function PasswordForm() {
   const t = useTranslations("beta");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");

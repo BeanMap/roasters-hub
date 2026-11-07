@@ -11,10 +11,12 @@ import { commonOrderBy, commonWhere, listParam, parseCatalogParams, ROASTER_STYL
 import { CERTIFICATIONS, CERTIFICATION_LABELS, ORIGINS } from "@/types/certifications";
 import { ItemListJsonLd } from "@/components/shared/JsonLd";
 import { db } from "@/lib/db";
+import { getRoasterLocationRows } from "@/lib/catalog-data";
 import { buildAlternates, buildOpenGraph, buildCanonical, seoKeywords } from "@/lib/seo";
 import { Pagination } from "@/components/shared/Pagination";
 import type { Metadata } from "next";
 import type { Prisma } from "@prisma/client";
+import { CARD_IMAGE } from "@/lib/card-image";
 
 export const revalidate = 3600;
 
@@ -55,11 +57,7 @@ export default async function CatalogPage({
 
   const sp = await searchParams;
   const { page, q, country, city, styles, sort } = parseCatalogParams(sp);
-  const locationRows = await db.roaster.groupBy({
-    by: ["countryCode", "city"],
-    where: { status: "VERIFIED" },
-    _count: { _all: true },
-  });
+  const locationRows = await getRoasterLocationRows();
   const locations = buildLocations(locationRows, locale);
   const totalVerified = locationRows.reduce((n, r) => n + r._count._all, 0);
   const cityVariants = cityVariantsFor(locations, city);
@@ -78,7 +76,7 @@ export default async function CatalogPage({
     db.roaster.count({ where }),
     db.roaster.findMany({
       where,
-      include: { images: { where: { isPrimary: true }, take: 1 } },
+      include: { images: CARD_IMAGE },
       orderBy: commonOrderBy(sort),
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,

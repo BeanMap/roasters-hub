@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { usePathname, useRouter } from "@/i18n/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { CoffeeBean } from "@/components/icons/CoffeeBean";
@@ -17,6 +17,7 @@ function HeaderSearch({ pathname }: { pathname: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentQ = searchParams.get("q") || "";
+  const inputRef = useRef<HTMLInputElement>(null);
   const [entityType, setEntityType] = useState<"roasters" | "cafes">(() => {
     const stored = typeof window !== "undefined" ? localStorage.getItem("beanmap_entity_type") : null;
     if (stored === "roasters" || stored === "cafes") return stored;
@@ -38,7 +39,7 @@ function HeaderSearch({ pathname }: { pathname: string }) {
   };
 
   const handleSearchClick = () => {
-    const input = document.querySelector("input[placeholder*='Search']") as HTMLInputElement | null;
+    const input = inputRef.current;
     if (input) {
       const val = input.value.trim();
       const base = entityType === "cafes" ? "/cafes" : "/roasters";
@@ -47,7 +48,7 @@ function HeaderSearch({ pathname }: { pathname: string }) {
   };
 
   return (
-    <div className="hidden sm:flex items-center bg-surface-container-low rounded-lg overflow-hidden h-[42px] border-[1.5px] border-transparent focus-within:border-outline-variant/50 transition-colors">
+    <div className="hidden xl:flex items-center bg-surface-container-low rounded-lg overflow-hidden h-[42px] border-[1.5px] border-transparent focus-within:border-outline-variant/50 transition-colors">
       <button
         onClick={() => handleToggle("roasters")}
         className={`h-full px-3 flex items-center transition-colors ${
@@ -82,7 +83,9 @@ function HeaderSearch({ pathname }: { pathname: string }) {
         </svg>
         <input
           key={currentQ}
-          className="bg-transparent border-none focus:ring-0 focus:outline-none text-sm w-44 lg:w-64 placeholder:text-on-surface-variant/40"
+          ref={inputRef}
+          aria-label={entityType === "cafes" ? t("searchCafesLabel") : t("searchRoastersLabel")}
+          className="bg-transparent border-none focus:ring-0 focus:outline-none text-sm w-56 placeholder:text-on-surface-variant/40"
           placeholder={entityType === "cafes" ? t("searchCafesPlaceholder") : t("searchRoastersPlaceholder")}
           type="text"
           defaultValue={currentQ}
@@ -99,16 +102,16 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navLinks = [
-    { href: "/roasters", label: t("browseRoasters") },
-    { href: "/cafes", label: t("browseCafes") },
-    { href: "/map", label: t("map") },
+    { href: "/roasters", label: t("browseRoasters"), short: t("roasters") },
+    { href: "/cafes", label: t("browseCafes"), short: t("cafes") },
+    { href: "/map", label: t("map"), short: t("map") },
   ];
 
   return (
     <header className="sticky top-0 z-[1000] glass-nav border-b border-outline-variant/60">
       <div className="flex justify-between items-center w-full px-6 max-w-7xl mx-auto h-16">
-        <div className="flex items-center gap-8">
-          <Link href="/" aria-label={t("homeLabel")} className="flex items-center">
+        <div className="flex items-center gap-6 min-w-0">
+          <Link href="/" aria-label={t("homeLabel")} className="flex items-center shrink-0">
             <Image
               src="/brand/beanmap-logo.png"
               alt="Bean Map"
@@ -118,7 +121,7 @@ export function Header() {
               className="h-10 w-auto"
             />
           </Link>
-          <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
+          <nav className="hidden min-[900px]:flex items-center gap-1 whitespace-nowrap" aria-label="Main navigation">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
@@ -131,7 +134,7 @@ export function Header() {
                       : "rounded-full px-3.5 py-1.5 text-[0.9375rem] font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors"
                   }
                 >
-                  {link.label}
+                  {link.short}
                 </Link>
               );
             })}
@@ -139,14 +142,14 @@ export function Header() {
           </nav>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 shrink-0">
           <Suspense fallback={
-            <div className="hidden sm:flex items-center bg-surface-container-low rounded-lg overflow-hidden h-[42px] w-72 lg:w-80" />
+            <div className="hidden xl:flex items-center bg-surface-container-low rounded-lg overflow-hidden h-[42px] w-80" />
           }>
             <HeaderSearch pathname={pathname} />
           </Suspense>
 
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden min-[900px]:flex items-center gap-3 whitespace-nowrap">
             <LocaleSwitcher />
             <div className="w-px h-5 bg-outline-variant/30" />
             <SignedOut>
@@ -179,7 +182,7 @@ export function Header() {
           </div>
 
           <button
-            className="md:hidden text-on-surface-variant"
+            className="min-[900px]:hidden text-on-surface-variant"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label={mobileOpen ? t("closeMenu") : t("openMenu")}
             aria-expanded={mobileOpen}
@@ -196,7 +199,7 @@ export function Header() {
       </div>
 
       {mobileOpen && (
-        <nav className="md:hidden border-t border-surface-container-high/50 bg-white px-6 py-4 space-y-3" aria-label="Mobile navigation">
+        <nav className="min-[900px]:hidden border-t border-surface-container-high/50 bg-surface px-6 py-4 space-y-3" aria-label="Mobile navigation">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -247,14 +250,14 @@ export function Header() {
               {t("registerCafe")}
             </Link>
             <Link
-              href="/register"
+              href="/suggest/roastery"
               className="block text-on-surface-variant hover:text-primary transition-colors py-2 text-base font-bold"
               onClick={() => setMobileOpen(false)}
             >
               {t("suggestRoastery")}
             </Link>
             <Link
-              href="/register/cafe"
+              href="/suggest/cafe"
               className="block text-on-surface-variant hover:text-primary transition-colors py-2 text-base font-bold"
               onClick={() => setMobileOpen(false)}
             >

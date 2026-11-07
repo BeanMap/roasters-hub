@@ -12,6 +12,7 @@ import { CAFE_SERVICES } from "@/constants/cafe-services";
 import { CAFE_STYLE_TO_SERVING, commonOrderBy, commonWhere, listParam, parseCatalogParams, buildLocations, cityVariantsFor } from "@/lib/catalog";
 import { ItemListJsonLd } from "@/components/shared/JsonLd";
 import { db } from "@/lib/db";
+import { getCafeLocationRows } from "@/lib/catalog-data";
 import { buildAlternates, buildOpenGraph, buildCanonical, seoKeywords } from "@/lib/seo";
 import { Pagination } from "@/components/shared/Pagination";
 import type { Metadata } from "next";
@@ -56,11 +57,7 @@ export default async function CafesPage({
 
   const sp = await searchParams;
   const { page, q, country, city, styles, sort } = parseCatalogParams(sp);
-  const locationRows = await db.cafe.groupBy({
-    by: ["countryCode", "city"],
-    where: { status: "VERIFIED" },
-    _count: { _all: true },
-  });
+  const locationRows = await getCafeLocationRows();
   const locations = buildLocations(locationRows, locale);
   const totalVerified = locationRows.reduce((n, r) => n + r._count._all, 0);
   const cityVariants = cityVariantsFor(locations, city);

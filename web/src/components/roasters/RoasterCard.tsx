@@ -104,7 +104,7 @@ export function RoasterCard({ roaster, variant = "default", className }: Roaster
           <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/45 to-transparent pointer-events-none" />
           <div className="absolute left-3 right-3 bottom-3 flex items-center justify-between gap-2">
             {roaster.featured ? (
-              <span className="label-mono rounded-full bg-[#f5efe6] text-[#1f1611] px-2.5 py-1">★ {t("featured")}</span>
+              <span className="label-mono whitespace-nowrap truncate rounded-full bg-[#f5efe6] text-[#1f1611] px-2.5 py-1">★ {t("featured")}</span>
             ) : <span />}
             {isVerified && <VerifiedBadge size="sm" className="shadow-sm" />}
           </div>
