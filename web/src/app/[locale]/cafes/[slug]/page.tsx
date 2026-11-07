@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
 import { ReviewSection } from "@/components/shared/ReviewSection";
@@ -16,7 +16,6 @@ import { CafeTrackedLink } from "@/components/cafes/CafeTrackedLink";
 import { SaveCafeButton } from "@/components/cafes/SaveCafeButton";
 import { LocalBusinessJsonLd, BreadcrumbJsonLd, ReviewJsonLd } from "@/components/shared/JsonLd";
 import { buildAlternates, buildOgImage, buildOpenGraph, seoKeywords } from "@/lib/seo";
-import { isCafeSaved } from "@/actions/saved-cafe.actions";
 import { db } from "@/lib/db";
 
 export const revalidate = 3600;
@@ -24,6 +23,7 @@ export const dynamicParams = true;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string; locale: string }> }): Promise<Metadata> {
   const { slug, locale } = await params;
+  setRequestLocale(locale);
   const cafe = await db.cafe.findUnique({
     where: { slug },
     select: { name: true, city: true, country: true, description: true, coverImageUrl: true },
@@ -74,6 +74,7 @@ export default async function CafeProfilePage({
   params: Promise<{ slug: string; locale: string }>;
 }) {
   const { slug, locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "profiles" });
 
   let cafe;
@@ -159,7 +160,6 @@ export default async function CafeProfilePage({
     createdAt: r.createdAt.toISOString(),
   }));
 
-  const saved = await isCafeSaved(cafe.id);
   const isVerified = cafe.status === "VERIFIED";
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://beanmap.pl";
   const profileUrl = `${baseUrl}/cafes/${slug}`;
@@ -412,7 +412,7 @@ export default async function CafeProfilePage({
                     {t("visitWebsite")}
                   </CafeTrackedLink>
                 )}
-                <SaveCafeButton cafeId={cafe.id} initialSaved={saved} />
+                <SaveCafeButton cafeId={cafe.id} />
               </div>
 
               {(cafe.instagram || cafe.phone) && (

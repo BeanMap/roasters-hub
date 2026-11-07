@@ -1,21 +1,28 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { useAuth, SignInButton } from "@clerk/nextjs";
-import { saveRoaster, unsaveRoaster } from "@/actions/saved-roaster.actions";
+import { isRoasterSaved, saveRoaster, unsaveRoaster } from "@/actions/saved-roaster.actions";
 
-export function SaveRoasterButton({
-  roasterId,
-  initialSaved,
-}: {
-  roasterId: string;
-  initialSaved: boolean;
-}) {
+export function SaveRoasterButton({ roasterId }: { roasterId: string }) {
   const t = useTranslations("profiles");
   const { isSignedIn } = useAuth();
-  const [saved, setSaved] = useState(initialSaved);
+  const [saved, setSaved] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  // Saved state is per user, so it is loaded in the browser: reading the
+  // session on the server would make the whole profile page uncacheable.
+  useEffect(() => {
+    if (!isSignedIn) return;
+    let cancelled = false;
+    isRoasterSaved(roasterId).then((value) => {
+      if (!cancelled) setSaved(value);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isSignedIn, roasterId]);
 
   const handleToggle = () => {
     startTransition(async () => {

@@ -2,6 +2,9 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "outputDirectory": ".next",
   "framework": "nextjs",
+  "regions": [
+    "fra1"
+  ],
   "buildCommand": "npm run vercel-build",
   "ignoreCommand": "bash \"$( [ -d web/scripts ] && echo web/scripts || echo scripts )/vercel-ignore-build.sh\""
 }

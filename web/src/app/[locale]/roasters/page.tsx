@@ -11,6 +11,7 @@ import { commonOrderBy, commonWhere, listParam, parseCatalogParams, ROASTER_STYL
 import { CERTIFICATIONS, CERTIFICATION_LABELS, ORIGINS } from "@/types/certifications";
 import { ItemListJsonLd } from "@/components/shared/JsonLd";
 import { db } from "@/lib/db";
+import { getRoasterLocationRows } from "@/lib/catalog-data";
 import { buildAlternates, buildOpenGraph, buildCanonical, seoKeywords } from "@/lib/seo";
 import { Pagination } from "@/components/shared/Pagination";
 import type { Metadata } from "next";
@@ -55,11 +56,7 @@ export default async function CatalogPage({
 
   const sp = await searchParams;
   const { page, q, country, city, styles, sort } = parseCatalogParams(sp);
-  const locationRows = await db.roaster.groupBy({
-    by: ["countryCode", "city"],
-    where: { status: "VERIFIED" },
-    _count: { _all: true },
-  });
+  const locationRows = await getRoasterLocationRows();
   const locations = buildLocations(locationRows, locale);
   const totalVerified = locationRows.reduce((n, r) => n + r._count._all, 0);
   const cityVariants = cityVariantsFor(locations, city);

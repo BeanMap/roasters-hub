@@ -5,6 +5,7 @@ import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { CookieBanner } from "@/components/shared/CookieBanner";
+import { AppShell } from "@/components/shared/AppShell";
 
 type Props = {
   children: React.ReactNode;
@@ -24,9 +25,11 @@ export default async function LocaleLayout({ children, params }: Props) {
   const messages = await getMessages();
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
-      {children}
-      <CookieBanner />
-    </NextIntlClientProvider>
+    <AppShell locale={locale}>
+      <NextIntlClientProvider locale={locale} messages={messages}>
+        {children}
+        <CookieBanner />
+      </NextIntlClientProvider>
+    </AppShell>
   );
 }
