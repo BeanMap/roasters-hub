@@ -18,6 +18,9 @@
  * in a PR — the "Database alignment" workflow fails until Vercel and this
  * file agree again.
  */
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
+
 export const PRODUCTION_NEON_PROJECT_ID = "steep-smoke-16472365";
 export const PRODUCTION_DB_ENDPOINT = "ep-purple-grass-al8w7icb";
 export const VERCEL_TEAM_ID = "team_Ao3CoQ6zPx2zmfWeSfWB5c0P";
@@ -40,7 +43,13 @@ export function unpooled(url) {
 }
 
 // CLI: `node scripts/production-db.mjs <name>` prints one constant (for workflows).
-if (process.argv[1]?.endsWith("production-db.mjs") && process.argv[2]) {
+// Only when run directly — not when imported (e.g. from `node -e`, where argv
+// can contain this file's path too).
+const isCli =
+  !process.execArgv.some((a) => a === "-e" || a === "--eval" || a === "-p" || a === "--print") &&
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
+if (isCli && process.argv[2]) {
   const value = {
     project: PRODUCTION_NEON_PROJECT_ID,
     endpoint: PRODUCTION_DB_ENDPOINT,

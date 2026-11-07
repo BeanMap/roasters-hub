@@ -35,7 +35,7 @@ echo "::add-mask::$URL"
 PASSWORD="$(node -e 'console.log(decodeURIComponent(new URL(process.argv[1]).password))' "$URL")"
 [ -n "$PASSWORD" ] && echo "::add-mask::$PASSWORD"
 
-ENDPOINT="$(node -e 'import(process.argv[1]).then(m => console.log(m.endpointId(process.argv[2]) ?? ""))' "$CFG" "$URL")"
+ENDPOINT="$(CFG="$CFG" node -e 'import(process.env.CFG).then(m => console.log(m.endpointId(process.argv[1]) ?? ""))' "$URL")"
 if [ "$ENDPOINT" != "$EXPECTED" ]; then
   echo "::error::Vercel production database endpoint is '$ENDPOINT', web/scripts/production-db.mjs expects '$EXPECTED'"
   exit 1

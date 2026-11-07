@@ -18,7 +18,7 @@ ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 CFG="$ROOT/web/scripts/production-db.mjs"
 PROJECT="$(node "$CFG" project)"
 EXPECTED="$(node "$CFG" endpoint)"
-endpoint_of() { node -e 'import(process.argv[1]).then(m => console.log(m.endpointId(process.argv[2]) ?? "(not a Neon URL)"))' "$CFG" "$1"; }
+endpoint_of() { CFG="$CFG" node -e 'import(process.env.CFG).then(m => console.log(m.endpointId(process.argv[1]) ?? "(not a Neon URL)"))' "$1"; }
 FAILED=0
 
 # 2. Neon API key ↔ project ↔ endpoint
