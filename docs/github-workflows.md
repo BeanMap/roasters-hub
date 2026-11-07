@@ -224,6 +224,10 @@ Gałęzie Neon: https://console.neon.tech/app/projects/steep-smoke-16472365/bran
 
 ## Backup i odtwarzanie danych
 
+> **Status (2026-11-08): backupy WYŁĄCZONE** — sekret `BACKUP_PASSPHRASE` nie jest ustawiony, więc
+> `db-backup.yml` kończy się ostrzeżeniem i nic nie zrzuca. Włączenie = dodanie tego sekretu
+> (patrz „Wymagane Secrets”). Do tego czasu jedynym zabezpieczeniem jest Neon point-in-time restore (6 h).
+
 ### Co jest backupowane
 
 | Mechanizm | Zakres | Gdzie |

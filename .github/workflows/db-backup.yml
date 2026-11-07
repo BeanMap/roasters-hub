@@ -38,8 +38,30 @@ env:
     ORDER BY table_name;
 
 jobs:
-  backup:
+  # Backups are switched on by adding the BACKUP_PASSPHRASE secret. Until then
+  # the workflow only leaves a warning (no red runs) and never dumps anything
+  # unencrypted.
+  check:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.passphrase.outputs.enabled }}
+    steps:
+      - name: Encryption passphrase present?
+        id: passphrase
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          if [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "::warning::Backups are OFF: add the BACKUP_PASSPHRASE secret to enable them (docs/github-workflows.md → Backup)."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  backup:
+    needs: check
+    if: needs.check.outputs.enabled == 'true'
     runs-on: ubuntu-latest
     outputs:
       artifact: ${{ steps.name.outputs.artifact }}
@@ -49,15 +71,6 @@ jobs:
           sparse-checkout: |
             web/scripts
             .github/scripts
-
-      - name: Require encryption passphrase
-        env:
-          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
-        run: |
-          if [ -z "$BACKUP_PASSPHRASE" ]; then
-            echo "::error::BACKUP_PASSPHRASE secret is missing — refusing to create an unencrypted backup in a public repository."
-            exit 1
-          fi
 
       - name: Production URL from Vercel
         run: bash .github/scripts/prod-db-url.sh
